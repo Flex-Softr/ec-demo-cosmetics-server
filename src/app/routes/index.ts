@@ -19,6 +19,7 @@ import { ReviewRoutes } from "../modules/productManagement/review/review.route";
 import { SubCategoryRoutes } from "../modules/productManagement/subCategory/subCategory.routes";
 import { TagRoutes } from "../modules/productManagement/tag/tag.route";
 import { ReportsRoutes } from "../modules/reports/reports.routes";
+import { SmsRoutes } from "../modules/smsManagement/sms/sms.routes";
 import { SliderBannerRoutes } from "../modules/themeOption/sliderSection/sliderSection.routes";
 import { AdminRoutes } from "../modules/userManagement/admin/admin.routes";
 import { CustomerRoutes } from "../modules/userManagement/customer/customer.routes";
@@ -142,6 +143,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/districts",
     route: DistrictRoutes,
+  },
+  {
+    path: "/sms",
+    route: SmsRoutes,
   },
 ];
 
