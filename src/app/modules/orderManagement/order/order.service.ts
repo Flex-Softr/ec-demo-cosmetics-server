@@ -1889,6 +1889,114 @@ const returnAndPartialManagementIntoDB = async (
   }
 };
 
+/* -----------------------------------------
+   Get mobile numbers for sending SMS
+-------------------------------------------- */
+
+const getMobileNumbersForSendingSMSFromDB = async (
+  query: Record<string, unknown>
+) => {
+  let matchQuery: Record<string, unknown> = {};
+
+  const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: "shippings",
+        localField: "shipping",
+        foreignField: "_id",
+        as: "shippingInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$shippingInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: "$shippingInfo.phoneNumber",
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        phoneNumbers: { $addToSet: "$_id" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        phoneNumbers: 1,
+      },
+    },
+  ];
+
+  if (query.startFrom) {
+    const startTime = convertIso(query.startFrom.toString());
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $gte: startTime,
+    };
+  }
+
+  if (query.endAt) {
+    const endTime = convertIso(query.endAt.toString(), false);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $lte: endTime,
+    };
+  }
+
+  if (query.productIds) {
+    const ids = Array.isArray(query.productIds)
+      ? query.productIds
+      : [query.productIds];
+
+    matchQuery = {
+      ...matchQuery,
+      "productDetails.product": {
+        $in: ids.map((id) => new Types.ObjectId(id)),
+      },
+    };
+  }
+
+  if (query.status) {
+    const statuses = Array.isArray(query.status)
+      ? query.status
+      : [query.status];
+
+    matchQuery = {
+      ...matchQuery,
+      status: {
+        $in: statuses,
+      },
+    };
+  }
+
+  if (query.district) {
+    matchQuery = {
+      ...matchQuery,
+      district: query.district,
+    };
+  }
+
+  if (query.division) {
+    matchQuery = {
+      ...matchQuery,
+      division: query.division,
+    };
+  }
+
+  pipeline.unshift({
+    $match: matchQuery,
+  });
+
+  const result = (await Order.aggregate(pipeline))[0];
+
+  return result;
+};
+
 export const OrderServices = {
   createOrderIntoDB,
   updateOrderStatusIntoDB,
@@ -1909,4 +2017,5 @@ export const OrderServices = {
   getOrderTrackingInfo,
   getOrdersByDeliveryStatusFromDB,
   returnAndPartialManagementIntoDB,
+  getMobileNumbersForSendingSMSFromDB,
 };

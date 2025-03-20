@@ -279,6 +279,19 @@ const returnAndPartialManagement = catchAsync(
   }
 );
 
+const getMobileNumbersForSendingSMS = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await OrderServices.getMobileNumbersForSendingSMSFromDB(
+      req.query as unknown as Record<string, string>
+    );
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Phone number retrieved successfully",
+      data: result,
+    });
+  }
+);
+
 export const OrderController = {
   createOrder,
   getOrderInfoByOrderIdCustomer,
@@ -299,4 +312,5 @@ export const OrderController = {
   getOrderTrackingInfo,
   getOrdersByDeliveryStatus,
   returnAndPartialManagement,
+  getMobileNumbersForSendingSMS,
 };
