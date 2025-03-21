@@ -3,9 +3,13 @@ import mongoose, { PipelineStage, Types } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
+import { errorLogger } from "../../../utilities/logger";
+import sendSms from "../../../utilities/sendSms";
 import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
 import { Coupon } from "../../coupon/coupon.model";
 import ProductModel from "../../productManagement/product/product.model";
+import { TOrderSMSNotificationType } from "../../smsManagement/orderSMSNotification/orderSMSNotification.interface";
+import { OrderSMSNotification } from "../../smsManagement/orderSMSNotification/orderSMSNotification.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
 import {
@@ -13,6 +17,7 @@ import {
   TOrderStatus,
   TProductDetails,
   TSanitizedOrProduct,
+  TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
 
@@ -1583,6 +1588,39 @@ const orderCostAfterCoupon = async (
   };
 };
 
+const sendOrderSMSNotification = async (
+  reviverInfo: TSMSReceiverInfo,
+  type: TOrderSMSNotificationType
+) => {
+  const SMSNotificationData = await OrderSMSNotification.findOne({
+    slug: type,
+  });
+
+  if (!SMSNotificationData) return;
+  if (SMSNotificationData?.isActive === false) return;
+
+  const SMSTemplate = SMSNotificationData?.customTemplate;
+
+  let SMSBody = SMSNotificationData.defaultTemplate;
+
+  if (SMSTemplate) {
+    SMSBody = SMSTemplate.replace(
+      /{(\w+)}/g,
+      (_, key: keyof typeof reviverInfo) => {
+        return reviverInfo[key] || "";
+      }
+    );
+  }
+
+  try {
+    await sendSms([reviverInfo.phoneNumber], SMSBody);
+  } catch (error) {
+    errorLogger.error("failed to send SMS", error);
+    return false;
+  }
+  return true;
+};
+
 export const OrderHelper = {
   sanitizeOrderedProducts,
   findOrderForUpdatingOrder,
@@ -1592,4 +1630,5 @@ export const OrderHelper = {
   sanitizeCartItemsForOrder,
   validateAndSanitizeOrderedProducts,
   orderCostAfterCoupon,
+  sendOrderSMSNotification,
 };
