@@ -1589,15 +1589,17 @@ const orderCostAfterCoupon = async (
 };
 
 const sendOrderSMSNotification = async (
-  reviverInfo: TSMSReceiverInfo,
-  type: TOrderSMSNotificationType
+  receiverInfo: TSMSReceiverInfo,
+  type?: TOrderSMSNotificationType
 ) => {
   const SMSNotificationData = await OrderSMSNotification.findOne({
     slug: type,
   });
 
-  if (!SMSNotificationData) return;
-  if (SMSNotificationData?.isActive === false) return;
+  if (!SMSNotificationData) return false;
+  if (SMSNotificationData?.isActive === false) return false;
+  if (!receiverInfo.phoneNumber) return false;
+  if (!type) return false;
 
   const SMSTemplate = SMSNotificationData?.customTemplate;
 
@@ -1606,14 +1608,14 @@ const sendOrderSMSNotification = async (
   if (SMSTemplate) {
     SMSBody = SMSTemplate.replace(
       /{(\w+)}/g,
-      (_, key: keyof typeof reviverInfo) => {
-        return reviverInfo[key] || "";
+      (_, key: keyof typeof receiverInfo) => {
+        return receiverInfo[key] || "";
       }
     );
   }
 
   try {
-    await sendSms([reviverInfo.phoneNumber], SMSBody);
+    await sendSms([receiverInfo.phoneNumber], SMSBody);
   } catch (error) {
     errorLogger.error("failed to send SMS", error);
     return false;

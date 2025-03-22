@@ -27,6 +27,7 @@ import {
   TOrderDeliveryStatus,
   TOrderStatus,
   TProductDetails,
+  TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
 // import steedFastApi from "../../../utilities/steedfastApi";
@@ -822,6 +823,7 @@ const updateOrderStatusIntoDB = async (
     );
 
     const orders = (await Order.aggregate(pipeline)) as Partial<TOrder[]>;
+
     const statusUpdateQuery: {
       updateOne: {
         filter: {
@@ -910,6 +912,33 @@ const updateOrderStatusIntoDB = async (
         }
       }
     }
+
+    if (
+      (orders.length && payload.status === "canceled") ||
+      payload.status === "confirmed"
+    ) {
+      const SMSReviverInformations: TSMSReceiverInfo[] = orders.map((order) => {
+        const shipping = (order as unknown as { shippingData: TShipping })
+          ?.shippingData;
+        return {
+          fullName: shipping.fullName || "",
+          phoneNumber: shipping.phoneNumber || "",
+          orderId: shipping.orderId || "",
+        };
+      });
+
+      SMSReviverInformations.forEach(async (receiver) => {
+        await OrderHelper.sendOrderSMSNotification(
+          receiver,
+          payload.status === "confirmed"
+            ? "order_confirmed"
+            : payload.status === "canceled"
+              ? "order_canceled"
+              : undefined
+        );
+      });
+    }
+
     await session.commitTransaction();
   } catch (error) {
     await session.abortTransaction();
