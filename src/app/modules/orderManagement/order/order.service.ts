@@ -920,6 +920,7 @@ const updateOrderStatusIntoDB = async (
       const SMSReviverInformations: TSMSReceiverInfo[] = orders.map((order) => {
         const shipping = (order as unknown as { shippingData: TShipping })
           ?.shippingData;
+
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
@@ -1172,6 +1173,48 @@ const bookCourierAndUpdateStatusIntoDB = async (
       );
     }
     await OrderStatusHistory.bulkWrite(historyUpdateQuery, { session });
+
+    let SMSReviverInformations: TSMSReceiverInfo[] = [];
+
+    if (status === "On courier") {
+      SMSReviverInformations = successCourierOrders.map((order) => {
+        const shipping = orders.find((item) => item.orderId === order.orderId)
+          ?.shippingData as TShipping;
+
+        return {
+          fullName: shipping.fullName || "",
+          phoneNumber: shipping.phoneNumber || "",
+          orderId: shipping.orderId || "",
+          trackingId: order.trackingId || "",
+        };
+      });
+    }
+
+    if (status === "canceled") {
+      SMSReviverInformations = orders.map((order) => {
+        const shipping = (order as unknown as { shippingData: TShipping })
+          ?.shippingData;
+
+        return {
+          fullName: shipping.fullName || "",
+          phoneNumber: shipping.phoneNumber || "",
+          orderId: shipping.orderId || "",
+        };
+      });
+    }
+
+    if (SMSReviverInformations.length) {
+      SMSReviverInformations.forEach(async (receiver) => {
+        await OrderHelper.sendOrderSMSNotification(
+          receiver,
+          status === "On courier"
+            ? "courier_assigned"
+            : status === "canceled"
+              ? "order_canceled"
+              : undefined
+        );
+      });
+    }
 
     await session.commitTransaction();
   } catch (error) {

@@ -204,4 +204,5 @@ export type TSMSReceiverInfo = {
   phoneNumber: string;
   fullName: string;
   orderId: string;
+  trackingId?: string;
 };
