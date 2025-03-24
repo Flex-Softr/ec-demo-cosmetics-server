@@ -8,7 +8,10 @@ import sendSms from "../../../utilities/sendSms";
 import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
 import { Coupon } from "../../coupon/coupon.model";
 import ProductModel from "../../productManagement/product/product.model";
-import { TOrderSMSNotificationType } from "../../smsManagement/orderSMSNotification/orderSMSNotification.interface";
+import {
+  TOrderSMSNotification,
+  TOrderSMSNotificationType,
+} from "../../smsManagement/orderSMSNotification/orderSMSNotification.interface";
 import { OrderSMSNotification } from "../../smsManagement/orderSMSNotification/orderSMSNotification.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
@@ -1590,11 +1593,16 @@ const orderCostAfterCoupon = async (
 
 const sendOrderSMSNotification = async (
   receiverInfo: TSMSReceiverInfo,
-  type?: TOrderSMSNotificationType
+  type?: TOrderSMSNotificationType,
+  notificationData?: TOrderSMSNotification
 ) => {
-  const SMSNotificationData = await OrderSMSNotification.findOne({
-    slug: type,
-  });
+  let SMSNotificationData = notificationData;
+
+  if (!Object.keys(SMSNotificationData || {}).length) {
+    SMSNotificationData = (await OrderSMSNotification.findOne({
+      slug: type,
+    })) as TOrderSMSNotification;
+  }
 
   if (!SMSNotificationData) return false;
   if (SMSNotificationData?.isActive === false) return false;
