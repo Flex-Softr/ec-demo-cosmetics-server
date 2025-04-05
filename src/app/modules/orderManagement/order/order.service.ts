@@ -1249,7 +1249,6 @@ const updateOrderDetailsByAdminIntoDB = async (
             // Update existing product details
             const currentProduct =
               findOrder.productDetails[existingProductIndex];
-
             const previousQuantity = currentProduct.quantity;
             if (updatedProduct.quantity || updatedProduct.quantity === 0) {
               currentProduct.total =
@@ -1430,7 +1429,7 @@ const updateOrderDetailsByAdminIntoDB = async (
             unitPrice: selectedVariation ? variationUnitPrice : unitPrice,
             quantity: updatedProduct.quantity,
             total: selectedVariation
-              ? variationUnitPrice
+              ? Number(variationUnitPrice) * updatedProduct.quantity
               : unitPrice * updatedProduct.quantity,
             warranty: updatedProduct.warranty,
             isWarrantyClaim: updatedProduct.isWarrantyClaim,
