@@ -37,7 +37,7 @@ if (config.env === "production") {
 // Middlewares
 app.use(cors(corsOptions));
 app.use(helmet());
-app.use(express.json());
+app.use(express.json({ limit: "1mb" })); // Default 100 KB, You can increase this as needed
 app.use(compression());
 app.use(cookieParser());
 app.use(userAgent.express());
