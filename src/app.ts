@@ -1,5 +1,4 @@
 import compression from "compression";
-
 import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from "cors";
 import express, { Application } from "express";

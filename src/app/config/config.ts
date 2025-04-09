@@ -7,6 +7,7 @@ const env = process.env;
 
 export default {
   env: env.NODE_ENV,
+  log_error: env.LOG_ERROR,
   port: env.PORT,
   company_name: env.COMPANY_NAME,
   admin_email: env.ADMIN_EMAIL,

@@ -43,6 +43,15 @@ const globalErrorhandler: ErrorRequestHandler = (
   if (config.env === "development") {
     // eslint-disable-next-line no-console
     console.log(err);
+  }
+
+  if (config.log_error === "true") {
+    // eslint-disable-next-line no-console
+    console.error(`❌ Error happened in ${req.method} ${req.originalUrl}`, err);
+  }
+
+  if (config.env === "production") {
+    // eslint-disable-next-line no-console
     consoleLogger.error(err);
   }
 
