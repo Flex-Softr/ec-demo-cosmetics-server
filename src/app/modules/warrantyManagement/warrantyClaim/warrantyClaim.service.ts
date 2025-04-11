@@ -72,6 +72,9 @@ const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
             title: {
               $arrayElemAt: ["$productInfo.title", 0],
             },
+            variations: {
+              $arrayElemAt: ["$productInfo.variations", 0],
+            },
           },
           warrantyClaimHistory: "$warrantyClaimHistory",
           claimedCodes: "$warrantyClaimReqData.claimedCodes",
