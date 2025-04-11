@@ -72,6 +72,9 @@ const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
             title: {
               $arrayElemAt: ["$productInfo.title", 0],
             },
+            variations: {
+              $arrayElemAt: ["$productInfo.variations", 0],
+            },
           },
           warrantyClaimHistory: "$warrantyClaimHistory",
           claimedCodes: "$warrantyClaimReqData.claimedCodes",
@@ -399,10 +402,30 @@ const createNewWarrantyClaimOrderIntoDB = async (
   return order;
 };
 
+const updateClaimProductVariationIntoDB = async (
+  claimId: string,
+  payload: { itemId: string; newVariation: string }
+) => {
+  await WarrantyClaim.updateOne(
+    {
+      _id: new Types.ObjectId(claimId),
+      "warrantyClaimReqData._id": new Types.ObjectId(payload.itemId),
+    },
+    {
+      $set: {
+        "warrantyClaimReqData.$.variation": new mongoose.Types.ObjectId(
+          payload.newVariation
+        ),
+      },
+    }
+  );
+};
+
 export const WarrantyClaimServices = {
   getAllWarrantyClaimReqFromDB,
   checkWarrantyFromDB,
   createWarrantyClaimIntoDB,
   updateWarrantyClaimReqIntoDB,
   createNewWarrantyClaimOrderIntoDB,
+  updateClaimProductVariationIntoDB,
 };
