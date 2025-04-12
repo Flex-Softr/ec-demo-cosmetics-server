@@ -8,6 +8,7 @@ import { TJwtPayload } from "../../authManagement/auth/auth.interface";
 import { Order } from "../../orderManagement/order/order.model";
 import { createNewOrder } from "../../orderManagement/order/order.utils";
 import { TShipping } from "../../orderManagement/shipping/shipping.interface";
+import { TVariation } from "../../productManagement/product/product.interface";
 import { Warranty } from "../warranty/warranty.model";
 import { WarrantyClaimHistory } from "../warrantyClaimHistory/warrantyClaimHistory.model";
 import {
@@ -406,6 +407,64 @@ const updateClaimProductVariationIntoDB = async (
   claimId: string,
   payload: { itemId: string; newVariation: string }
 ) => {
+  const productDetails = (
+    await WarrantyClaim.aggregate([
+      {
+        $match: {
+          _id: new Types.ObjectId(claimId),
+          approvalStatus: { $ne: "approved" },
+          result: { $ne: "solved" },
+        },
+      },
+      {
+        $unwind: {
+          path: "$warrantyClaimReqData", // Separate each warrantyClaimReqData entry
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "products", // Collection name for products
+          localField: "warrantyClaimReqData.productId",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      {
+        $project: {
+          warrantyClaimReqData: {
+            _id: "$warrantyClaimReqData._id",
+            product: {
+              _id: {
+                $arrayElemAt: ["$productInfo._id", 0],
+              },
+              title: {
+                $arrayElemAt: ["$productInfo.title", 0],
+              },
+              variations: {
+                $arrayElemAt: ["$productInfo.variations", 0],
+              },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          warrantyClaimReqData: { $push: "$warrantyClaimReqData" },
+        },
+      },
+    ])
+  )[0];
+
+  const attribute = (productDetails?.warrantyClaimReqData || [])
+    ?.find((item: { _id: string }) => item?._id.toString() === payload.itemId)
+    ?.product?.variations?.find(
+      (item: { _id: Types.ObjectId } & TVariation) => {
+        return item?._id?.toString() === payload.newVariation;
+      }
+    )?.attributes;
+
   await WarrantyClaim.updateOne(
     {
       _id: new Types.ObjectId(claimId),
@@ -416,6 +475,7 @@ const updateClaimProductVariationIntoDB = async (
         "warrantyClaimReqData.$.variation": new mongoose.Types.ObjectId(
           payload.newVariation
         ),
+        "warrantyClaimReqData.$.attributes": attribute,
       },
     }
   );
