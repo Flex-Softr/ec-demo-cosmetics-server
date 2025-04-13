@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import config from "../../../config/config";
 import authGuard from "../../../middlewares/authGuard";
 import validateRequest from "../../../middlewares/validateRequest";
@@ -48,6 +49,23 @@ router.post(
   }),
   validateRequest(WarrantyClaimValidation.approveAndCreateOrder),
   WarrantyClaimController.createNewWarrantyClaimOrder
+);
+
+router.patch(
+  "/update-variation/:id",
+  authGuard({
+    requiredRoles: ["superAdmin", "admin", "staff"],
+    requiredPermission: "manage warranty claim",
+  }),
+  validateRequest(
+    z.object({
+      body: z.object({
+        itemId: z.string({ required_error: "Item id is required" }),
+        newVariation: z.string({ required_error: "New Variation id required" }),
+      }),
+    })
+  ),
+  WarrantyClaimController.updateClaimProductVariation
 );
 
 export const WarrantyClaimRoutes = router;

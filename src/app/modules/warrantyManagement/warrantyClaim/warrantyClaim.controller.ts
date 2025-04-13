@@ -90,10 +90,29 @@ const createNewWarrantyClaimOrder = catchAsync(
   }
 );
 
+const updateClaimProductVariation = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    const warranty =
+      await WarrantyClaimServices.updateClaimProductVariationIntoDB(
+        id,
+        req.body
+      );
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Variation updated successfully!",
+      data: warranty,
+    });
+  }
+);
+
 export const WarrantyClaimController = {
   getAllWarrantyClaimReq,
   checkWarranty,
   createWarrantyClaimReq,
   updateWarrantyClaimReq,
   createNewWarrantyClaimOrder,
+  updateClaimProductVariation,
 };
