@@ -705,6 +705,7 @@ const updateProductIntoDB = async (
         // Check if variation already exists
         const existingVariation = await VariationModel.findOne({
           attributes: (variation as TVariation).attributes,
+          "inventory.sku": (variation as TVariation).inventory.sku,
         });
         if (existingVariation) {
           await VariationModel.updateOne(
