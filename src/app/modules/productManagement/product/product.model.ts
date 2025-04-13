@@ -5,7 +5,6 @@ import {
   TProductAttribute,
   TProductImage,
   TPublishedStatusSchema,
-  TVariation,
   TWarrantyInfo,
 } from "./product.interface";
 // import { TAttribute } from "../attribute/attribute.interface";
@@ -15,7 +14,6 @@ import { ImageModel } from "../../image/image.model";
 import { AttributeModel } from "../attribute/attribute.model";
 import { BrandModel } from "../brand/brand.model";
 import { CategoryModel } from "../category/category.model";
-import { stockStatus } from "../inventory/inventory.const";
 import { SubCategoryModel } from "../subCategory/subCategory.model";
 import { publishedStatus, visibilityStatus } from "./product.const";
 
@@ -37,29 +35,6 @@ const productAttributeSchema = new Schema<TProductAttribute>(
   },
   { _id: false }
 );
-
-export const productVariationsSchema = new Schema<TVariation>({
-  attributes: {
-    type: Map,
-    of: String,
-  },
-  price: {
-    regularPrice: { type: Number, required: true },
-    salePrice: { type: Number },
-    discountPercent: { type: Number },
-    priceSave: { type: Number },
-  },
-  inventory: {
-    sku: { type: String, unique: true, sparse: true },
-    stockStatus: { type: String, enum: [...stockStatus], required: true },
-    stockQuantity: { type: Number, required: true },
-    stockAvailable: { type: Number, required: true },
-    productCode: { type: String },
-    manageStock: { type: Boolean, default: false },
-    lowStockWarning: { type: Number },
-    hideStock: { type: Boolean, default: false },
-  },
-});
 
 const categorySchema = new Schema<TCategorySchema>(
   {
@@ -121,9 +96,7 @@ export const productSchema = new Schema<TProduct>(
     attributes: {
       type: [productAttributeSchema],
     },
-    variations: {
-      type: [productVariationsSchema],
-    },
+    variations: [{ type: Schema.Types.ObjectId, ref: "Variation" }],
     brand: { type: Schema.Types.ObjectId, ref: "Brand" },
     category: categorySchema,
     warranty: { type: Boolean, required: true },

@@ -7,10 +7,10 @@ export const priceSchema = new Schema<TPrice>(
     salePrice: { type: Number },
     discountPercent: { type: Number },
     priceSave: { type: Number },
-    date: {
-      start: { type: String },
-      end: { type: String },
-    },
+    // date: {
+    //   start: { type: String },
+    //   end: { type: String },
+    // },
   },
   {
     timestamps: true,

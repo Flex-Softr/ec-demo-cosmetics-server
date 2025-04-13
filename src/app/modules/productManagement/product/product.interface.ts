@@ -2,6 +2,7 @@ import { Document, Types } from "mongoose";
 // import { TAttribute } from "../attribute/attribute.interface";
 import { TInventory } from "../inventory/inventory.interface";
 import { TPrice } from "../price/price.interface";
+import { TVariation } from "../variation/variation.interface";
 
 export type TPublishedStatus = "Draft" | "Published";
 export type TVisibilityStatus = "Public" | "Private" | "Password protected";
@@ -24,14 +25,6 @@ export type TProductAttribute = {
   values: Types.ObjectId[];
 };
 
-export type TVariation = {
-  attributes: {
-    [key: string]: string;
-  };
-  price: TPrice;
-  inventory: TInventory;
-};
-
 export type TWarrantyInfo = {
   duration: string;
   terms: string;
@@ -40,27 +33,27 @@ export type TWarrantyInfo = {
 export type TProduct = {
   id: string;
   title: string;
-  permalink?: string;
-  type?: string;
-  slug?: string;
+  // permalink?: string;
+  // type?: string;
+  slug: string;
   description: string;
   shortDescription?: string;
   additionalInfo?: string;
   usageGuidelines?: string;
-  downloadable?: boolean;
+  // downloadable?: boolean;
   featured?: boolean;
-  review?: boolean;
+  // review?: boolean;
   price: Types.ObjectId | TPrice;
   image: TProductImage; //| TProductImage
   inventory: Types.ObjectId | TInventory;
   attributes: TProductAttribute[];
-  variations: TVariation[];
+  variations: Types.ObjectId[] | TVariation[];
   brand: Types.ObjectId;
   category: TCategorySchema;
   warranty: boolean;
   warrantyInfo: TWarrantyInfo;
-  tag: Types.ObjectId[];
-  seoData: Types.ObjectId; // | TSeoData
+  // tag: Types.ObjectId[];
+  // seoData: Types.ObjectId; // | TSeoData
   publishedStatus: TPublishedStatusSchema;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;

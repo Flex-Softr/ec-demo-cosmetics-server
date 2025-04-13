@@ -5,7 +5,7 @@ import { AggregateQueryHelper } from "../../../helper/query.helper";
 import generateProductId from "../../../utilities/generateProductId";
 import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
-import { SeoDataModel } from "../seoData/seoData.model";
+// import { SeoDataModel } from "../seoData/seoData.model";
 import { publishedStatusQuery, visibilityStatusQuery } from "./product.const";
 import { TProduct } from "./product.interface";
 import ProductModel from "./product.model";
@@ -15,6 +15,8 @@ import {
   commonPipelineMultipleProduct,
   commonPipelineSingleProduct,
 } from "./product.utils";
+import VariationModel from "../variation/variation.model";
+import { TVariation } from "../variation/variation.interface";
 
 const createProductIntoDB = async (
   createdBy: Types.ObjectId,
@@ -36,6 +38,13 @@ const createProductIntoDB = async (
       await InventoryModel.create([payload.inventory], { session })
     )[0]._id;
 
+    const insertedVariations = await VariationModel.insertMany(
+      payload.variations,
+      { session }
+    );
+
+    payload.variations = insertedVariations?.map((v) => v._id);
+
     // if (payload.seoData) {
     //   payload.seoData = (
     //     await SeoDataModel.create([payload.seoData], { session })
@@ -43,7 +52,7 @@ const createProductIntoDB = async (
     // }
 
     const isProductDeleted = await ProductModel.findOne({
-      title: { $regex: new RegExp(payload.title, "i") },
+      slug: { $regex: new RegExp(payload.slug, "i") },
       isDeleted: true,
     });
 
@@ -626,13 +635,14 @@ const updateProductIntoDB = async (
       price,
       image,
       inventory,
-      seoData,
+      // seoData,
       publishedStatus,
       attributes,
       brand,
       category,
       warrantyInfo,
-      tag,
+      // tag,
+      variations,
       ...remainingUpdateData
     } = payload;
     const isProductExist = await ProductModel.findById(id);
@@ -680,13 +690,44 @@ const updateProductIntoDB = async (
       );
     }
 
-    if (seoData && Object.keys(seoData).length) {
-      await SeoDataModel.findByIdAndUpdate(
-        isProductExist.seoData,
-        { $set: { ...seoData, updatedBy } },
-        { session }
-      );
+    const variationIds: Types.ObjectId[] = [];
+
+    for (const variation of variations) {
+      if (variation._id) {
+        // Update existing variation
+        await VariationModel.updateOne(
+          { _id: variation._id },
+          { $set: variation },
+          { session }
+        );
+        variationIds.push(variation._id);
+      } else {
+        // Check if variation already exists
+        const existingVariation = await VariationModel.findOne({
+          attributes: (variation as TVariation).attributes,
+        });
+        if (existingVariation) {
+          await VariationModel.updateOne(
+            { _id: existingVariation._id },
+            { $set: variation },
+            { session }
+          );
+          variationIds.push(existingVariation._id);
+          continue; // Skip creating a new variation if it already exists
+        }
+        // Create new variation
+        const created = await VariationModel.create([variation], { session });
+        variationIds.push(created[0]?._id);
+      }
     }
+
+    // if (seoData && Object.keys(seoData).length) {
+    //   await SeoDataModel.findByIdAndUpdate(
+    //     isProductExist.seoData,
+    //     { $set: { ...seoData, updatedBy } },
+    //     { session }
+    //   );
+    // }
 
     const updateImage: Record<string, unknown> = {};
     if (image && Object.keys(image).length) {
@@ -720,19 +761,20 @@ const updateProductIntoDB = async (
     if (brand) {
       updateBrand = brand;
     }
-    if (tag?.length) {
-      updateTag = tag;
-    }
+    // if (tag?.length) {
+    //   updateTag = tag;
+    // }
 
     const product = await ProductModel.findByIdAndUpdate(
       isProductExist._id,
       {
         $set: {
           ...updateImage,
-          attribute: updateAttribute,
+          attributes: updateAttribute,
           brand: updateBrand,
           ...updateCategory,
           tag: updateTag,
+          variations: variationIds,
           ...updateWarrantyInfo,
           ...updatePublishedStatus,
           ...remainingUpdateData,

@@ -110,6 +110,15 @@ export const commonPipelineSingleProduct = () => [
   },
   {
     $lookup: {
+      from: "variations",
+      localField: "variations",
+      foreignField: "_id",
+      as: "variations",
+      pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }],
+    },
+  },
+  {
+    $lookup: {
       from: "categories",
       localField: "category.name",
       foreignField: "_id",
@@ -176,6 +185,7 @@ export const commonPipelineSingleProduct = () => [
       gallery: "$gallery",
       price: "$price",
       inventory: "$inventory",
+      variations: "$variations",
       category: {
         _id: "$myCategory._id",
         name: "$myCategory.name",
@@ -221,7 +231,6 @@ export const commonPipelineSingleProduct = () => [
           },
         },
       },
-      variations: 1,
       brand: "$brand",
       warranty: 1,
       warrantyInfo: 1,

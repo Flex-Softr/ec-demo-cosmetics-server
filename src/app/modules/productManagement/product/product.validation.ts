@@ -4,18 +4,13 @@ import { ProductImageValidation } from "../productImage/productImage.validation"
 import { InventoryValidation } from "../inventory/inventory.validation";
 // import { SeoDataValidation } from "../seoData/seoData.validation";
 import { publishedStatus, visibilityStatus } from "./product.const";
+import { productVariations } from "../variation/variation.validation";
 
 const updateProductAttribute = z.object({
   name: z.string().trim().min(1, { message: "Attribute is required!" }),
   values: z
     .array(z.string().trim())
     .min(1, { message: "Attribute value is required!" }),
-});
-
-const productVariations = z.object({
-  attributes: z.record(z.string()), // Use `z.record` for dynamic key-value pairs
-  price: PriceValidation.price,
-  inventory: InventoryValidation.inventory,
 });
 
 const category = z.object({
