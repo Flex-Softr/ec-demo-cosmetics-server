@@ -1,9 +1,15 @@
 import httpStatus from "http-status";
-import mongoose, { PipelineStage, Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
+import { TImage } from "../../image/image.interface";
+import { TPrice } from "../../productManagement/price/price.interface";
+import {
+  TProduct,
+  TVariation,
+} from "../../productManagement/product/product.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { TCartItem, TCartItemData } from "../cartItem/cartItem.interface";
 import { CartItem } from "../cartItem/cartItem.model";
@@ -14,165 +20,56 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
   if (query.userId) {
     query.userId = new Types.ObjectId(query.userId);
   }
-  const pipeline: PipelineStage[] = [
-    {
-      $match: query,
-    },
-    {
-      $lookup: {
-        from: "products",
-        localField: "product",
-        foreignField: "_id",
-        as: "productDetails",
-      },
-    },
-    {
-      $unwind: "$productDetails",
-    },
-    {
-      $lookup: {
-        from: "images",
-        localField: "productDetails.image.thumbnail",
-        foreignField: "_id",
-        as: "productImage",
-      },
-    },
-    {
-      $unwind: "$productImage",
-    },
-    {
-      $lookup: {
-        from: "prices",
-        localField: "productDetails.price",
-        foreignField: "_id",
-        as: "defaultPrice",
-      },
-    },
-    {
-      $unwind: "$defaultPrice",
-    },
-    // Conditionally handle the variation if it exists
-    {
-      $lookup: {
-        from: "products",
-        let: {
-          productId: "$productDetails._id",
-          variationId: "$variation",
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$_id", "$$productId"] },
-                  { $ne: ["$$variationId", null] }, // Ensure the variation is not null
-                ],
-              },
-            },
-          },
-          {
-            $project: {
-              variations: {
-                $filter: {
-                  input: "$variations",
-                  as: "variation",
-                  cond: { $eq: ["$$variation._id", "$$variationId"] },
-                },
-              },
-            },
-          },
-        ],
-        as: "variationDetails",
-      },
-    },
-    {
-      $unwind: {
-        path: "$variationDetails",
-        preserveNullAndEmptyArrays: true, // In case there is no variation
-      },
-    },
-    {
-      $project: {
-        product: {
-          _id: "$productDetails._id",
-          title: "$productDetails.title",
-          image: {
-            src: {
-              $concat: [config.image_server, "/", "$productImage.src"],
-            },
-            alt: "$productImage.alt",
-          },
-        },
-        variation: {
-          $cond: {
-            if: {
-              $and: [
-                { $ne: ["$variation", null] }, // Ensure variation is present
-                {
-                  $gt: [
-                    {
-                      $size: {
-                        $ifNull: ["$variationDetails.variations", []],
-                      },
-                    },
-                    0,
-                  ],
-                }, // Ensure variationDetails.variations is non-empty
-              ],
-            },
-            then: {
-              _id: { $arrayElemAt: ["$variationDetails.variations._id", 0] },
-              attributes: {
-                $arrayElemAt: ["$variationDetails.variations.attributes", 0],
-              },
-            },
-            else: "This variation is no longer available. Please select a new variation. Else you can't order the product.",
-          },
-        },
-        price: {
-          $cond: {
-            if: {
-              $and: [
-                { $ne: ["$variation", null] }, // Ensure variation is present
-                {
-                  $gt: [
-                    {
-                      $size: {
-                        $ifNull: ["$variationDetails.variations", []],
-                      },
-                    },
-                    0,
-                  ],
-                }, // Ensure variationDetails.variations is non-empty
-              ],
-            },
-            then: {
-              regularPrice: {
-                $arrayElemAt: [
-                  "$variationDetails.variations.price.regularPrice",
-                  0,
-                ],
-              },
-              salePrice: {
-                $arrayElemAt: [
-                  "$variationDetails.variations.price.salePrice",
-                  0,
-                ],
-              },
-            },
-            else: {
-              regularPrice: "$defaultPrice.regularPrice",
-              salePrice: "$defaultPrice.salePrice",
-            },
-          },
-        },
-        quantity: 1,
-      },
-    },
-  ];
 
-  const result = await CartItem.aggregate(pipeline);
-  return result;
+  const result = await CartItem.find(query, {}).populate([
+    {
+      path: "product",
+      select: "_id title price image.thumbnail",
+      populate: [
+        {
+          path: "price",
+        },
+        {
+          path: "image.thumbnail",
+          select: "src alt",
+        },
+      ],
+    },
+    {
+      path: "variation",
+    },
+  ]);
+
+  const response = result?.map((item) => {
+    const product = item?.product as TProduct;
+    const variation = item?.variation as TVariation;
+    const price = product?.price as TPrice;
+    const image = product?.image?.thumbnail as unknown as TImage;
+    const data = {
+      product: {
+        _id: product?._id,
+        title: product?.title,
+        image: {
+          src: `${config.image_server}/${image?.src}`,
+          alt: image?.alt,
+        },
+      },
+      price: {
+        regularPrice: variation?.price?.regularPrice
+          ? variation?.price?.regularPrice
+          : price?.regularPrice,
+        salePrice: variation?.price?.salePrice
+          ? variation?.price?.salePrice
+          : price?.salePrice,
+      },
+      variation: item?.variation?._id,
+      quantity: item?.quantity,
+      _id: item?._id,
+    };
+    return data;
+  });
+
+  return response;
 };
 
 const addToCartIntoDB = async (
@@ -196,7 +93,7 @@ const addToCartIntoDB = async (
     },
   });
 
-  if (product.variations.length) {
+  if (product?.variations?.length) {
     if (!payload.variation)
       throw new ApiError(
         httpStatus.BAD_REQUEST,

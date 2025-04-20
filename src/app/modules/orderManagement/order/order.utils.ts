@@ -218,7 +218,7 @@ export const createNewOrder = async (
   } else {
     fromWebsite = true;
     const cart = await OrderHelper.sanitizeCartItemsForOrder(userQuery);
-    orderedProductInfo = cart;
+    orderedProductInfo = cart as unknown as TSanitizedOrProduct[];
   }
 
   if (config.env === "production") {

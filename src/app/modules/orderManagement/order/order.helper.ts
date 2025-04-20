@@ -5,7 +5,12 @@ import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
 import { Coupon } from "../../coupon/coupon.model";
+import { TCategory } from "../../productManagement/category/category.interface";
+import { TInventory } from "../../productManagement/inventory/inventory.interface";
+import { TPrice } from "../../productManagement/price/price.interface";
+import { TProduct } from "../../productManagement/product/product.interface";
 import ProductModel from "../../productManagement/product/product.model";
+import { TVariation } from "../../productManagement/variation/variation.interface";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
 import {
@@ -24,99 +29,35 @@ const sanitizeOrderedProducts = async (
 ): Promise<TSanitizedOrProduct[]> => {
   const data: TSanitizedOrProduct[] = [];
   for (const item of orderedProducts) {
-    const product = (
-      await ProductModel.aggregate([
-        { $match: { _id: new mongoose.Types.ObjectId(String(item.product)) } },
+    const product = await ProductModel.findOne(
+      {
+        _id: new mongoose.Types.ObjectId(String(item.product)),
+      },
+      {
+        title: 1,
+        price: 1,
+        inventory: 1,
+        variations: 1,
+        category: 1,
+        isDeleted: 1,
+      }
+    )
+      .populate([
         {
-          $lookup: {
-            from: "prices",
-            localField: "price",
-            foreignField: "_id",
-            as: "price",
-          },
+          path: "variations",
         },
-        {
-          $unwind: "$price",
-        },
-        {
-          $lookup: {
-            from: "inventories",
-            localField: "inventory",
-            foreignField: "_id",
-            as: "inventory",
-          },
-        },
-        {
-          $unwind: "$inventory",
-        },
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category.name",
-            foreignField: "_id",
-            as: "productCategory",
-          },
-        },
-        {
-          $unwind: {
-            path: "$productCategory",
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $project: {
-            title: 1,
-            price: {
-              regularPrice: "$price.regularPrice",
-              salePrice: "$price.salePrice",
-            },
-            inventory: {
-              _id: "$inventory._id",
-              sku: "$inventory.sku",
-              lowStockWarning: "$inventory.lowStockWarning",
-              stockAvailable: "$inventory.stockAvailable",
-              manageStock: "$inventory.manageStock",
-              stockStatus: "$inventory.stockStatus",
-            },
-            category: {
-              _id: "$productCategory._id",
-              name: "$productCategory.name",
-            },
-            isDeleted: 1,
-            variations: {
-              $map: {
-                input: "$variations",
-                as: "variation",
-                in: {
-                  _id: "$$variation._id",
-                  inventory: {
-                    sku: "$$variation.inventory.sku",
-                    lowStockWarning: "$$variation.inventory.lowStockWarning",
-                    stockAvailable: "$$variation.inventory.stockAvailable",
-                    manageStock: "$$variation.inventory.manageStock",
-                    stockStatus: "$$variation.inventory.stockStatus",
-                  },
-                  price: {
-                    regularPrice: "$$variation.price.regularPrice",
-                    salePrice: "$$variation.price.salePrice",
-                  },
-                  attributes: "$$variation.attributes",
-                },
-              },
-            },
-          },
-        },
+        { path: "price" },
+        { path: "category.name" },
+        { path: "inventory" },
       ])
-    )[0];
+      .lean();
 
     if (!product)
       throw new ApiError(httpStatus.BAD_REQUEST, "Failed to find product.");
 
     const findVariation = product?.variations?.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (variation: any) =>
-        variation?._id?.toString() === item?.variation?.toString()
-    )[0];
+      (variation) => variation?._id?.toString() === item?.variation?.toString()
+    )[0] as TVariation;
 
     if (product?.variations?.length) {
       if (!item.variation) {
@@ -137,14 +78,16 @@ const sanitizeOrderedProducts = async (
       product: {
         ...product,
         variationDetails: {
-          variations: findVariation?.attributes ? [findVariation] : null,
+          variations: Object.keys(findVariation?.attributes || {})?.length
+            ? [findVariation]
+            : null,
         },
         price: findVariation?.price || product?.price,
         stock: findVariation?.inventory || product?.inventory,
         defaultInventory: product?.inventory?._id,
         variations: undefined,
         inventory: undefined,
-        category: product.category,
+        category: product?.category?.name as unknown as TCategory,
       },
       quantity: item.quantity,
       variation: item?.variation
@@ -166,6 +109,7 @@ const sanitizeOrderedProducts = async (
         : undefined,
       warrantyClaimHistory: item.warrantyClaimHistory as Types.ObjectId,
     };
+
     data.push(sanitizedData);
   }
 
@@ -1070,233 +1014,70 @@ const sanitizeCartItemsForOrder = async (userQuery: {
   userId?: Types.ObjectId;
   sessionId?: string;
 }) => {
-  const pipeline: PipelineStage[] = [
+  const result = await CartItem.find(userQuery, {}).populate([
     {
-      $match: userQuery,
-    },
-    {
-      $lookup: {
-        from: "products",
-        localField: "product",
-        foreignField: "_id",
-        as: "productDetails",
-      },
-    },
-    {
-      $unwind: "$productDetails",
-    },
-    {
-      $lookup: {
-        from: "inventories",
-        localField: "productDetails.inventory",
-        foreignField: "_id",
-        as: "defaultInventory",
-      },
-    },
-    {
-      $unwind: "$defaultInventory",
-    },
-    {
-      $lookup: {
-        from: "prices",
-        localField: "productDetails.price",
-        foreignField: "_id",
-        as: "productPrice",
-      },
-    },
-    {
-      $unwind: "$productPrice",
-    },
-    {
-      $lookup: {
-        from: "products",
-        let: {
-          productId: "$productDetails._id",
-          variationId: "$variation", // Checking CartItem.variation, not the product
+      path: "product",
+      select: "_id title price isDeleted category.name inventory",
+      populate: [
+        {
+          path: "price",
         },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$_id", "$$productId"] },
-                  { $ne: ["$$variationId", null] }, // Ensure variation is present in CartItem
-                ],
-              },
-            },
-          },
-          {
-            $project: {
-              variations: {
-                $filter: {
-                  input: "$variations",
-                  as: "variation",
-                  cond: { $eq: ["$$variation._id", "$$variationId"] }, // Match variationId
-                },
-              },
-            },
-          },
-        ],
-        as: "variationDetails",
-      },
-    },
-    {
-      $unwind: {
-        path: "$variationDetails",
-        preserveNullAndEmptyArrays: true, // Handle cases without variation
-      },
-    },
-    {
-      $lookup: {
-        from: "categories",
-        localField: "productDetails.category.name",
-        foreignField: "_id",
-        as: "productCategory",
-      },
-    },
-    {
-      $unwind: {
-        path: "$productCategory",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $project: {
-        product: {
-          variationDetails: "$variationDetails",
-          _id: "$productDetails._id",
-          title: "$productDetails.title",
-          isDeleted: "$productDetails.isDeleted",
-          defaultInventory: "$defaultInventory._id",
-          category: {
-            _id: "$productCategory._id",
-            name: "$productCategory.name",
-          },
-          isVariationAvailable: {
-            $cond: {
-              if: {
-                $and: [
-                  { $ne: ["$variation", null] }, // Ensure variation is present
-                  {
-                    $gt: [
-                      {
-                        $size: {
-                          $ifNull: ["$variationDetails.variations", []],
-                        },
-                      },
-                      0,
-                    ],
-                  }, // Ensure variationDetails.variations is non-empty
-                ],
-              },
-              then: true,
-              else: false,
-            },
-          },
-          stock: {
-            $cond: {
-              if: {
-                $and: [
-                  { $ne: ["$variation", null] }, // Ensure variation is present
-                  {
-                    $gt: [
-                      {
-                        $size: {
-                          $ifNull: ["$variationDetails.variations", []],
-                        },
-                      },
-                      0,
-                    ],
-                  }, // Ensure variationDetails.variations is non-empty
-                ],
-              },
-              then: {
-                sku: {
-                  $arrayElemAt: [
-                    "$variationDetails.variations.inventory.sku",
-                    0,
-                  ],
-                },
-                lowStockWarning: {
-                  $arrayElemAt: [
-                    "$variationDetails.variations.inventory.lowStockWarning",
-                    0,
-                  ],
-                },
-                stockAvailable: {
-                  $arrayElemAt: [
-                    "$variationDetails.variations.inventory.stockAvailable",
-                    0,
-                  ],
-                },
-                manageStock: {
-                  $arrayElemAt: [
-                    "$variationDetails.variations.inventory.manageStock",
-                    0,
-                  ],
-                },
-                stockStatus: {
-                  $arrayElemAt: [
-                    "$variationDetails.variations.inventory.stockStatus",
-                    0,
-                  ],
-                },
-              },
-              else: {
-                lowStockWarning: "$defaultInventory.lowStockWarning",
-                sku: "$defaultInventory.sku",
-                stockAvailable: "$defaultInventory.stockAvailable",
-                manageStock: "$defaultInventory.manageStock",
-                stockStatus: "$defaultInventory.stockStatus",
-              },
-            },
-          },
-          price: {
-            $cond: {
-              if: {
-                $and: [
-                  { $ne: ["$variation", null] }, // Ensure variation is present
-                  {
-                    $gt: [
-                      {
-                        $size: {
-                          $ifNull: ["$variationDetails.variations", []],
-                        },
-                      },
-                      0,
-                    ],
-                  }, // Ensure variationDetails.variations is non-empty
-                ],
-              },
-              then: {
-                regularPrice: {
-                  $arrayElemAt: [
-                    "$variationDetails.variations.price.regularPrice",
-                    0,
-                  ],
-                },
-                salePrice: {
-                  $arrayElemAt: [
-                    "$variationDetails.variations.price.salePrice",
-                    0,
-                  ],
-                },
-              },
-              else: {
-                regularPrice: "$productPrice.regularPrice",
-                salePrice: "$productPrice.salePrice",
-              },
-            },
-          },
+        {
+          path: "category.name",
         },
-
-        variation: 1,
-        quantity: 1,
-      },
+        {
+          path: "inventory",
+        },
+      ],
     },
-  ];
+    {
+      path: "variation",
+    },
+  ]);
 
-  const cart = await CartItem.aggregate(pipeline);
+  const cart = result?.map((item) => {
+    const product = item?.product as TProduct;
+    const variation = item?.variation as TVariation;
+    const price = product?.price as TPrice;
+    const category = product?.category.name;
+    const inventory = product?.inventory as TInventory;
+    const data = {
+      product: {
+        _id: product?._id,
+        title: product?.title,
+        price: {
+          regularPrice: variation?.price?.regularPrice
+            ? variation?.price?.regularPrice
+            : price?.regularPrice,
+          salePrice: variation?.price?.salePrice
+            ? variation?.price?.salePrice
+            : price?.salePrice,
+          discountPercent: variation?.price?.discountPercent
+            ? variation?.price?.discountPercent
+            : price?.discountPercent,
+          priceSave: variation?.price?.priceSave
+            ? variation?.price?.priceSave
+            : price?.priceSave,
+        },
+        category,
+        isDeleted: product?.isDeleted,
+        variationDetails: Object.keys(variation || {})?.length
+          ? [variation]
+          : undefined,
+        stock: Object.keys(variation || {}).length
+          ? variation.inventory
+          : inventory,
+        defaultInventory: inventory?._id,
+      },
+      variation: item?.variation?._id,
+      attributes: variation?.attributes,
+      quantity: item?.quantity,
+      _id: item?._id,
+    };
+
+    return data;
+  });
+
   if (!cart.length) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No item found on cart");
   }
