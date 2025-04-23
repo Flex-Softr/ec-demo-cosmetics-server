@@ -480,11 +480,13 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         fullAddress: "$shippingData.fullAddress",
       },
       shippingCharge: {
+        _id: "$shippingCharge._id",
         name: "$shippingCharge.name",
         amount: "$shippingCharge.amount",
       },
       payment: {
         paymentMethod: {
+          _id: "$paymentMethod._id",
           name: "$paymentMethod.name",
           image: {
             src: {
