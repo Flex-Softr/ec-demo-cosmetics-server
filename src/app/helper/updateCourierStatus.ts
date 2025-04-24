@@ -1,5 +1,10 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
+import { OrderHelper } from "../modules/orderManagement/order/order.helper";
 import { Order } from "../modules/orderManagement/order/order.model";
+import { OrderStatusHistory } from "../modules/orderManagement/orderStatusHistory/orderStatusHistory.model";
+import { TShipping } from "../modules/orderManagement/shipping/shipping.interface";
+import { TOrderSMSNotification } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.interface";
+import { OrderSMSNotification } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.model";
 import { courierStatusUpdateError } from "../utilities/logger";
 import steedFastApi from "../utilities/steedfastApi";
 
@@ -38,10 +43,23 @@ const updateCourierStatus = async () => {
         $unwind: "$courier",
       },
       {
+        $lookup: {
+          from: "shippings",
+          localField: "shipping",
+          foreignField: "_id",
+          as: "shipping",
+        },
+      },
+      {
+        $unwind: { path: "$shipping", preserveNullAndEmptyArrays: true },
+      },
+      {
         $project: {
           orderId: 1,
           status: 1,
           deliveryStatus: 1,
+          shipping: "$shipping",
+          statusHistory: 1,
           courier: {
             name: "$courier.name",
             slug: "$courier.slug",
@@ -105,8 +123,77 @@ const updateCourierStatus = async () => {
           },
         },
       })) || [];
-    if (statusUpdateQuery.length) {
-      await Order.bulkWrite(statusUpdateQuery);
+
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+      //  update orders
+      if (statusUpdateQuery.length) {
+        // await Order.bulkWrite(statusUpdateQuery, { session }); //TODO: uncomment this line
+      }
+
+      const completedOrders = updatedData.filter(
+        (item) => item?.delivery_status === "delivered"
+      );
+
+      let SMSNotificationData: TOrderSMSNotification | null = null;
+
+      if (completedOrders.length) {
+        SMSNotificationData = (await OrderSMSNotification.findOne({
+          slug: "shifted",
+        })) as TOrderSMSNotification;
+      }
+
+      const deliveredOrderStatusHistoryIds = await Promise.all(
+        completedOrders.map(async (order) => {
+          const singleOrder = orders.find(
+            (item) => item.orderId === order.orderId
+          );
+
+          const statusHistoryId = singleOrder?.statusHistory || "";
+
+          const singleOrderShipping = singleOrder?.shipping as TShipping;
+
+          if (SMSNotificationData?.isActive) {
+            await OrderHelper.sendOrderSMSNotification(
+              {
+                fullName: singleOrderShipping?.fullName,
+                orderId: singleOrderShipping?.orderId || "",
+                phoneNumber: singleOrderShipping?.phoneNumber,
+              },
+              "shifted",
+              SMSNotificationData
+            );
+          }
+
+          return statusHistoryId; // Collect statusHistoryId
+        })
+      );
+
+      await OrderStatusHistory.updateMany(
+        {
+          _id: {
+            $in: deliveredOrderStatusHistoryIds.map(
+              (item) => new Types.ObjectId(item)
+            ),
+          },
+        },
+        {
+          $push: {
+            history: {
+              status: "completed",
+            },
+          },
+        },
+        { session }
+      );
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
     }
   } catch (error) {
     courierStatusUpdateError.error("Failed to update courier status", error);

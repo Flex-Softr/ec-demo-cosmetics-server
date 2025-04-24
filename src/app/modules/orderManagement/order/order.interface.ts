@@ -199,3 +199,10 @@ export type TFindOrderForUpdatingOrder = {
   status: TOrderStatus;
   deliveryStatus: string;
 };
+
+export type TSMSReceiverInfo = {
+  phoneNumber: string;
+  fullName: string;
+  orderId: string;
+  trackingId?: string;
+};

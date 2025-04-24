@@ -388,6 +388,11 @@ export const createNewOrder = async (
     await CartItem.deleteMany(userQuery).session(session);
   }
 
+  await OrderHelper.sendOrderSMSNotification(
+    { fullName: shipping.fullName, orderId, phoneNumber: shipping.phoneNumber },
+    "order_created"
+  );
+
   return orderRes;
 };
 

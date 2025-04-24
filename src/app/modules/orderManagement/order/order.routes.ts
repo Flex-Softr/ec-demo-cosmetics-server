@@ -168,4 +168,13 @@ router.patch(
   OrderController.returnAndPartialManagement
 );
 
+router.get(
+  "/get-phone-numbers",
+  authGuard({
+    requiredRoles: ["superAdmin", "admin", "staff"],
+    requiredPermission: "manage sms",
+  }),
+  OrderController.getMobileNumbersForSendingSMS
+);
+
 export const OrderRoutes = router;

@@ -27,6 +27,7 @@ import {
   TOrderDeliveryStatus,
   TOrderStatus,
   TProductDetails,
+  TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
 // import steedFastApi from "../../../utilities/steedfastApi";
@@ -822,6 +823,7 @@ const updateOrderStatusIntoDB = async (
     );
 
     const orders = (await Order.aggregate(pipeline)) as Partial<TOrder[]>;
+
     const statusUpdateQuery: {
       updateOne: {
         filter: {
@@ -910,6 +912,34 @@ const updateOrderStatusIntoDB = async (
         }
       }
     }
+
+    if (
+      (orders.length && payload.status === "canceled") ||
+      payload.status === "confirmed"
+    ) {
+      const SMSReviverInformations: TSMSReceiverInfo[] = orders.map((order) => {
+        const shipping = (order as unknown as { shippingData: TShipping })
+          ?.shippingData;
+
+        return {
+          fullName: shipping.fullName || "",
+          phoneNumber: shipping.phoneNumber || "",
+          orderId: shipping.orderId || "",
+        };
+      });
+
+      SMSReviverInformations.forEach(async (receiver) => {
+        await OrderHelper.sendOrderSMSNotification(
+          receiver,
+          payload.status === "confirmed"
+            ? "order_confirmed"
+            : payload.status === "canceled"
+              ? "order_canceled"
+              : undefined
+        );
+      });
+    }
+
     await session.commitTransaction();
   } catch (error) {
     await session.abortTransaction();
@@ -1143,6 +1173,48 @@ const bookCourierAndUpdateStatusIntoDB = async (
       );
     }
     await OrderStatusHistory.bulkWrite(historyUpdateQuery, { session });
+
+    let SMSReviverInformations: TSMSReceiverInfo[] = [];
+
+    if (status === "On courier") {
+      SMSReviverInformations = successCourierOrders.map((order) => {
+        const shipping = orders.find((item) => item.orderId === order.orderId)
+          ?.shippingData as TShipping;
+
+        return {
+          fullName: shipping.fullName || "",
+          phoneNumber: shipping.phoneNumber || "",
+          orderId: shipping.orderId || "",
+          trackingId: order.trackingId || "",
+        };
+      });
+    }
+
+    if (status === "canceled") {
+      SMSReviverInformations = orders.map((order) => {
+        const shipping = (order as unknown as { shippingData: TShipping })
+          ?.shippingData;
+
+        return {
+          fullName: shipping.fullName || "",
+          phoneNumber: shipping.phoneNumber || "",
+          orderId: shipping.orderId || "",
+        };
+      });
+    }
+
+    if (SMSReviverInformations.length) {
+      SMSReviverInformations.forEach(async (receiver) => {
+        await OrderHelper.sendOrderSMSNotification(
+          receiver,
+          status === "On courier"
+            ? "courier_assigned"
+            : status === "canceled"
+              ? "order_canceled"
+              : undefined
+        );
+      });
+    }
 
     await session.commitTransaction();
   } catch (error) {
@@ -1888,6 +1960,114 @@ const returnAndPartialManagementIntoDB = async (
   }
 };
 
+/* -----------------------------------------
+   Get mobile numbers for sending SMS
+-------------------------------------------- */
+
+const getMobileNumbersForSendingSMSFromDB = async (
+  query: Record<string, unknown>
+) => {
+  let matchQuery: Record<string, unknown> = {};
+
+  const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: "shippings",
+        localField: "shipping",
+        foreignField: "_id",
+        as: "shippingInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$shippingInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: "$shippingInfo.phoneNumber",
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        phoneNumbers: { $addToSet: "$_id" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        phoneNumbers: 1,
+      },
+    },
+  ];
+
+  if (query.startFrom) {
+    const startTime = convertIso(query.startFrom.toString());
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $gte: startTime,
+    };
+  }
+
+  if (query.endAt) {
+    const endTime = convertIso(query.endAt.toString(), false);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $lte: endTime,
+    };
+  }
+
+  if (query.productIds) {
+    const ids = Array.isArray(query.productIds)
+      ? query.productIds
+      : [query.productIds];
+
+    matchQuery = {
+      ...matchQuery,
+      "productDetails.product": {
+        $in: ids.map((id) => new Types.ObjectId(id)),
+      },
+    };
+  }
+
+  if (query.status) {
+    const statuses = Array.isArray(query.status)
+      ? query.status
+      : [query.status];
+
+    matchQuery = {
+      ...matchQuery,
+      status: {
+        $in: statuses,
+      },
+    };
+  }
+
+  if (query.district) {
+    matchQuery = {
+      ...matchQuery,
+      district: query.district,
+    };
+  }
+
+  if (query.division) {
+    matchQuery = {
+      ...matchQuery,
+      division: query.division,
+    };
+  }
+
+  pipeline.unshift({
+    $match: matchQuery,
+  });
+
+  const result = (await Order.aggregate(pipeline))[0];
+
+  return result;
+};
+
 export const OrderServices = {
   createOrderIntoDB,
   updateOrderStatusIntoDB,
@@ -1908,4 +2088,5 @@ export const OrderServices = {
   getOrderTrackingInfo,
   getOrdersByDeliveryStatusFromDB,
   returnAndPartialManagementIntoDB,
+  getMobileNumbersForSendingSMSFromDB,
 };
