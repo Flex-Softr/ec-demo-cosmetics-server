@@ -33,6 +33,14 @@ const createProduct = catchAsync(async (req, res) => {
 
 const getAProductCustomer = catchAsync(async (req, res) => {
   const id = req.params.id;
+  if (id == "null") {
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Product retrieved successfully",
+      data: [],
+    });
+    return;
+  }
   const result = await ProductServices.getAProductCustomerFromDB(id);
   successResponse(res, {
     statusCode: httpStatus.OK,
