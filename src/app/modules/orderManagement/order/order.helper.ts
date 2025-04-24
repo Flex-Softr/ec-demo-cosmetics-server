@@ -188,22 +188,38 @@ const findOrderForUpdatingOrder = async (
           preserveNullAndEmptyArrays: true,
         },
       },
+
+      {
+        $lookup: {
+          from: "variations",
+          localField: "productDetails.variation",
+          foreignField: "_id",
+          as: "variation",
+        },
+      },
+      {
+        $unwind: {
+          path: "$variation",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $addFields: {
-          variation: {
-            $arrayElemAt: [
-              {
-                $filter: {
-                  input: "$productDetails.productInfo.variations",
-                  as: "variation",
-                  cond: {
-                    $eq: ["$$variation._id", "$productDetails.variation"],
-                  },
-                },
-              },
-              0,
-            ],
+          "productDetails.productInfo.variations": {
+            $cond: {
+              if: { $isArray: "$productDetails.productInfo.variations" },
+              then: "$productDetails.productInfo.variations",
+              else: [],
+            },
           },
+        },
+      },
+      {
+        $lookup: {
+          from: "variations",
+          localField: "productDetails.productInfo.variations",
+          foreignField: "_id",
+          as: "allVariations",
         },
       },
       {
@@ -229,7 +245,7 @@ const findOrderForUpdatingOrder = async (
                   isWarrantyClaim: "$productDetails.isWarrantyClaim",
                   claimedCodes: "$productDetails.claimedCodes",
                   variation: "$productDetails.variation",
-                  variations: "$productDetails.productInfo.variations",
+                  variations: "$allVariations",
                   inventoryInfo: {
                     variationInventory: {
                       variation: "$variation._id",
@@ -242,6 +258,8 @@ const findOrderForUpdatingOrder = async (
                       _id: "$productDetails.productInfo.inventoryInfo._id",
                       stockAvailable:
                         "$productDetails.productInfo.inventoryInfo.stockAvailable",
+                      stockStatus:
+                        "$productDetails.productInfo.inventoryInfo.stockStatus",
                       manageStock:
                         "$productDetails.productInfo.inventoryInfo.manageStock",
                       lowStockWarning:

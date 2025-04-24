@@ -10,6 +10,7 @@ const ProductDetailsSchema = new Schema<TProductDetails>({
   },
   variation: {
     type: Schema.Types.ObjectId,
+    ref: "Variation",
   },
   attributes: {
     type: Map,
