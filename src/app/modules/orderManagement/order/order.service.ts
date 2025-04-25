@@ -12,7 +12,6 @@ import { Courier } from "../../courier/courier.model";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
 import { TPrice } from "../../productManagement/price/price.interface";
-import { TVariation } from "../../productManagement/product/product.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { OrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.model";
@@ -38,6 +37,7 @@ import {
   TUpStOnCanDelProducts,
   updateStockOrderCancelDelete,
 } from "./order.utils";
+import { TVariation } from "../../productManagement/variation/variation.interface";
 
 const maxOrderStatusChangeAtATime = 20;
 
