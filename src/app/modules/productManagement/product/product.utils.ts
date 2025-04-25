@@ -3,6 +3,7 @@ import ProductModel from "./product.model";
 import { CronJob } from "cron";
 import PriceModel from "../price/price.model";
 import { InventoryModel } from "../inventory/inventory.model";
+import { PipelineStage } from "mongoose";
 
 const modifiedPriceData = (req: Request) => {
   const { price } = req.body;
@@ -71,7 +72,9 @@ export const deleteDraftProducts = new CronJob(
   "Asia/Dhaka" // Change this to your desired timezone
 );
 
-export const commonPipelineSingleProduct = () => [
+export const commonPipelineSingleProduct = (
+  pipeline: PipelineStage[] | undefined = []
+) => [
   {
     $lookup: {
       from: "images",
@@ -114,7 +117,15 @@ export const commonPipelineSingleProduct = () => [
       localField: "variations",
       foreignField: "_id",
       as: "variations",
-      pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }],
+      pipeline: [
+        ...pipeline,
+        {
+          $project: {
+            createdAt: 0,
+            updatedAt: 0,
+          },
+        },
+      ],
     },
   },
   {
