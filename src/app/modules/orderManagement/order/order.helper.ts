@@ -318,6 +318,34 @@ const orderDetailsPipeline = (): PipelineStage[] => [
   },
   {
     $lookup: {
+      from: "divisions",
+      localField: "shippingData.division",
+      foreignField: "id",
+      as: "shippingData.division",
+    },
+  },
+  {
+    $unwind: {
+      path: "$shippingData.division",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $lookup: {
+      from: "districts",
+      localField: "shippingData.district",
+      foreignField: "id",
+      as: "shippingData.district",
+    },
+  },
+  {
+    $unwind: {
+      path: "$shippingData.district",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $lookup: {
       from: "shippingcharges",
       localField: "shippingCharge",
       foreignField: "_id",
@@ -395,39 +423,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
     $unwind: { path: "$statusHistory", preserveNullAndEmptyArrays: true },
   },
   {
-    $lookup: {
-      from: "districts",
-      localField: "district",
-      foreignField: "_id",
-      as: "districtData",
-    },
-  },
-  {
-    $unwind: { path: "$districtData", preserveNullAndEmptyArrays: true },
-  },
-  {
-    $lookup: {
-      from: "districts",
-      localField: "district",
-      foreignField: "id",
-      as: "districtData",
-    },
-  },
-  {
-    $unwind: { path: "$districtData", preserveNullAndEmptyArrays: true },
-  },
-  {
-    $lookup: {
-      from: "divisions",
-      localField: "division",
-      foreignField: "id",
-      as: "divisionData",
-    },
-  },
-  {
-    $unwind: { path: "$divisionData", preserveNullAndEmptyArrays: true },
-  },
-  {
     $project: {
       _id: 1,
       orderId: 1,
@@ -440,6 +435,16 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         fullName: "$shippingData.fullName",
         phoneNumber: "$shippingData.phoneNumber",
         fullAddress: "$shippingData.fullAddress",
+        division: {
+          id: "$shippingData.division.id",
+          name: "$shippingData.division.name",
+          bn_name: "$shippingData.division.bn_name",
+        },
+        district: {
+          id: "$shippingData.district.id",
+          name: "$shippingData.district.name",
+          bn_name: "$shippingData.district.bn_name",
+        },
       },
       shippingCharge: {
         _id: "$shippingCharge._id",
@@ -488,8 +493,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       reasonNotes: 1,
       createdAt: 1,
       courierDetails: 1,
-      division: "$divisionData.bn_name",
-      district: "$districtData.bn_name",
     },
   },
   {
@@ -629,8 +632,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       monitoringStatus: { $first: "$monitoringStatus" },
       trackingStatus: { $first: "$trackingStatus" },
       shipping: { $first: "$shipping" },
-      division: { $first: "$division" },
-      district: { $first: "$district" },
       payment: { $first: "$payment" },
       courier: { $first: "$courier" },
       shippingCharge: { $first: "$shippingCharge" },
