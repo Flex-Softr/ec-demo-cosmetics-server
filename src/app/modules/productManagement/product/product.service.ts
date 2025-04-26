@@ -87,10 +87,16 @@ const getAProductCustomerFromDB = async (id: string) => {
         "publishedStatus.visibility": visibilityStatusQuery.Public,
       },
     },
-    ...commonPipelineSingleProduct(),
+    ...commonPipelineSingleProduct([
+      {
+        $match: {
+          "inventory.stockStatus": { $ne: "Out of stock" },
+        },
+      },
+    ]),
   ];
 
-  const result = await ProductModel.aggregate(pipeline);
+  const result = await ProductModel.aggregate(pipeline as PipelineStage[]);
 
   if (!result) {
     throw new ApiError(httpStatus.BAD_REQUEST, "The product was not found!");
@@ -109,7 +115,7 @@ const getAProductAdminFromDB = async (id: string) => {
     ...commonPipelineSingleProduct(),
   ];
 
-  const result = await ProductModel.aggregate(pipeline);
+  const result = await ProductModel.aggregate(pipeline as PipelineStage[]);
 
   if (!result) {
     throw new ApiError(httpStatus.BAD_REQUEST, "The product was not found!");
@@ -173,8 +179,8 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
         "publishedStatus.visibility": visibilityStatusQuery.Public,
       },
     },
-    ...commonPipelineMultipleProduct, // Assuming this handles common transformations
-    { $match: filterQuery }, // Filter by category or subcategory, price, brand, etc.
+    ...commonPipelineMultipleProduct,
+    { $match: filterQuery },
     {
       $facet: {
         // Define sub-pipeline 2: For other operations

@@ -11,7 +11,10 @@ export type TPermissionNames =
   | "manage warehouse"
   | "manage courier"
   | "manage warranty claim"
-  | "manage image to order";
+  | "manage image to order"
+  | "manage customers"
+  | "manage sms"
+  | "manage SMS";
 
 export type TPermissionData = {
   name: TPermissionNames;

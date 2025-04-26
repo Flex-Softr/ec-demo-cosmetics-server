@@ -3,6 +3,8 @@ import mongoose, { PipelineStage, Types } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
+import { errorLogger } from "../../../utilities/logger";
+import sendSms from "../../../utilities/sendSms";
 import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
 import { Coupon } from "../../coupon/coupon.model";
 import { TCategory } from "../../productManagement/category/category.interface";
@@ -11,6 +13,11 @@ import { TPrice } from "../../productManagement/price/price.interface";
 import { TProduct } from "../../productManagement/product/product.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { TVariation } from "../../productManagement/variation/variation.interface";
+import {
+  TOrderSMSNotification,
+  TOrderSMSNotificationType,
+} from "../../smsManagement/orderSMSNotification/orderSMSNotification.interface";
+import { OrderSMSNotification } from "../../smsManagement/orderSMSNotification/orderSMSNotification.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
 import {
@@ -18,6 +25,7 @@ import {
   TOrderStatus,
   TProductDetails,
   TSanitizedOrProduct,
+  TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
 
@@ -434,11 +442,13 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         fullAddress: "$shippingData.fullAddress",
       },
       shippingCharge: {
+        _id: "$shippingCharge._id",
         name: "$shippingCharge.name",
         amount: "$shippingCharge.amount",
       },
       payment: {
         paymentMethod: {
+          _id: "$paymentMethod._id",
           name: "$paymentMethod.name",
           image: {
             src: {
@@ -1382,6 +1392,46 @@ const orderCostAfterCoupon = async (
   };
 };
 
+const sendOrderSMSNotification = async (
+  receiverInfo: TSMSReceiverInfo,
+  type?: TOrderSMSNotificationType,
+  notificationData?: TOrderSMSNotification
+) => {
+  let SMSNotificationData = notificationData;
+
+  if (!Object.keys(SMSNotificationData || {}).length) {
+    SMSNotificationData = (await OrderSMSNotification.findOne({
+      slug: type,
+    })) as TOrderSMSNotification;
+  }
+
+  if (!SMSNotificationData) return false;
+  if (SMSNotificationData?.isActive === false) return false;
+  if (!receiverInfo.phoneNumber) return false;
+  if (!type) return false;
+
+  const SMSTemplate = SMSNotificationData?.customTemplate;
+
+  let SMSBody = SMSNotificationData.defaultTemplate;
+
+  if (SMSTemplate) {
+    SMSBody = SMSTemplate.replace(
+      /{(\w+)}/g,
+      (_, key: keyof typeof receiverInfo) => {
+        return receiverInfo[key] || "";
+      }
+    );
+  }
+
+  try {
+    await sendSms([receiverInfo.phoneNumber], SMSBody);
+  } catch (error) {
+    errorLogger.error("failed to send SMS", error);
+    return false;
+  }
+  return true;
+};
+
 export const OrderHelper = {
   sanitizeOrderedProducts,
   findOrderForUpdatingOrder,
@@ -1391,4 +1441,5 @@ export const OrderHelper = {
   sanitizeCartItemsForOrder,
   validateAndSanitizeOrderedProducts,
   orderCostAfterCoupon,
+  sendOrderSMSNotification,
 };
