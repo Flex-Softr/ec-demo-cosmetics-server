@@ -12,6 +12,7 @@ import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
 import ProductModel from "../../productManagement/product/product.model";
+import VariationModel from "../../productManagement/variation/variation.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { TPaymentData } from "../orderPayment/orderPayment.interface";
@@ -218,9 +219,8 @@ export const createNewOrder = async (
   } else {
     fromWebsite = true;
     const cart = await OrderHelper.sanitizeCartItemsForOrder(userQuery);
-    orderedProductInfo = cart;
+    orderedProductInfo = cart as unknown as TSanitizedOrProduct[];
   }
-
   if (config.env === "production") {
     if (salesPage || fromWebsite) {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -261,16 +261,9 @@ export const createNewOrder = async (
           });
         }
         if (item.variation) {
-          await ProductModel.updateOne(
-            {
-              _id: item?.product?._id,
-              "variations._id": item?.variation,
-            },
-            {
-              $inc: {
-                "variations.$.inventory.stockAvailable": -item.quantity,
-              },
-            }
+          await VariationModel.updateOne(
+            { _id: item.variation },
+            { $inc: { "inventory.stockAvailable": -item.quantity } }
           ).session(session);
         } else {
           await InventoryModel.updateOne(

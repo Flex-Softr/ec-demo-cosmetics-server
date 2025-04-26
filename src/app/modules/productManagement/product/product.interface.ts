@@ -60,3 +60,5 @@ export type TProduct = {
   deletedBy: Types.ObjectId;
   isDeleted: boolean;
 } & Document;
+
+export { TVariation };

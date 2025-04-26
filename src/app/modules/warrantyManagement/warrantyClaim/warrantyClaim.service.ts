@@ -62,6 +62,14 @@ const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
       },
     },
     {
+      $lookup: {
+        from: "variations",
+        localField: "productInfo.variations",
+        foreignField: "_id",
+        as: "pVariations",
+      },
+    },
+    {
       $project: {
         videosAndImages: 1,
         warrantyClaimReqData: {
@@ -73,9 +81,7 @@ const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
             title: {
               $arrayElemAt: ["$productInfo.title", 0],
             },
-            variations: {
-              $arrayElemAt: ["$productInfo.variations", 0],
-            },
+            variations: "$pVariations",
           },
           warrantyClaimHistory: "$warrantyClaimHistory",
           claimedCodes: "$warrantyClaimReqData.claimedCodes",
@@ -284,32 +290,6 @@ const createNewWarrantyClaimOrderIntoDB = async (
   let order;
   try {
     session.startTransaction();
-    // const productsDetails = claimReq?.warrantyClaimReqData?.map(
-    //   ({
-    //     productId,
-    //     claimedCodes,
-    //     variation,
-    //     attributes,
-    //     prevWarrantyInformation,
-    //   }: {
-    //     productId: Types.ObjectId;
-    //     claimedCodes: string[];
-    //     variation?: Types.ObjectId | TVariation;
-    //     prevWarrantyInformation: TWarrantyClaimPrevWarrantyInformation;
-    //     attributes?: {
-    //       [key: string]: string;
-    //     };
-    //   }) => ({
-    //     product: productId,
-    //     quantity: claimedCodes?.length,
-    //     variation: variation
-    //       ? new Types.ObjectId(variation.toString())
-    //       : undefined,
-    //     claimedCodes: claimedCodes.map((item) => ({ code: item })),
-    //     prevWarrantyInformation,
-    //     attributes,
-    //   })
-    // ) as Partial<TWarrantyClaimedProductDetails[]>;
 
     const productsDetails: TWarrantyClaimedProductDetails[] = [];
 

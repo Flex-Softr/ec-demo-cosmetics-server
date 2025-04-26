@@ -30,6 +30,7 @@ import {
 } from "./order.interface";
 import { Order } from "./order.model";
 // import steedFastApi from "../../../utilities/steedfastApi";
+import VariationModel from "../../productManagement/variation/variation.model";
 import {
   createNewOrder,
   createOrderOnSteedFast,
@@ -1321,7 +1322,8 @@ const updateOrderDetailsByAdminIntoDB = async (
             // Update existing product details
             const currentProduct =
               findOrder.productDetails[existingProductIndex];
-            const previousQuantity = currentProduct.quantity;
+            const previousQuantity = currentProduct?.quantity;
+
             if (updatedProduct.quantity || updatedProduct.quantity === 0) {
               currentProduct.total =
                 currentProduct.unitPrice * updatedProduct.quantity;
@@ -1405,37 +1407,47 @@ const updateOrderDetailsByAdminIntoDB = async (
               if (
                 currentProduct?.inventoryInfo?.variationInventory?.variation
               ) {
+                if (
+                  currentProduct?.inventoryInfo?.variationInventory
+                    ?.manageStock === true
+                ) {
+                  const quantityCalculation =
+                    Number(
+                      currentProduct?.inventoryInfo?.variationInventory
+                        ?.stockAvailable || 0
+                    ) +
+                    previousQuantity -
+                    updatedProduct.quantity;
+
+                  await VariationModel.updateOne(
+                    {
+                      _id: currentProduct?.variation,
+                    },
+                    {
+                      $set: { "inventory.stockAvailable": quantityCalculation },
+                    },
+                    { session }
+                  );
+                }
+              }
+            } else {
+              if (
+                currentProduct?.inventoryInfo?.defaultInventory?.manageStock ===
+                true
+              ) {
                 const quantityCalculation =
                   Number(
-                    currentProduct?.inventoryInfo?.variationInventory
+                    currentProduct?.inventoryInfo?.defaultInventory
                       ?.stockAvailable || 0
                   ) +
                   previousQuantity -
                   updatedProduct.quantity;
-                await ProductModel.updateOne(
-                  {
-                    _id: currentProduct.product,
-                    "variations._id": currentProduct.variation,
-                  },
-                  {
-                    "variations.$.inventory.stockAvailable":
-                      quantityCalculation,
-                  }
-                ).session(session);
+                await InventoryModel.updateOne(
+                  { _id: currentProduct?.inventoryInfo?.defaultInventory?._id },
+                  { $set: { stockAvailable: quantityCalculation } },
+                  { session }
+                );
               }
-            } else {
-              const quantityCalculation =
-                Number(
-                  currentProduct?.inventoryInfo?.defaultInventory
-                    ?.stockAvailable || 0
-                ) +
-                previousQuantity -
-                updatedProduct.quantity;
-              await InventoryModel.updateOne(
-                { _id: currentProduct?.inventoryInfo?.defaultInventory?._id },
-                { stockAvailable: quantityCalculation },
-                { session }
-              );
             }
           }
         } else if (updatedProduct.newProductId) {
@@ -1458,6 +1470,28 @@ const updateOrderDetailsByAdminIntoDB = async (
                 $unwind: "$priceInfo",
               },
               {
+                $lookup: {
+                  from: "variations",
+                  localField: "variations",
+                  foreignField: "_id",
+                  as: "variations",
+                },
+              },
+              {
+                $lookup: {
+                  from: "inventories",
+                  localField: "inventory",
+                  foreignField: "_id",
+                  as: "inventory",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$inventory",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+              {
                 $project: {
                   price: "$priceInfo",
                   inventory: 1,
@@ -1471,11 +1505,9 @@ const updateOrderDetailsByAdminIntoDB = async (
             inventory: TInventory;
             variations: TVariation[];
           };
-
           if (!productInfo) {
             throw new ApiError(httpStatus.BAD_REQUEST, "No product found");
           }
-
           if (productInfo?.variations?.length)
             if (!updatedProduct?.variation)
               throw new ApiError(httpStatus.BAD_REQUEST, "Select a variation");
@@ -1506,9 +1538,7 @@ const updateOrderDetailsByAdminIntoDB = async (
             warranty: updatedProduct.warranty,
             isWarrantyClaim: updatedProduct.isWarrantyClaim,
             claimedCodes: updatedProduct.claimedCodes,
-            variation:
-              (selectedVariation as unknown as { _id: Types.ObjectId })?._id ||
-              undefined,
+            variation: (selectedVariation as TVariation)?._id || undefined,
           };
 
           if (newProductDetails?.isWarrantyClaim) {
@@ -1529,20 +1559,13 @@ const updateOrderDetailsByAdminIntoDB = async (
               newProductDetails as any
             );
           }
-
           if (selectedVariation) {
             if (selectedVariation?.inventory?.manageStock) {
-              await ProductModel.updateOne(
-                {
-                  _id: productInfo._id,
-                  "variations._id": (
-                    selectedVariation as unknown as { _id: Types.ObjectId }
-                  )._id,
-                },
+              await VariationModel.updateOne(
+                { _id: selectedVariation?._id },
                 {
                   $inc: {
-                    "variations.$.inventory.stockAvailable":
-                      -updatedProduct.quantity,
+                    "inventory.stockAvailable": -updatedProduct.quantity,
                   },
                 }
               ).session(session);

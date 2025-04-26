@@ -16,6 +16,7 @@ const CartItemSchema = new Schema<TCartItem>(
     },
     variation: {
       type: mongoose.Schema.ObjectId,
+      ref: "Variation",
     },
     quantity: {
       type: Number,
