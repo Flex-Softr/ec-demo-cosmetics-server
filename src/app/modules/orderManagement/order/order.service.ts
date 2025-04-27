@@ -1985,7 +1985,8 @@ const returnAndPartialManagementIntoDB = async (
 const getMobileNumbersForSendingSMSFromDB = async (
   query: Record<string, unknown>
 ) => {
-  let matchQuery: Record<string, unknown> = {};
+  const matchQuery: Record<string, unknown> = {};
+  const matchShippingQuery: Record<string, unknown> = {};
 
   const pipeline: PipelineStage[] = [
     {
@@ -2002,6 +2003,21 @@ const getMobileNumbersForSendingSMSFromDB = async (
         preserveNullAndEmptyArrays: true,
       },
     },
+  ];
+
+  // Filter shippingInfo.district and division early
+  if (query.district) {
+    matchShippingQuery["shippingInfo.district"] = query.district;
+  }
+  if (query.division) {
+    matchShippingQuery["shippingInfo.division"] = query.division;
+  }
+  if (Object.keys(matchShippingQuery).length) {
+    pipeline.push({ $match: matchShippingQuery });
+  }
+
+  // Now group safely
+  pipeline.push(
     {
       $group: {
         _id: "$shippingInfo.phoneNumber",
@@ -2018,9 +2034,10 @@ const getMobileNumbersForSendingSMSFromDB = async (
         _id: 0,
         phoneNumbers: 1,
       },
-    },
-  ];
+    }
+  );
 
+  // Handle main matchQuery (createdAt, status, etc.)
   if (query.startFrom) {
     const startTime = convertIso(query.startFrom.toString());
     matchQuery.createdAt = {
@@ -2028,7 +2045,6 @@ const getMobileNumbersForSendingSMSFromDB = async (
       $gte: startTime,
     };
   }
-
   if (query.endAt) {
     const endTime = convertIso(query.endAt.toString(), false);
     matchQuery.createdAt = {
@@ -2036,50 +2052,19 @@ const getMobileNumbersForSendingSMSFromDB = async (
       $lte: endTime,
     };
   }
-
   if (query.productIds) {
-    const ids = Array.isArray(query.productIds)
-      ? query.productIds
-      : [query.productIds];
-
-    matchQuery = {
-      ...matchQuery,
-      "productDetails.product": {
-        $in: ids.map((id) => new Types.ObjectId(id)),
-      },
+    const ids = (query.productIds as string).split(",");
+    matchQuery["productDetails.product"] = {
+      $in: ids.map((id) => new Types.ObjectId(id)),
     };
   }
-
   if (query.status) {
-    const statuses = Array.isArray(query.status)
-      ? query.status
-      : [query.status];
-
-    matchQuery = {
-      ...matchQuery,
-      status: {
-        $in: statuses,
-      },
-    };
+    const statuses = (query.status as string).split(",");
+    matchQuery.status = { $in: statuses };
   }
-
-  if (query.district) {
-    matchQuery = {
-      ...matchQuery,
-      district: query.district,
-    };
+  if (Object.keys(matchQuery).length) {
+    pipeline.unshift({ $match: matchQuery });
   }
-
-  if (query.division) {
-    matchQuery = {
-      ...matchQuery,
-      division: query.division,
-    };
-  }
-
-  pipeline.unshift({
-    $match: matchQuery,
-  });
 
   const result = (await Order.aggregate(pipeline))[0];
 
