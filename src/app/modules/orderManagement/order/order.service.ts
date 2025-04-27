@@ -824,7 +824,6 @@ const updateOrderStatusIntoDB = async (
     );
 
     const orders = (await Order.aggregate(pipeline)) as Partial<TOrder[]>;
-
     const statusUpdateQuery: {
       updateOne: {
         filter: {

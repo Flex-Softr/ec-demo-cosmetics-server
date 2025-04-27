@@ -720,22 +720,36 @@ const orderStatusUpdatingPipeline = (
     {
       $unwind: "$shippingInfo",
     },
+    // {
+    //   $addFields: {
+    //     variation: {
+    //       $arrayElemAt: [
+    //         {
+    //           $filter: {
+    //             input: "$productInfo.variations",
+    //             as: "variation",
+    //             cond: {
+    //               $eq: ["$$variation._id", "$productDetails.variation"],
+    //             },
+    //           },
+    //         },
+    //         0,
+    //       ],
+    //     },
+    //   },
+    // },
     {
-      $addFields: {
-        variation: {
-          $arrayElemAt: [
-            {
-              $filter: {
-                input: "$productInfo.variations",
-                as: "variation",
-                cond: {
-                  $eq: ["$$variation._id", "$productDetails.variation"],
-                },
-              },
-            },
-            0,
-          ],
-        },
+      $lookup: {
+        from: "variations",
+        localField: "productDetails.variation",
+        foreignField: "_id",
+        as: "variationData",
+      },
+    },
+    {
+      $unwind: {
+        path: "$variationData",
+        preserveNullAndEmptyArrays: true,
       },
     },
     {
@@ -753,7 +767,7 @@ const orderStatusUpdatingPipeline = (
               warranty: "$productDetails.warranty",
               productWarranty: "$productInfo.warranty",
               quantity: "$productDetails.quantity",
-              variation: "$productDetails.variation",
+              variation: "$variationData",
               total: "$productDetails.total",
               defaultInventory: {
                 _id: "$defaultInventoryData._id",
@@ -762,22 +776,11 @@ const orderStatusUpdatingPipeline = (
                 lowStockWarning: "$defaultInventoryData.lowStockWarning",
               },
               variationDetails: {
-                $cond: {
-                  if: {
-                    $and: [
-                      { $isArray: "$productInfo.variations" },
-                      { $gt: [{ $size: "$productInfo.variations" }, 0] },
-                    ],
-                  },
-                  then: {
-                    _id: "$variation._id",
-                    inventory: {
-                      stockAvailable: "$variation.inventory.stockAvailable",
-                      manageStock: "$variation.inventory.manageStock",
-                      lowStockWarning: "$variation.inventory.lowStockWarning",
-                    },
-                  },
-                  else: null,
+                _id: "$variationData._id",
+                inventory: {
+                  stockAvailable: "$variationData.inventory.stockAvailable",
+                  manageStock: "$variationData.inventory.manageStock",
+                  lowStockWarning: "$variationData.inventory.lowStockWarning",
                 },
               },
             },

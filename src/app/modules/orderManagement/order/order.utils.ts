@@ -11,7 +11,6 @@ import { Coupon } from "../../coupon/coupon.model";
 import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
-import ProductModel from "../../productManagement/product/product.model";
 import VariationModel from "../../productManagement/variation/variation.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
@@ -76,21 +75,19 @@ export const updateStockOrderCancelDelete = async (
   const variationMissingProducts = [];
   for (const item of productDetails) {
     let updateType = item.quantity;
-
     if (!inc) {
       updateType = -item.quantity;
     }
     if (item?.variation) {
       if (item?.variationDetails) {
         if (item?.variationDetails?.inventory?.manageStock) {
-          await ProductModel.updateOne(
+          await VariationModel.updateOne(
             {
-              _id: item?.productId,
-              "variations._id": item?.variation,
+              _id: item?.variation,
             },
             {
               $inc: {
-                "variations.$.inventory.stockAvailable": updateType,
+                "inventory.stockAvailable": updateType,
               },
             }
           ).session(session);
@@ -101,11 +98,17 @@ export const updateStockOrderCancelDelete = async (
     } else {
       if (item?.defaultInventory?.manageStock) {
         await InventoryModel.updateOne(
-          { _id: item.defaultInventory._id },
+          { _id: item?.defaultInventory?._id },
           { $inc: { stockAvailable: updateType } }
         ).session(session);
       }
     }
+  }
+  if (variationMissingProducts.length) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Variation missing for ${variationMissingProducts.join(", ")}`
+    );
   }
 };
 
