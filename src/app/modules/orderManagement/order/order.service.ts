@@ -30,6 +30,7 @@ import {
 } from "./order.interface";
 import { Order } from "./order.model";
 // import steedFastApi from "../../../utilities/steedfastApi";
+import { TVariation } from "../../productManagement/variation/variation.interface";
 import VariationModel from "../../productManagement/variation/variation.model";
 import {
   createNewOrder,
@@ -38,7 +39,6 @@ import {
   TUpStOnCanDelProducts,
   updateStockOrderCancelDelete,
 } from "./order.utils";
-import { TVariation } from "../../productManagement/variation/variation.interface";
 
 const maxOrderStatusChangeAtATime = 20;
 
@@ -824,7 +824,6 @@ const updateOrderStatusIntoDB = async (
     );
 
     const orders = (await Order.aggregate(pipeline)) as Partial<TOrder[]>;
-
     const statusUpdateQuery: {
       updateOne: {
         filter: {
@@ -1255,8 +1254,6 @@ const updateOrderDetailsByAdminIntoDB = async (
     status,
     monitoringStatus,
     trackingStatus,
-    division,
-    district,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = payload as any;
 
@@ -1654,8 +1651,6 @@ const updateOrderDetailsByAdminIntoDB = async (
     updatedDoc.followUpDate = followUpDate;
     updatedDoc.monitoringNotes = monitoringNotes;
     updatedDoc.reasonNotes = reasonNotes;
-    updatedDoc.division = division;
-    updatedDoc.district = district;
 
     await Order.findByIdAndUpdate(
       id,

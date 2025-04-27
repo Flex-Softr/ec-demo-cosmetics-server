@@ -30,6 +30,14 @@ export const ShippingSchema = new Schema<TShippingData>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Country",
     },
+    district: {
+      type: String,
+      ref: "District",
+    },
+    division: {
+      type: String,
+      ref: "Division",
+    },
   },
   { timestamps: true }
 );

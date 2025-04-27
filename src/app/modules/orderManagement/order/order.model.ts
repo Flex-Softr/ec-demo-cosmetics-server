@@ -198,12 +198,6 @@ const OrderSchema = new Schema<TOrder>(
         type: String,
       },
     },
-    division: {
-      type: String,
-    },
-    district: {
-      type: String,
-    },
   },
   {
     timestamps: true,
