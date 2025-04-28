@@ -11,6 +11,8 @@
     "dev": "nodemon",
     "build": "npx tsc",
     "start": "node dist/server.js",
+    "start:seed": "node dist/app/utilities/seedSuperAdmin.js",
+    "seed": "ts-node --transpile-only ./src/app/utilities/seedSuperAdmin.ts",
     "prepare": "husky install"
   },
   "lint-staged": {

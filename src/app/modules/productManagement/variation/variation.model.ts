@@ -3,6 +3,10 @@ import { TVariation } from "./variation.interface";
 import { stockStatus } from "../inventory/inventory.const";
 
 const productVariationsSchema = new Schema<TVariation>({
+  productId: {
+    type: String,
+    required: true,
+  },
   attributes: {
     type: Map,
     of: String,

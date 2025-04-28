@@ -8,84 +8,95 @@ import { User } from "../modules/userManagement/user/user.model";
 import { createAdminOrStaffId } from "../modules/userManagement/user/user.util";
 import { consoleLogger } from "./logger";
 
-const checkPermission = async (session: mongoose.mongo.ClientSession) => {
-  const existingPermission = await Permission.findOne({ name: "super admin" });
-  if (existingPermission) return existingPermission;
+const checkAndCreatePermissions = async (session: mongoose.ClientSession) => {
+  const existingPermissions = await Permission.find({}, null, {
+    session,
+  }).lean();
+  const existingNames = existingPermissions.map((p) => p.name);
 
-  // If not found, create the permissions
-  const createdPermissions = await Permission.create(
-    permissionEnums.map((item) => ({ name: item })),
+  const permissionsToCreate = permissionEnums
+    .filter((name) => !existingNames.includes(name))
+    .map((name) => ({ name }));
+
+  if (permissionsToCreate.length > 0) {
+    await Permission.insertMany(permissionsToCreate, { session });
+    consoleLogger.info(
+      `✅ Created missing permissions: ${permissionsToCreate.map((p) => p.name).join(", ")}`
+    );
+  }
+
+  const superAdminPermission = await Permission.findOne(
+    { name: "super admin" },
+    null,
     { session }
   );
-
-  // Find the specific "super admin" permission
-  const superAdminPermission = createdPermissions.find(
-    (item) => item.name === "super admin"
-  );
+  if (!superAdminPermission) {
+    throw new Error(
+      "❌ Super admin permission not found after creating permissions!"
+    );
+  }
 
   return superAdminPermission;
 };
 
 const createSuperAdmin = async () => {
   const session = await mongoose.startSession();
-  session.startTransaction(); // Start transaction right away
 
   try {
+    session.startTransaction();
+
+    const superAdminPermission = await checkAndCreatePermissions(session);
+
+    const existingSuperAdmin = await User.findOne(
+      { role: "superAdmin" },
+      null,
+      { session }
+    );
+    if (existingSuperAdmin) {
+      consoleLogger.info("✅ Super admin already exists.");
+      return;
+    }
+
     const userId = await createAdminOrStaffId(false);
-    if (!userId) {
-      consoleLogger.error("❌ Failed to create super admin user ID!");
-      return;
-    }
+    if (!userId) throw new Error("❌ Failed to create super admin user ID!");
 
-    const superAdminPermission = await checkPermission(session);
-    if (!superAdminPermission) {
-      consoleLogger.error("❌ Failed to create super admin permissions!");
-      return;
-    }
+    const [admin] = await Admin.create(
+      [
+        {
+          uid: userId,
+          fullName: config.fullName,
+        },
+      ],
+      { session }
+    );
 
-    const adminData = {
-      uid: userId,
-      fullName: config.fullName,
-      // emergencyContact: "01912345678",
-      // NIDNo: "1234567890123",
-      // birthCertificateNo: "9876543210",
-      // dateOfBirth: "1990-01-01",
-      // joiningDate: "2023-09-18",
-      // profilePicture: "https://example.com/profile.jpg",
-    };
+    const [address] = await Address.create(
+      [
+        {
+          uid: userId,
+          fullAddress: config.fullAddress,
+        },
+      ],
+      { session }
+    );
 
-    const [admin] = await Admin.create([adminData], { session });
-    if (!admin) {
-      consoleLogger.error("❌ Failed to create super admin name!");
-      return;
-    }
+    await User.create(
+      [
+        {
+          uid: userId,
+          phoneNumber: config.phoneNumber,
+          email: config.email,
+          password: config.password,
+          role: "superAdmin",
+          admin: admin._id,
+          address: address._id,
+          permissions: [superAdminPermission._id],
+          status: "active",
+        },
+      ],
+      { session }
+    );
 
-    const addressData = {
-      uid: userId,
-      fullAddress: config.fullAddress,
-    };
-
-    const [address] = await Address.create([addressData], { session });
-    if (!address) {
-      consoleLogger.error("❌ Failed to create super admin address!");
-      return;
-    }
-
-    const superAdminData = {
-      uid: userId,
-      phoneNumber: config.phoneNumber,
-      email: config.email,
-      password: config.password,
-      role: "superAdmin",
-      admin: admin._id,
-      address: address._id,
-      permissions: [superAdminPermission._id],
-      status: "active",
-    };
-
-    await User.create([superAdminData], { session });
-
-    await session.commitTransaction();
     consoleLogger.info("✅ Super admin created successfully.");
   } catch (error) {
     await session.abortTransaction();
@@ -95,22 +106,36 @@ const createSuperAdmin = async () => {
     );
     throw error;
   } finally {
-    session.endSession();
+    await session.commitTransaction();
+    await session.endSession();
   }
 };
 
-const seedSuperAdmin = async () => {
+const connectDB = async (): Promise<void> => {
   try {
-    // Check if super admin already exists
-    const existingSuperAdmin = await User.findOne({ role: "superAdmin" });
-    if (!existingSuperAdmin) {
-      await createSuperAdmin();
-    } else {
-      consoleLogger.info("✅ Super admin already exists.");
-    }
+    await mongoose.connect(config.DBUrl as string);
+    consoleLogger.info("✅ Connected to MongoDB");
   } catch (error) {
-    consoleLogger.error("❌ Error while seeding super admin!", error);
+    consoleLogger.error("❌ MongoDB connection failed:", error);
+    process.exit(1);
   }
 };
+
+const seedSuperAdmin = async (): Promise<void> => {
+  try {
+    await connectDB();
+    await createSuperAdmin();
+    process.exit(0);
+  } catch (error) {
+    consoleLogger.error("❌ Error during super admin seeding:", error);
+    process.exit(1);
+  }
+};
+
+// eslint-disable-next-line no-undef
+if (require.main === module) {
+  // Only run if executed directly
+  seedSuperAdmin();
+}
 
 export default seedSuperAdmin;

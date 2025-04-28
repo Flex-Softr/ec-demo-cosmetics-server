@@ -42,7 +42,7 @@ export type TProduct = {
   usageGuidelines?: string;
   // downloadable?: boolean;
   featured?: boolean;
-  // review?: boolean;
+  review?: boolean;
   price: Types.ObjectId | TPrice;
   image: TProductImage; //| TProductImage
   inventory: Types.ObjectId | TInventory;

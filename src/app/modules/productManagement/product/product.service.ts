@@ -38,6 +38,15 @@ const createProductIntoDB = async (
       await InventoryModel.create([payload.inventory], { session })
     )[0]._id;
 
+    if (payload.variations.length) {
+      payload.variations = payload.variations.map((variation) => {
+        return {
+          productId: generatedProductId,
+          ...variation,
+        } as TVariation;
+      });
+    }
+
     const insertedVariations = await VariationModel.insertMany(
       payload.variations,
       { session }
@@ -710,8 +719,8 @@ const updateProductIntoDB = async (
       } else {
         // Check if variation already exists
         const existingVariation = await VariationModel.findOne({
+          productId: isProductExist.id,
           attributes: (variation as TVariation).attributes,
-          "inventory.sku": (variation as TVariation).inventory.sku,
         });
         if (existingVariation) {
           await VariationModel.updateOne(
@@ -723,7 +732,10 @@ const updateProductIntoDB = async (
           continue; // Skip creating a new variation if it already exists
         }
         // Create new variation
-        const created = await VariationModel.create([variation], { session });
+        const created = await VariationModel.create(
+          [{ productId: isProductExist.id, ...variation }],
+          { session }
+        );
         variationIds.push(created[0]?._id);
       }
     }

@@ -122,7 +122,7 @@ export type TSanitizedOrProduct = {
     stock: TInventory;
     defaultInventory: Types.ObjectId;
     isVariationAvailable?: boolean;
-    category: TCategory;
+    category: TCategory | mongoose.Types.ObjectId;
   };
   quantity: number;
   variation?: Types.ObjectId;
