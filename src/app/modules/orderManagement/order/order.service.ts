@@ -524,13 +524,14 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   let queryProducts: string[] = [];
   const orderedTimes: string | undefined = query.orderedTimes;
 
-  if (query.products) {
-    queryProducts = Array.isArray(query.products)
-      ? query.products
-      : [query.products];
+  if (query.productIds) {
+    queryProducts = (query.productIds as string)
+      .split(",")
+      .map((item) => item.trim());
   }
 
   const matchQuery: Record<string, unknown> = {};
+  let matchSuffix: Record<string, unknown> = {};
   const acceptableStatus: TOrderStatus[] = [
     "completed",
     "partial completed",
@@ -556,6 +557,9 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   if (query.status) {
     matchQuery.status = query?.status as string;
   }
+  if (query.orderId) {
+    matchQuery.orderId = query?.orderId as string;
+  }
 
   if ((!query.status || query.status === "all") && !query.search) {
     matchQuery.status = {
@@ -564,10 +568,17 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   }
 
   if (query.division) {
-    matchQuery.division = query.division;
+    matchSuffix = {
+      ...matchSuffix,
+      "shipping.division.id": query.division,
+    };
   }
+
   if (query.district) {
-    matchQuery.district = query.district;
+    matchSuffix = {
+      ...matchSuffix,
+      "shipping.district.id": query.district,
+    };
   }
 
   if (query.startFrom) {
@@ -595,30 +606,33 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
 
   const pipeline = OrderHelper.orderDetailsPipeline();
 
+  if (queryProducts.length > 0) {
+    matchQuery.productDetails = {
+      $elemMatch: {
+        product: {
+          $in: queryProducts.map((item) => new Types.ObjectId(item)),
+        },
+      },
+    };
+  }
+
+  if (query.orderSource) {
+    matchQuery.orderSource = {
+      name: query.orderSource,
+    };
+  }
+
   pipeline.unshift({
     $match: matchQuery,
   });
 
-  let matchSuffix: Record<string, unknown> = {};
-
   if (query.search) {
-    const searchRegex = new RegExp(query.search, "i"); // 'i' for case-insensitive matching
+    const searchRegex = query?.search?.toLowerCase();
     matchSuffix.$or = [
       { "shipping.phoneNumber": { $regex: searchRegex } },
       { "shipping.fullName": { $regex: searchRegex } },
-      { division: { $regex: searchRegex } },
-      { district: { $regex: searchRegex } },
       { orderId: { $regex: searchRegex } },
     ];
-  }
-
-  if (queryProducts.length > 0) {
-    matchSuffix = {
-      ...matchSuffix,
-      "products.productId": {
-        $in: queryProducts.map((item) => new Types.ObjectId(item)),
-      },
-    };
   }
 
   if (orderedTimes) {
@@ -666,6 +680,8 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   if (Object.keys(matchSuffix).length > 0) {
     pipeline.push({ $match: { ...matchSuffix } });
   }
+
+  // console.log(pipeline);
 
   const orderQuery = new AggregateQueryHelper(Order.aggregate(pipeline), query)
     .sort()
