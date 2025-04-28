@@ -420,9 +420,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
     $unwind: { path: "$statusHistory", preserveNullAndEmptyArrays: true },
   },
   {
-    $unwind: { path: "$statusHistory", preserveNullAndEmptyArrays: true },
-  },
-  {
     $project: {
       _id: 1,
       orderId: 1,

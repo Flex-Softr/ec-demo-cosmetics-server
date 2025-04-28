@@ -524,13 +524,14 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   let queryProducts: string[] = [];
   const orderedTimes: string | undefined = query.orderedTimes;
 
-  if (query.products) {
-    queryProducts = Array.isArray(query.products)
-      ? query.products
-      : [query.products];
+  if (query.productIds) {
+    queryProducts = (query.productIds as string)
+      .split(",")
+      .map((item) => item.trim());
   }
 
   const matchQuery: Record<string, unknown> = {};
+  let matchSuffix: Record<string, unknown> = {};
   const acceptableStatus: TOrderStatus[] = [
     "completed",
     "partial completed",
@@ -556,6 +557,9 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   if (query.status) {
     matchQuery.status = query?.status as string;
   }
+  if (query.orderId) {
+    matchQuery.orderId = query?.orderId as string;
+  }
 
   if ((!query.status || query.status === "all") && !query.search) {
     matchQuery.status = {
@@ -564,10 +568,17 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   }
 
   if (query.division) {
-    matchQuery.division = query.division;
+    matchSuffix = {
+      ...matchSuffix,
+      "shipping.division.id": query.division,
+    };
   }
+
   if (query.district) {
-    matchQuery.district = query.district;
+    matchSuffix = {
+      ...matchSuffix,
+      "shipping.district.id": query.district,
+    };
   }
 
   if (query.startFrom) {
@@ -595,30 +606,33 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
 
   const pipeline = OrderHelper.orderDetailsPipeline();
 
+  if (queryProducts.length > 0) {
+    matchQuery.productDetails = {
+      $elemMatch: {
+        product: {
+          $in: queryProducts.map((item) => new Types.ObjectId(item)),
+        },
+      },
+    };
+  }
+
+  if (query.orderSource) {
+    matchQuery.orderSource = {
+      name: query.orderSource,
+    };
+  }
+
   pipeline.unshift({
     $match: matchQuery,
   });
 
-  let matchSuffix: Record<string, unknown> = {};
-
   if (query.search) {
-    const searchRegex = new RegExp(query.search, "i"); // 'i' for case-insensitive matching
+    const searchRegex = query?.search?.toLowerCase();
     matchSuffix.$or = [
       { "shipping.phoneNumber": { $regex: searchRegex } },
       { "shipping.fullName": { $regex: searchRegex } },
-      { division: { $regex: searchRegex } },
-      { district: { $regex: searchRegex } },
       { orderId: { $regex: searchRegex } },
     ];
-  }
-
-  if (queryProducts.length > 0) {
-    matchSuffix = {
-      ...matchSuffix,
-      "products.productId": {
-        $in: queryProducts.map((item) => new Types.ObjectId(item)),
-      },
-    };
   }
 
   if (orderedTimes) {
@@ -666,6 +680,8 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   if (Object.keys(matchSuffix).length > 0) {
     pipeline.push({ $match: { ...matchSuffix } });
   }
+
+  // console.log(pipeline);
 
   const orderQuery = new AggregateQueryHelper(Order.aggregate(pipeline), query)
     .sort()
@@ -1985,7 +2001,8 @@ const returnAndPartialManagementIntoDB = async (
 const getMobileNumbersForSendingSMSFromDB = async (
   query: Record<string, unknown>
 ) => {
-  let matchQuery: Record<string, unknown> = {};
+  const matchQuery: Record<string, unknown> = {};
+  const matchShippingQuery: Record<string, unknown> = {};
 
   const pipeline: PipelineStage[] = [
     {
@@ -2002,6 +2019,21 @@ const getMobileNumbersForSendingSMSFromDB = async (
         preserveNullAndEmptyArrays: true,
       },
     },
+  ];
+
+  // Filter shippingInfo.district and division early
+  if (query.district) {
+    matchShippingQuery["shippingInfo.district"] = query.district;
+  }
+  if (query.division) {
+    matchShippingQuery["shippingInfo.division"] = query.division;
+  }
+  if (Object.keys(matchShippingQuery).length) {
+    pipeline.push({ $match: matchShippingQuery });
+  }
+
+  // Now group safely
+  pipeline.push(
     {
       $group: {
         _id: "$shippingInfo.phoneNumber",
@@ -2018,9 +2050,10 @@ const getMobileNumbersForSendingSMSFromDB = async (
         _id: 0,
         phoneNumbers: 1,
       },
-    },
-  ];
+    }
+  );
 
+  // Handle main matchQuery (createdAt, status, etc.)
   if (query.startFrom) {
     const startTime = convertIso(query.startFrom.toString());
     matchQuery.createdAt = {
@@ -2028,7 +2061,6 @@ const getMobileNumbersForSendingSMSFromDB = async (
       $gte: startTime,
     };
   }
-
   if (query.endAt) {
     const endTime = convertIso(query.endAt.toString(), false);
     matchQuery.createdAt = {
@@ -2036,50 +2068,19 @@ const getMobileNumbersForSendingSMSFromDB = async (
       $lte: endTime,
     };
   }
-
   if (query.productIds) {
-    const ids = Array.isArray(query.productIds)
-      ? query.productIds
-      : [query.productIds];
-
-    matchQuery = {
-      ...matchQuery,
-      "productDetails.product": {
-        $in: ids.map((id) => new Types.ObjectId(id)),
-      },
+    const ids = (query.productIds as string).split(",");
+    matchQuery["productDetails.product"] = {
+      $in: ids.map((id) => new Types.ObjectId(id)),
     };
   }
-
   if (query.status) {
-    const statuses = Array.isArray(query.status)
-      ? query.status
-      : [query.status];
-
-    matchQuery = {
-      ...matchQuery,
-      status: {
-        $in: statuses,
-      },
-    };
+    const statuses = (query.status as string).split(",");
+    matchQuery.status = { $in: statuses };
   }
-
-  if (query.district) {
-    matchQuery = {
-      ...matchQuery,
-      district: query.district,
-    };
+  if (Object.keys(matchQuery).length) {
+    pipeline.unshift({ $match: matchQuery });
   }
-
-  if (query.division) {
-    matchQuery = {
-      ...matchQuery,
-      division: query.division,
-    };
-  }
-
-  pipeline.unshift({
-    $match: matchQuery,
-  });
 
   const result = (await Order.aggregate(pipeline))[0];
 
