@@ -316,34 +316,34 @@ const orderDetailsPipeline = (): PipelineStage[] => [
   {
     $unwind: { path: "$shippingData", preserveNullAndEmptyArrays: true },
   },
-  {
-    $lookup: {
-      from: "divisions",
-      localField: "shippingData.division",
-      foreignField: "id",
-      as: "shippingData.division",
-    },
-  },
-  {
-    $unwind: {
-      path: "$shippingData.division",
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: "districts",
-      localField: "shippingData.district",
-      foreignField: "id",
-      as: "shippingData.district",
-    },
-  },
-  {
-    $unwind: {
-      path: "$shippingData.district",
-      preserveNullAndEmptyArrays: true,
-    },
-  },
+  // {
+  //   $lookup: {
+  //     from: "divisions",
+  //     localField: "shippingData.division",
+  //     foreignField: "id",
+  //     as: "shippingData.division",
+  //   },
+  // },
+  // {
+  //   $unwind: {
+  //     path: "$shippingData.division",
+  //     preserveNullAndEmptyArrays: true,
+  //   },
+  // },
+  // {
+  //   $lookup: {
+  //     from: "districts",
+  //     localField: "shippingData.district",
+  //     foreignField: "id",
+  //     as: "shippingData.district",
+  //   },
+  // },
+  // {
+  //   $unwind: {
+  //     path: "$shippingData.district",
+  //     preserveNullAndEmptyArrays: true,
+  //   },
+  // },
   {
     $lookup: {
       from: "shippingcharges",
@@ -432,16 +432,18 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         fullName: "$shippingData.fullName",
         phoneNumber: "$shippingData.phoneNumber",
         fullAddress: "$shippingData.fullAddress",
-        division: {
-          id: "$shippingData.division.id",
-          name: "$shippingData.division.name",
-          bn_name: "$shippingData.division.bn_name",
-        },
-        district: {
-          id: "$shippingData.district.id",
-          name: "$shippingData.district.name",
-          bn_name: "$shippingData.district.bn_name",
-        },
+        district: "$shippingData.district",
+        division: "$shippingData.division",
+        // division: {
+        //   id: "$shippingData.division.id",
+        //   name: "$shippingData.division.name",
+        //   bn_name: "$shippingData.division.bn_name",
+        // },
+        // district: {
+        //   id: "$shippingData.district.id",
+        //   name: "$shippingData.district.name",
+        //   bn_name: "$shippingData.district.bn_name",
+        // },
       },
       shippingCharge: {
         _id: "$shippingCharge._id",

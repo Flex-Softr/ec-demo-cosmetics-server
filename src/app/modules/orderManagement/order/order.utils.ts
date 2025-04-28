@@ -302,7 +302,31 @@ export const createNewOrder = async (
   )[0]._id;
   // Create Shipping data
   shipping.orderId = orderId;
-  orderData.shipping = (await Shipping.create([shipping], { session }))[0]._id;
+  const isExistingShipping = await Shipping.findOne({
+    phoneNumber: shipping.phoneNumber,
+  });
+  if (isExistingShipping) {
+    await Shipping.findByIdAndUpdate(
+      isExistingShipping._id,
+      {
+        $set: {
+          fullName: shipping.fullName,
+          fullAddress: shipping.fullAddress,
+          // city: shipping.city,
+          // state: shipping.state,
+          // country: shipping.country,
+          district: shipping.district,
+          division: shipping.division,
+        },
+      },
+      { session }
+    );
+    orderData.shipping = isExistingShipping._id;
+  } else {
+    orderData.shipping = (
+      await Shipping.create([shipping], { session })
+    )[0]._id;
+  }
   // create status document
   orderData.statusHistory = (
     await OrderStatusHistory.create([{ orderId, history: [{ status }] }], {

@@ -17,6 +17,8 @@ export const shippingValidationZodSchema = (isOptional = false) => {
         fullName: string().optional(),
         phoneNumber: phoneNumberValidationZodSchema(true),
         fullAddress: string().optional(),
+        district: string().optional(),
+        division: string().optional(),
       })
     );
   }

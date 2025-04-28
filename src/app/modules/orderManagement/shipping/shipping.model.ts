@@ -32,11 +32,11 @@ export const ShippingSchema = new Schema<TShippingData>(
     },
     district: {
       type: String,
-      ref: "District",
+      // ref: "District",
     },
     division: {
       type: String,
-      ref: "Division",
+      // ref: "Division",
     },
   },
   { timestamps: true }
