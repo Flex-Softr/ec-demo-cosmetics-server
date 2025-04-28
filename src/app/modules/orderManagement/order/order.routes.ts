@@ -24,10 +24,10 @@ router.get(
 
 router.get(
   "/admin/order-id/:id",
-  // authGuard({
-  //   requiredRoles: ["superAdmin", "admin", "staff"],
-  //   //   requiredPermission: "manage orders",
-  // }),
+  authGuard({
+    requiredRoles: ["superAdmin", "admin", "staff"],
+    //   requiredPermission: "manage orders",
+  }),
   OrderController.getOrderInfoByOrderIdAdmin
 );
 
