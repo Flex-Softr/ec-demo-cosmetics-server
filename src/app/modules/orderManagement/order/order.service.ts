@@ -570,14 +570,14 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   if (query.division) {
     matchSuffix = {
       ...matchSuffix,
-      "shipping.division.id": query.division,
+      "shipping.division": query.division,
     };
   }
 
   if (query.district) {
     matchSuffix = {
       ...matchSuffix,
-      "shipping.district.id": query.district,
+      "shipping.district": query.district,
     };
   }
 
