@@ -69,4 +69,10 @@ export default {
   password: env.PASSWORD,
   fullAddress: env.FULL_ADDRESS,
   tmp_shipping_id: env.SHIPPING_ID,
+  banglaLink: {
+    base_url: env.BL_BASE_URL || "https://corpsms.banglalink.net/bl",
+    user: env.BL_USER,
+    pass: env.BL_PASS,
+    bill_msisdn: env.BL_BILL_MSISDN,
+  },
 };

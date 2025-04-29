@@ -237,7 +237,7 @@ export const createNewOrder = async (
     }
   }
 
-  if (!custom || warrantyClaimOrderData?.warrantyClaim === false) {
+  if (fromWebsite || salesPage) {
     courierNotes = undefined;
     officialNotes = undefined;
     invoiceNotes = undefined;
