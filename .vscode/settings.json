@@ -5,7 +5,15 @@
     "source.organizeImports": "explicit",
     "source.fixAll.eslint": "explicit"
   },
-  "cSpell.words": ["Attributesvalue", "hookform", "lucide", "Valuehandler"],
+  "cSpell.words": [
+    "Attributesvalue",
+    "hookform",
+    "lucide",
+    "Upazila",
+    "upazilas",
+    "upzila",
+    "Valuehandler"
+  ],
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },

@@ -19,6 +19,7 @@ export const shippingValidationZodSchema = (isOptional = false) => {
         fullAddress: string().optional(),
         district: string().optional(),
         division: string().optional(),
+        upazila: string().optional(),
       })
     );
   }

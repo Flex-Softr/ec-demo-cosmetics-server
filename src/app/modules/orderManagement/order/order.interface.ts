@@ -3,6 +3,7 @@ import { TCategory } from "../../productManagement/category/category.interface";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { TPrice } from "../../productManagement/price/price.interface";
 import { TProduct } from "../../productManagement/product/product.interface";
+import { TVariation } from "../../productManagement/variation/variation.interface";
 import { TUser } from "../../userManagement/user/user.interface";
 import {
   TWarranty,
@@ -16,7 +17,6 @@ import { TWarrantyClaimHistory } from "../../warrantyManagement/warrantyClaimHis
 import { TOrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.interface";
 import { TShipping } from "../shipping/shipping.interface";
 import { TShippingCharge } from "../shippingCharge/shippingCharge.interface";
-import { TVariation } from "../../productManagement/variation/variation.interface";
 
 export type TOrderStatus =
   | "pending"
