@@ -129,9 +129,8 @@ const updateCourierStatus = async () => {
       session.startTransaction();
       //  update orders
       if (statusUpdateQuery.length) {
-        // await Order.bulkWrite(statusUpdateQuery, { session }); //TODO: uncomment this line
+        await Order.bulkWrite(statusUpdateQuery, { session });
       }
-
       const completedOrders = updatedData.filter(
         (item) => item?.delivery_status === "delivered"
       );
