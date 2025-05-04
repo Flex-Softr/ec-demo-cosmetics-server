@@ -22,6 +22,7 @@ import { ReportsRoutes } from "../modules/reports/reports.routes";
 import { OrderSMSNotificationRotes } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.routes";
 import { SmsRoutes } from "../modules/smsManagement/sms/sms.routes";
 import { SliderBannerRoutes } from "../modules/themeOption/sliderSection/sliderSection.routes";
+import { UpazilaRoutes } from "../modules/upazila/upazila.routes";
 import { AdminRoutes } from "../modules/userManagement/admin/admin.routes";
 import { CustomerRoutes } from "../modules/userManagement/customer/customer.routes";
 import { PermissionRoutes } from "../modules/userManagement/permission/permission.routes";
@@ -144,6 +145,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/districts",
     route: DistrictRoutes,
+  },
+  {
+    path: "/upazilas",
+    route: UpazilaRoutes,
   },
   {
     path: "/sms",
