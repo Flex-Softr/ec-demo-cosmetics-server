@@ -317,6 +317,7 @@ export const createNewOrder = async (
           // country: shipping.country,
           district: shipping.district,
           division: shipping.division,
+          upazila: shipping.upazila,
         },
       },
       { session }

@@ -580,6 +580,19 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
       "shipping.district": query.district,
     };
   }
+  if (query.upazila) {
+    matchSuffix = {
+      ...matchSuffix,
+      "shipping.upazila": query.upazila,
+    };
+  }
+
+  if (query.orderSource) {
+    matchSuffix = {
+      ...matchSuffix,
+      "orderSource.name": query.orderSource,
+    };
+  }
 
   if (query.startFrom) {
     const startTime = convertIso(query.startFrom);
@@ -613,12 +626,6 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
           $in: queryProducts.map((item) => new Types.ObjectId(item)),
         },
       },
-    };
-  }
-
-  if (query.orderSource) {
-    matchQuery.orderSource = {
-      name: query.orderSource,
     };
   }
 
@@ -681,7 +688,24 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
     pipeline.push({ $match: { ...matchSuffix } });
   }
 
-  // console.log(pipeline);
+  const queryExceptStatus = { query, status: undefined };
+
+  if (Object.keys(queryExceptStatus).length > 0) {
+    pipeline.push(
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: "$shipping.phoneNumber",
+          order: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: { newRoot: "$order" },
+      }
+    );
+  }
 
   const orderQuery = new AggregateQueryHelper(Order.aggregate(pipeline), query)
     .sort()

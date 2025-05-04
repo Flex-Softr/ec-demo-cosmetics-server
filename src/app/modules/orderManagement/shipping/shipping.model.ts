@@ -38,6 +38,10 @@ export const ShippingSchema = new Schema<TShippingData>(
       type: String,
       // ref: "Division",
     },
+    upazila: {
+      type: String,
+      // ref: "Division",
+    },
   },
   { timestamps: true }
 );

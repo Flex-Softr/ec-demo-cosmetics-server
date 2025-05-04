@@ -434,6 +434,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         fullAddress: "$shippingData.fullAddress",
         district: "$shippingData.district",
         division: "$shippingData.division",
+        upazila: "$shippingData.upazila",
         // division: {
         //   id: "$shippingData.division.id",
         //   name: "$shippingData.division.name",
