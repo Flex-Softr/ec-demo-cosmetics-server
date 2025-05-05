@@ -17,7 +17,7 @@ router.get(
 router.post(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin"],
+    requiredRoles: ["superAdmin", "admin"],
   }),
   validateRequest(PermissionValidation.createPermission),
   PermissionController.createPermission
