@@ -10,7 +10,7 @@ router.post(
   "/",
   authGuard({
     requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage SMS",
+    requiredPermission: "manage sms",
   }),
   validateRequest(OrderSMSNotificationValidation.createOrderSMSNotification),
   OrderSMSNotificationController.createOrderSMSNotification
@@ -20,7 +20,7 @@ router.get(
   "/",
   authGuard({
     requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage SMS",
+    requiredPermission: "manage sms",
   }),
   OrderSMSNotificationController.getOrderSMSNotification
 );
@@ -29,7 +29,7 @@ router.patch(
   "/:id",
   authGuard({
     requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage SMS",
+    requiredPermission: "manage sms",
   }),
   OrderSMSNotificationController.updateOrderSMSNotification
 );
