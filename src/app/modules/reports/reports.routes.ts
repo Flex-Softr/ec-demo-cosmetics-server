@@ -20,7 +20,10 @@ route.get(
 
 route.get(
   "/orders-source-count",
-  authGuard({ requiredRoles: ["superAdmin", "admin"], requiredPermission }),
+  authGuard({
+    requiredRoles: ["superAdmin", "admin", "staff"],
+    // requiredPermission,
+  }),
   ReportsController.getSourceCounts
 );
 
