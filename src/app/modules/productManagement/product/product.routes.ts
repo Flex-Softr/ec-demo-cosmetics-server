@@ -31,7 +31,7 @@ router.get(
   "/admin",
   authGuard({
     requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    // requiredPermission: "manage product",
   }),
   ProductControllers.getAllProductsAdmin
 );
