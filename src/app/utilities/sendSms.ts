@@ -1,22 +1,26 @@
 import httpStatus from "http-status";
 import config from "../config/config";
 import ApiError from "../errorHandlers/ApiError";
-// import { banglaLinkUtil } from "./banglalink";
-// import createBLClientSid from "./banglalink/createBLClientSid";
-// import { detectLanguageType } from "./detectLanguageType";
+import { banglaLinkUtil } from "./banglalink";
+import createBLClientSid from "./banglalink/createBLClientSid";
+import { detectLanguageType } from "./detectLanguageType";
 
-const sendSms = async (mobileNumbers: string[], body: string) => {
+const sendSms = async (
+  mobileNumbers: string[],
+  body: string,
+  tran_type: "T" | "P"
+) => {
   try {
     // SMS sending logic here
-
-    if (config.env === "development") {
-      // await banglaLinkUtil.sendSMS({
-      //   msisdn: mobileNumbers,
-      //   clienttransid: createBLClientSid(),
-      //   cli: "OneselfBD",
-      //   messagetype: detectLanguageType(body) === "Unicode" ? "3" : "1",
-      //   message: body,
-      // });
+    if (config.env === "production") {
+      await banglaLinkUtil.sendSMS({
+        msisdn: mobileNumbers,
+        clienttransid: createBLClientSid(),
+        cli: "Oneself",
+        messagetype: detectLanguageType(body) === "Unicode" ? "3" : "1",
+        message: body,
+        tran_type,
+      });
     } else {
       // eslint-disable-next-line no-console
       console.log("TO test SMS in development turn it on from sendSms util.", {

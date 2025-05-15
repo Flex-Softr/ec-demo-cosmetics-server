@@ -1428,7 +1428,7 @@ const sendOrderSMSNotification = async (
   }
 
   try {
-    await sendSms([receiverInfo.phoneNumber], SMSBody);
+    await sendSms([receiverInfo.phoneNumber], SMSBody, "T");
   } catch (error) {
     errorLogger.error("failed to send SMS", error);
     return false;
