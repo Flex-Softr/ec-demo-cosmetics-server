@@ -119,6 +119,7 @@ export const commonPipelineSingleProduct = (
       as: "variations",
       pipeline: [
         ...pipeline,
+        { $sort: { serial: 1 } },
         {
           $project: {
             createdAt: 0,

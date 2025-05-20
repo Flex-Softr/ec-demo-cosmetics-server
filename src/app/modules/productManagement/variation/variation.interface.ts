@@ -4,6 +4,7 @@ import { TPrice } from "../price/price.interface";
 
 export type TVariation = {
   _id?: Types.ObjectId;
+  serial: number;
   productId: string;
   attributes: {
     [key: string]: string;

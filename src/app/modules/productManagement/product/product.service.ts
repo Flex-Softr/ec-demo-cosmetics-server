@@ -39,8 +39,9 @@ const createProductIntoDB = async (
     )[0]._id;
 
     if (payload.variations.length) {
-      payload.variations = payload.variations.map((variation) => {
+      payload.variations = payload.variations.map((variation, index) => {
         return {
+          serial: index + 1,
           productId: generatedProductId,
           ...variation,
         } as TVariation;
@@ -99,6 +100,7 @@ const getAProductCustomerFromDB = async (id: string) => {
     ...commonPipelineSingleProduct([
       {
         $match: {
+          // isDeleted: false,
           "inventory.stockStatus": { $ne: "Out of stock" },
         },
       },
@@ -707,12 +709,16 @@ const updateProductIntoDB = async (
 
     const variationIds: Types.ObjectId[] = [];
 
+    let index = 0;
+
     for (const variation of variations) {
+      const serial = index + 1;
+
       if (variation._id) {
         // Update existing variation
         await VariationModel.updateOne(
           { _id: variation._id },
-          { $set: variation },
+          { $set: { serial, ...variation } },
           { session }
         );
         variationIds.push(variation._id);
@@ -722,22 +728,25 @@ const updateProductIntoDB = async (
           productId: isProductExist.id,
           attributes: (variation as TVariation).attributes,
         });
+
         if (existingVariation) {
           await VariationModel.updateOne(
             { _id: existingVariation._id },
-            { $set: variation },
+            { $set: { serial, ...variation } },
             { session }
           );
           variationIds.push(existingVariation._id);
-          continue; // Skip creating a new variation if it already exists
+        } else {
+          // Create new variation
+          const created = await VariationModel.create(
+            [{ productId: isProductExist.id, serial, ...variation }],
+            { session }
+          );
+          variationIds.push(created[0]?._id);
         }
-        // Create new variation
-        const created = await VariationModel.create(
-          [{ productId: isProductExist.id, ...variation }],
-          { session }
-        );
-        variationIds.push(created[0]?._id);
       }
+
+      index++; // increment index at the end of each loop
     }
 
     // if (seoData && Object.keys(seoData).length) {
