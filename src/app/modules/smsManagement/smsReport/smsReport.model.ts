@@ -35,6 +35,10 @@ const SMSReportSchema = new Schema<TSMSReport>(
     billMsisdn: {
       type: String,
     },
+    smsCount: {
+      type: Number,
+      required: true,
+    },
   },
   {
     versionKey: false,

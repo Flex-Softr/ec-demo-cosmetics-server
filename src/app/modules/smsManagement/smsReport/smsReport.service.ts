@@ -1,7 +1,7 @@
 import { SMSReport } from "./smsReport.model";
 
 const getSMSCountFromDB = async () => {
-  const totalReceiversCount = (
+  const smsCount = (
     await SMSReport.aggregate([
       {
         $match: {
@@ -11,14 +11,14 @@ const getSMSCountFromDB = async () => {
       {
         $group: {
           _id: null,
-          totalReceiversCount: { $sum: "$receiversCount" },
+          smsCount: { $sum: "$smsCount" },
         },
       },
     ])
   )[0];
 
   const res = {
-    totalSmsSended: totalReceiversCount.totalReceiversCount,
+    smsCount: smsCount.smsCount,
   };
 
   return res;

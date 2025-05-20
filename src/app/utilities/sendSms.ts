@@ -12,6 +12,7 @@ const sendSms = async (
   tran_type: "T" | "P"
 ) => {
   const clienttransid = createBLClientSid();
+  const smsLanguageType = detectLanguageType(body);
   let res;
   try {
     // SMS sending logic here
@@ -20,7 +21,7 @@ const sendSms = async (
         msisdn: mobileNumbers,
         clienttransid,
         cli: "Oneself",
-        messagetype: detectLanguageType(body) === "Unicode" ? "3" : "1",
+        messagetype: smsLanguageType === "Unicode" ? "3" : "1",
         message: body,
         tran_type,
       });
@@ -39,6 +40,12 @@ const sendSms = async (
       `Failed to send sms. Message - ${error.message}`
     );
   }
+
+  const smsCount =
+    smsLanguageType === "Unicode"
+      ? Math.ceil(body.length / 70)
+      : Math.ceil(body.length / 160);
+
   try {
     await SMSReportUtil.createSMSReport({
       billMsisdn: config.banglaLink.bill_msisdn || "",
@@ -50,6 +57,7 @@ const sendSms = async (
       smsType: tran_type === "P" ? "B" : "T",
       status:
         res?.statusInfo?.errordescription === "Failure" ? "failed" : "success",
+      smsCount: smsCount * mobileNumbers.length,
     });
     // eslint-disable-next-line no-empty
   } catch (error) {}

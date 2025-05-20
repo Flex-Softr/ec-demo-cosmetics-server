@@ -12,6 +12,7 @@ export type TSMSReportInput = {
   smsType: TSMSType;
   billMsisdn: string;
   operatorStatusCode: string;
+  smsCount: number;
 };
 
 export type TSMSReport = TSMSReportInput & Document;
