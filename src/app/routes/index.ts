@@ -21,6 +21,7 @@ import { TagRoutes } from "../modules/productManagement/tag/tag.route";
 import { ReportsRoutes } from "../modules/reports/reports.routes";
 import { OrderSMSNotificationRotes } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.routes";
 import { SmsRoutes } from "../modules/smsManagement/sms/sms.routes";
+import { SMSReportRoutes } from "../modules/smsManagement/smsReport/smsReport.routes";
 import { SliderBannerRoutes } from "../modules/themeOption/sliderSection/sliderSection.routes";
 import { UpazilaRoutes } from "../modules/upazila/upazila.routes";
 import { AdminRoutes } from "../modules/userManagement/admin/admin.routes";
@@ -157,6 +158,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/order-sms-notification",
     route: OrderSMSNotificationRotes,
+  },
+  {
+    path: "/sms-reports",
+    route: SMSReportRoutes,
   },
 ];
 
