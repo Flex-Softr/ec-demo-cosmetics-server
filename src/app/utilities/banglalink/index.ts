@@ -1,5 +1,6 @@
 import axios from "axios";
 import config from "../../config/config";
+import { TSMSResponse } from "../../types/smsReponse";
 
 const credentials = {
   username: config.banglaLink.user,
@@ -13,14 +14,16 @@ const sendSMS = async ({
   messagetype,
   message,
   clienttransid,
+  tran_type,
 }: {
   msisdn: string[];
   cli?: string;
   messagetype: "1" | "3"; // 1 for english and 3 for unicode message
   message: string;
   clienttransid: string;
-}) => {
-  const url = `${config.banglaLink.base_url}/api/v1/smsapigw`;
+  tran_type: "T" | "P";
+}): Promise<TSMSResponse> => {
+  const url = `${config.banglaLink.base_url}/api/v1/smsapigw/`;
   const res = await axios(url, {
     method: "POST",
     headers: {
@@ -35,13 +38,12 @@ const sendSMS = async ({
       messagetype,
       message,
       clienttransid,
-      tran_type: "T",
-      request_type: msisdn.length > 1 ? "B" : "S",
+      tran_type,
+      request_type: tran_type === "P" ? "B" : "S",
       rn_code: "91",
     },
   });
-
-  return res.data;
+  return res.data as TSMSResponse;
 };
 
 const checkBallance = async ({ clienttransid }: { clienttransid: string }) => {
