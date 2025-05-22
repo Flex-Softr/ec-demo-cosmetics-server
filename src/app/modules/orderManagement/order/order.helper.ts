@@ -1419,16 +1419,14 @@ const sendOrderSMSNotification = async (
   let SMSBody = SMSNotificationData.defaultTemplate;
 
   if (SMSTemplate) {
-    SMSBody = SMSTemplate.replace(
-      /{(\w+)}/g,
-      (_, key: keyof typeof receiverInfo) => {
-        return receiverInfo[key] || "";
-      }
-    );
+    SMSBody = SMSTemplate.replace(/{(\w+)}/g, (_, key: string) => {
+      if (key === "break") return "\n"; // handle line break
+      return receiverInfo[key as keyof typeof receiverInfo] || "";
+    });
   }
 
   try {
-    await sendSms([receiverInfo.phoneNumber], SMSBody);
+    await sendSms([receiverInfo.phoneNumber], SMSBody, "T");
   } catch (error) {
     errorLogger.error("failed to send SMS", error);
     return false;
