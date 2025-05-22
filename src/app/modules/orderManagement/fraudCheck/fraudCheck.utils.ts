@@ -16,8 +16,8 @@ const formatSteadfastFraudData = async (mobile: string) => {
 
     const reports: Report[] = [];
 
-    if (Array.isArray(res?.[2]) && res?.[2].length > 0) {
-      res[2].forEach((entry: any) => {
+    if (res?.frauds && res?.frauds?.length > 0) {
+      res?.frauds?.forEach((entry: any) => {
         reports.push({
           reportFrom: "Steadfast",
           comment: entry.details,
@@ -26,9 +26,10 @@ const formatSteadfastFraudData = async (mobile: string) => {
       });
     }
 
-    const totalOrders = (res[0] || 0) + (res[1] || 0);
-    const totalDeliveries = res[0] || 0;
-    const totalCancellations = res[1] || 0;
+    const totalOrders =
+      (res?.total_delivered || 0) + (res?.total_cancelled || 0);
+    const totalDeliveries = res?.total_delivered || 0;
+    const totalCancellations = res?.total_cancelled || 0;
     const successRatio = (totalDeliveries / totalOrders) * 100 || 0;
 
     const couriers: Courier[] = [
