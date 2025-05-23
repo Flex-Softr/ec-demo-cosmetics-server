@@ -75,4 +75,5 @@ export default {
     pass: env.BL_PASS,
     bill_msisdn: env.BL_BILL_MSISDN,
   },
+  order_tracking_url: env.ORDER_TRACKING_URL || "",
 };

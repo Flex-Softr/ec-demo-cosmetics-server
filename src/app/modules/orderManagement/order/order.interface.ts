@@ -203,4 +203,6 @@ export type TSMSReceiverInfo = {
   fullName: string;
   orderId: string;
   trackingId?: string;
+  trackingUrl?: string;
+  total?: string;
 };
