@@ -1421,6 +1421,8 @@ const sendOrderSMSNotification = async (
   if (SMSTemplate) {
     SMSBody = SMSTemplate.replace(/{(\w+)}/g, (_, key: string) => {
       if (key === "break") return "\n"; // handle line break
+      if (key === "trackingUrl")
+        return `${config.order_tracking_url}/${receiverInfo.orderId}`; // handle line break
       return receiverInfo[key as keyof typeof receiverInfo] || "";
     });
   }
