@@ -59,6 +59,7 @@ const updateCourierStatus = async () => {
           status: 1,
           deliveryStatus: 1,
           shipping: "$shipping",
+          total: 1,
           statusHistory: 1,
           courier: {
             name: "$courier.name",
@@ -148,18 +149,19 @@ const updateCourierStatus = async () => {
           const singleOrder = orders.find(
             (item) => item.orderId === order.orderId
           );
-
           const statusHistoryId = singleOrder?.statusHistory || "";
 
           const singleOrderShipping = singleOrder?.shipping as TShipping;
 
           if (SMSNotificationData?.isActive) {
+            const receiveInfo = {
+              fullName: singleOrderShipping?.fullName,
+              orderId: singleOrder?.orderId || "",
+              phoneNumber: singleOrderShipping?.phoneNumber || "",
+              total: singleOrder?.total.toString() || "",
+            };
             await OrderHelper.sendOrderSMSNotification(
-              {
-                fullName: singleOrderShipping?.fullName,
-                orderId: singleOrderShipping?.orderId || "",
-                phoneNumber: singleOrderShipping?.phoneNumber,
-              },
+              receiveInfo,
               "shifted",
               SMSNotificationData
             );

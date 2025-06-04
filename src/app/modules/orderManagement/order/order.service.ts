@@ -964,7 +964,8 @@ const updateOrderStatusIntoDB = async (
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
-          orderId: shipping.orderId || "",
+          orderId: order?.orderId || "",
+          total: order?.total.toString() || "0",
         };
       });
 
@@ -1218,14 +1219,17 @@ const bookCourierAndUpdateStatusIntoDB = async (
 
     if (status === "On courier") {
       SMSReviverInformations = successCourierOrders.map((order) => {
-        const shipping = orders.find((item) => item.orderId === order.orderId)
-          ?.shippingData as TShipping;
+        const currentOrder = orders.find(
+          (item) => item.orderId === order.orderId
+        );
+        const shipping = currentOrder?.shippingData as TShipping;
 
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
-          orderId: shipping.orderId || "",
+          orderId: currentOrder.orderId || "",
           trackingId: order.trackingId || "",
+          total: currentOrder.total.toString() || "0",
         };
       });
     }
@@ -1238,7 +1242,8 @@ const bookCourierAndUpdateStatusIntoDB = async (
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
-          orderId: shipping.orderId || "",
+          orderId: order?.orderId || "",
+          total: order?.total.toString() || "0",
         };
       });
     }

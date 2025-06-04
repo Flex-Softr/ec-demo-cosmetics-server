@@ -411,7 +411,12 @@ export const createNewOrder = async (
   }
 
   await OrderHelper.sendOrderSMSNotification(
-    { fullName: shipping.fullName, orderId, phoneNumber: shipping.phoneNumber },
+    {
+      fullName: shipping.fullName,
+      orderId,
+      phoneNumber: shipping.phoneNumber,
+      total: totalCost.toString(),
+    },
     "order_created"
   );
 
