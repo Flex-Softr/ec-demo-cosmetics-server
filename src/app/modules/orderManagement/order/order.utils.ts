@@ -29,6 +29,7 @@ import {
   TSanitizedOrProduct,
 } from "./order.interface";
 import { Order } from "./order.model";
+import BdAddress from "../../../utilities/bdAddress/bdAddress";
 
 export const createOrderId = () => {
   const date = new Date();
@@ -433,7 +434,12 @@ export const createOrderOnSteedFast = async (
     ({ orderId, shippingData, total, courierNotes }) => ({
       invoice: orderId,
       recipient_name: shippingData.fullName,
-      recipient_address: shippingData.fullAddress,
+      recipient_address:
+        shippingData.fullAddress +
+        "" +
+        BdAddress.upazilaNameById(shippingData.upazila) +
+        "" +
+        BdAddress.districtNameById(shippingData.district),
       recipient_phone: shippingData.phoneNumber,
       cod_amount: total,
       note: courierNotes || "",
