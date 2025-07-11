@@ -2051,12 +2051,16 @@ const getMobileNumbersForSendingSMSFromDB = async (
   ];
 
   // Filter shippingInfo.district and division early
-  if (query.district) {
-    matchShippingQuery["shippingInfo.district"] = query.district;
-  }
   if (query.division) {
     matchShippingQuery["shippingInfo.division"] = query.division;
   }
+  if (query.district) {
+    matchShippingQuery["shippingInfo.district"] = query.district;
+  }
+  if (query.upazila) {
+    matchShippingQuery["shippingInfo.upazila"] = query.upazila;
+  }
+
   if (Object.keys(matchShippingQuery).length) {
     pipeline.push({ $match: matchShippingQuery });
   }
@@ -2107,8 +2111,20 @@ const getMobileNumbersForSendingSMSFromDB = async (
     const statuses = (query.status as string).split(",");
     matchQuery.status = { $in: statuses };
   }
+
+  if (query.orderSource) {
+    matchQuery.orderSource = query.orderSource;
+  }
+
   if (Object.keys(matchQuery).length) {
     pipeline.unshift({ $match: matchQuery });
+  }
+
+  if (
+    Object.keys(matchQuery).length === 0 &&
+    Object.keys(matchShippingQuery).length === 0
+  ) {
+    return { phoneNumbers: null };
   }
 
   const result = (await Order.aggregate(pipeline))[0];
