@@ -41,7 +41,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
 
     const refreshToken = jwtHelper.createToken(
       {
-        id: user?._id,
+        id: user?._id?.toString() as string,
         role: user?.role as string,
         uid: user?.uid as string,
       },
@@ -50,7 +50,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
     );
     const accessToken = jwtHelper.createToken(
       {
-        id: user?._id,
+        id: user?._id?.toString() as string,
         role: user?.role as string,
         permissions: (user?.role !== "customer"
           ? user?.permissions?.map(
@@ -69,7 +69,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
       await RefreshToken.deleteMany({ userId: user?._id });
     }
     const refreshTokenData: TRefreshTokenData = {
-      userId: user?._id,
+      userId: user?._id as mongoose.Types.ObjectId,
       token: refreshToken,
       sessionId,
       ip: req.clientIp as string,

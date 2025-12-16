@@ -121,7 +121,7 @@ const moduleRoutes: TModuleTypes[] = [
     route: WarrantyRoutes,
   },
   {
-    path: "/courier",
+    path: "/courier-config",
     route: CourierRoutes,
   },
   {

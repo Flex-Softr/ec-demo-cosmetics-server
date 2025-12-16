@@ -896,7 +896,7 @@ const updateOrderStatusIntoDB = async (
       if (order?.status !== payload.status) {
         const statusUpdateData = {
           updateOne: {
-            filter: { _id: order?._id },
+            filter: { _id: order?._id as Types.ObjectId },
             update: {
               status: payload.status,
               isDeleted: payload.status === "deleted",

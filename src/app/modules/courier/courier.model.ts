@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { TCourier } from "./courier.interface";
 
 const CourierSchema = new Schema<TCourier>(
@@ -13,16 +13,25 @@ const CourierSchema = new Schema<TCourier>(
       required: true,
       unique: true,
     },
-    image: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
+    // image: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   required: true,
+    // },
+    // website: {
+    //   type: String,
+    // },
+    apiBaseUrl: {
+      type: String,
     },
-    website: {
+    apiKey: {
+      type: String,
+    },
+    secretKey: {
       type: String,
     },
     credentials: {
-      type: [[String]],
-      required: true,
+      type: [String],
+      default: [],
     },
     isActive: {
       type: Boolean,

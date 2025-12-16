@@ -67,7 +67,7 @@ const authGuard =
         if (!isEqual) {
           const accessToken = jwtHelper.createToken(
             {
-              id: user?._id,
+              id: user?._id.toString(),
               role: user?.role as string,
               permissions:
                 (user?.permissions?.map(

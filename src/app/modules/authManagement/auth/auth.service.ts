@@ -77,16 +77,20 @@ const refreshToken = async (
 
   const isExist = await User.isUserExist({ _id: id });
 
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
   const accessToken = jwtHelper.createToken(
     {
-      id: isExist?._id,
-      role: isExist?.role as string,
+      id: isExist._id.toString(),
+      role: isExist.role as string,
       permissions:
-        (isExist?.permissions?.map(
+        (isExist.permissions.map(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (item: any) => item.name
         ) as unknown as string[]) || [],
-      uid: isExist?.uid as string,
+      uid: isExist.uid as string,
       // sessionId: isTokenExist.sessionId,
     },
     config.token_data.access_token_secret as Secret,

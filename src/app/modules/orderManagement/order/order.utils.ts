@@ -4,6 +4,7 @@ import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
+import BdAddress from "../../../utilities/bdAddress/bdAddress";
 import lowStockWarningEmail from "../../../utilities/lowStockWarningEmail";
 import steedFastApi from "../../../utilities/steedfastApi";
 import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
@@ -29,7 +30,6 @@ import {
   TSanitizedOrProduct,
 } from "./order.interface";
 import { Order } from "./order.model";
-import BdAddress from "../../../utilities/bdAddress/bdAddress";
 
 export const createOrderId = () => {
   const date = new Date();
@@ -452,7 +452,7 @@ export const createOrderOnSteedFast = async (
   );
 
   const { data } = await steedFastApi({
-    credentials: courier.credentials,
+    credentials: courier.credentials || [],
     endpoints: "/create_order/bulk-order",
     method: "POST",
     payload: payload as unknown as Record<string, string>[],

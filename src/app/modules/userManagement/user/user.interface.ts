@@ -9,6 +9,7 @@ export type TRoles = "customer" | "staff" | "admin" | "superAdmin";
 export type TStatus = "active" | "banned" | "deleted";
 
 export type TUser = {
+  _id: string;
   uid: string;
   role: TRoles;
   phoneNumber: string;

@@ -1,7 +1,5 @@
-import { TCourierCredentials } from "../modules/courier/courier.interface";
-
 const steedFastApi = async (config: {
-  credentials: TCourierCredentials[];
+  credentials: string[];
   endpoints: string;
   payload?: Record<string, string>[];
   method: "GET" | "POST";
@@ -10,7 +8,7 @@ const steedFastApi = async (config: {
   const url = `https://portal.packzy.com/api/v1${endpoints}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...Object.fromEntries(credentials || []),
+    ...Object.fromEntries([credentials]),
   };
   const reqConfig: Record<string, unknown> = { method, headers };
   if (payload) {
