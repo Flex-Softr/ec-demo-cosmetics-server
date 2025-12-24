@@ -1,18 +1,19 @@
 import { Document, Types } from "mongoose";
-import { TImage } from "../image/image.interface";
 import { TUser } from "../userManagement/user/user.interface";
 
-export type TPaymentMethodMerchantACInfo = {
-  accountType: string;
-  accountNo: string;
+export type TRequiredInput = {
+  type: "text" | "number" | "select";
+  name: string;
+  is_required: boolean;
+  enums?: string; // Comma separated values if type is 'select'
 };
 
 export type TPaymentMethod = {
   name: string;
-  image: Types.ObjectId | TImage;
-  description: string;
-  merchantACInfo?: TPaymentMethodMerchantACInfo;
-  isPaymentDetailsNeeded: boolean;
+  instructions?: string;
+  isActive: boolean;
+  image?: string; // URL to icon/logo
+  required_inputs: TRequiredInput[];
   createdBy: Types.ObjectId | TUser;
   isDeleted: boolean;
 } & Document;

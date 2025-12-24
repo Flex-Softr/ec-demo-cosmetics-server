@@ -10,7 +10,7 @@ const getPaymentMethods = catchAsync(async (req: Request, res: Response) => {
   const result = await PaymentMethodService.getAllPaymentMethodsFromDB();
   successResponse<TPaymentMethod[]>(res, {
     statusCode: httpStatus.OK,
-    message: "Payment method retrieved successfully.",
+    message: "Payment methods retrieved successfully.",
     data: result,
   });
 });
@@ -27,7 +27,32 @@ const createPaymentMethod = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updatePaymentMethod = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await PaymentMethodService.updatePaymentMethodIntoDB(
+    id,
+    req.body
+  );
+  successResponse<TPaymentMethod | null>(res, {
+    statusCode: httpStatus.OK,
+    message: "Payment method updated successfully.",
+    data: result,
+  });
+});
+
+const deletePaymentMethod = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await PaymentMethodService.deletePaymentMethodFromDB(id);
+  successResponse<TPaymentMethod | null>(res, {
+    statusCode: httpStatus.OK,
+    message: "Payment method deleted successfully.",
+    data: result,
+  });
+});
+
 export const PaymentMethodController = {
   getPaymentMethods,
   createPaymentMethod,
+  updatePaymentMethod,
+  deletePaymentMethod,
 };

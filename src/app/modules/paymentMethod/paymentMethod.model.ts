@@ -1,17 +1,16 @@
 import { Schema, model } from "mongoose";
-import {
-  TPaymentMethod,
-  TPaymentMethodMerchantACInfo,
-} from "./paymentMethod.interface";
+import { TPaymentMethod, TRequiredInput } from "./paymentMethod.interface";
 
-const merchantACInfoSchema = new Schema<TPaymentMethodMerchantACInfo>(
+const requiredInputSchema = new Schema<TRequiredInput>(
   {
-    accountType: {
+    type: {
       type: String,
+      enum: ["text", "number", "select"],
+      required: true,
     },
-    accountNo: {
-      type: String,
-    },
+    name: { type: String, required: true },
+    is_required: { type: Boolean, default: false },
+    enums: { type: String },
   },
   {
     _id: false,
@@ -25,20 +24,17 @@ const PaymentMethodSchema = new Schema<TPaymentMethod>(
       type: String,
       required: true,
     },
-    image: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: "Image",
-    },
-    description: {
+    instructions: {
       type: String,
-      required: true,
     },
-    merchantACInfo: merchantACInfoSchema,
-    isPaymentDetailsNeeded: {
+    isActive: {
       type: Boolean,
-      required: true,
+      default: true,
     },
+    image: {
+      type: String,
+    },
+    required_inputs: [requiredInputSchema],
     isDeleted: {
       type: Boolean,
       default: false,
