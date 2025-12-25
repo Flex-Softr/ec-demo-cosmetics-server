@@ -1,23 +1,20 @@
-import { TPublishedStatus, TVisibilityStatus } from "./product.interface";
+export const productStatus = {
+  published: "published",
+  draft: "draft",
+  private: "private",
+} as const;
 
-export const publishedStatus: TPublishedStatus[] = ["Draft", "Published"];
-export const visibilityStatus: TVisibilityStatus[] = [
-  "Public",
-  "Private",
-  "Password protected",
-];
-
-export const publishedStatusQuery: Record<TPublishedStatus, TPublishedStatus> =
-  {
-    Published: "Published",
-    Draft: "Draft",
-  };
-
-export const visibilityStatusQuery: Record<
-  TVisibilityStatus,
-  TVisibilityStatus
-> = {
-  Public: "Public",
-  Private: "Private",
-  "Password protected": "Password protected",
+export const PRODUCT_FIELD_CONFIG = {
+  simple: {
+    price: true,
+    inventory: true, // Specific stock for this item
+    variations: false, // Simple products don't have variations
+    attributes: true, // Optional attributes for display
+  },
+  variable: {
+    price: true, // Base price or range placeholder
+    inventory: false, // Stock is managed at variation level
+    variations: true, // Required
+    attributes: true, // Required for defining variation axes
+  },
 };

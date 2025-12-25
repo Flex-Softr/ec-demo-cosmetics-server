@@ -1,4 +1,4 @@
-import { FilterQuery, Query, Aggregate, Model, PipelineStage } from "mongoose";
+import { Aggregate, FilterQuery, Model, Query } from "mongoose";
 
 export class QueryHelper<T> {
   model: Query<T[], T>;
@@ -111,12 +111,8 @@ export class AggregateQueryHelper<T> {
   }
 }
 
-type CustomPipelineStage = {
-  $facet?: { data: Record<string, unknown>[] };
-  // Define other possible stages as needed
-};
-
-type ExtendedPipelineStage = PipelineStage & CustomPipelineStage;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ExtendedPipelineStage = any;
 
 export class AggregateQueryHelperFacet<T> {
   model: Model<T>;

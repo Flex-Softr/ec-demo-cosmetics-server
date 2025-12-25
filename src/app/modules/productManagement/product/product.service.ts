@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
 import mongoose, { PipelineStage, Types } from "mongoose";
 import ApiError from "../../../errorHandlers/ApiError";
@@ -6,79 +7,112 @@ import generateProductId from "../../../utilities/generateProductId";
 import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
 // import { SeoDataModel } from "../seoData/seoData.model";
-import { publishedStatusQuery, visibilityStatusQuery } from "./product.const";
-import { TProduct } from "./product.interface";
-import ProductModel from "./product.model";
-import { AggregateQueryHelperFacet } from "../../../helper/query.helper";
+import {
+  AggregateQueryHelperFacet,
+  ExtendedPipelineStage,
+} from "../../../helper/query.helper";
 import { Order } from "../../orderManagement/order/order.model";
+import VariationModel from "../variation/variation.model";
+import { productStatus } from "./product.const";
+import { TProduct, TProductPayload } from "./product.interface";
+import ProductModel from "./product.model";
 import {
   commonPipelineMultipleProduct,
   commonPipelineSingleProduct,
 } from "./product.utils";
-import VariationModel from "../variation/variation.model";
-import { TVariation } from "../variation/variation.interface";
 
 const createProductIntoDB = async (
   createdBy: Types.ObjectId,
-  payload: TProduct
+  payload: TProductPayload
 ) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
 
-    payload.createdBy = createdBy;
-    const generatedProductId = await generateProductId();
-    payload.id = generatedProductId;
+    // 1. Create Price
+    let price;
+    if (payload.price) {
+      [price] = await PriceModel.create([payload.price], { session });
+    }
 
-    payload.price = (
-      await PriceModel.create([payload.price], { session })
-    )[0]._id;
-
-    payload.inventory = (
-      await InventoryModel.create([payload.inventory], { session })
-    )[0]._id;
-
-    if (payload.variations.length) {
-      payload.variations = payload.variations.map((variation, index) => {
-        return {
-          serial: index + 1,
-          productId: generatedProductId,
-          ...variation,
-        } as TVariation;
+    // 2. Create Inventory
+    let inventory;
+    if (payload.inventory) {
+      [inventory] = await InventoryModel.create([payload.inventory], {
+        session,
       });
     }
 
-    const insertedVariations = await VariationModel.insertMany(
-      payload.variations,
-      { session }
-    );
+    const generatedProductId = await generateProductId();
 
-    payload.variations = insertedVariations?.map((v) => v._id);
+    // 3. Resolve Variations
+    let variationIds: Types.ObjectId[] = [];
+    if (
+      payload.type === "variable" &&
+      payload.variations &&
+      payload.variations.length > 0
+    ) {
+      const variationsData = [];
+      for (let i = 0; i < payload.variations.length; i++) {
+        const v = payload.variations[i];
+        const [vPrice] = await PriceModel.create([v.price], { session });
+        const [vInventory] = await InventoryModel.create([v.inventory], {
+          session,
+        });
 
-    // if (payload.seoData) {
-    //   payload.seoData = (
-    //     await SeoDataModel.create([payload.seoData], { session })
-    //   )[0]._id;
-    // }
+        variationsData.push({
+          serial: i + 1,
+          productId: generatedProductId,
+          attributes: v.attributes,
+          price: vPrice._id,
+          inventory: vInventory._id,
+          offer: v.offer,
+          image: v.image,
+        });
+      }
+      const insertedVariations = await VariationModel.insertMany(
+        variationsData,
+        { session }
+      );
+      variationIds = insertedVariations.map((v) => v._id);
+    }
+
+    // 4. Construct Final Product Object
+    // Note: Attributes, Category, Brand, Image are passed directly.
+    // The ProductModel 'pre-save' hook will validate their existence.
+    const productData = {
+      ...payload,
+      id: generatedProductId,
+      createdBy,
+      price: price?._id,
+      inventory: inventory?._id,
+      variations: variationIds,
+      // Map inputs to match schema expectations if needed,
+      // but based on payload and schema, they align (ObjectIds for refs).
+      // If payload structure diffs from schema, map here.
+      // e.g. payload.image -> schema.image (matches)
+      // payload.category.name -> schema.category.name (matches)
+    };
 
     const isProductDeleted = await ProductModel.findOne({
-      slug: { $regex: new RegExp(payload.slug, "i") },
+      slug: payload.slug,
       isDeleted: true,
     });
 
+    let product;
+
     if (isProductDeleted) {
-      const product = await ProductModel.findByIdAndUpdate(
+      product = await ProductModel.findByIdAndUpdate(
         isProductDeleted._id,
-        { ...payload, isDeleted: false },
+        { ...productData, isDeleted: false },
         { new: true, session }
       );
-      await session.commitTransaction();
-      return product;
     } else {
-      const product = (await ProductModel.create([payload], { session }))[0];
-      await session.commitTransaction();
-      return product;
+      [product] = await ProductModel.create([productData], { session });
     }
+
+    await session.commitTransaction();
+    return product;
   } catch (error) {
     await session.abortTransaction();
     throw error;
@@ -93,8 +127,7 @@ const getAProductCustomerFromDB = async (id: string) => {
       $match: {
         _id: new mongoose.Types.ObjectId(id),
         isDeleted: false,
-        "publishedStatus.status": publishedStatusQuery.Published,
-        "publishedStatus.visibility": visibilityStatusQuery.Public,
+        publishedStatus: productStatus.published,
       },
     },
     ...commonPipelineSingleProduct([
@@ -182,12 +215,11 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
     filterQuery["$or"] = filterConditions; // Match either category or subcategory
   }
 
-  const pipeline = [
+  const pipeline: ExtendedPipelineStage[] = [
     {
       $match: {
         isDeleted: false,
-        "publishedStatus.status": publishedStatusQuery.Published,
-        "publishedStatus.visibility": visibilityStatusQuery.Public,
+        publishedStatus: productStatus.published,
       },
     },
     ...commonPipelineMultipleProduct,
@@ -201,6 +233,8 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
               _id: 1,
               title: 1,
               slug: 1,
+              type: 1,
+              variations: 1,
               // shortDescription: 1,
               regularPrice: "$price.regularPrice",
               salePrice: "$price.salePrice",
@@ -277,19 +311,12 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
   const filterQuery: Record<string, unknown> = {};
 
   if (
-    (query.status && query.status === publishedStatusQuery.Published) ||
-    query.status === publishedStatusQuery.Draft
+    (query.status && query.status === productStatus.published) ||
+    query.status === productStatus.draft ||
+    query.status === productStatus.private
   ) {
     const statusRegex = new RegExp(`\\b${query.status}\\b`, "i");
-    filterQuery["publishedStatus.status"] = statusRegex;
-  }
-
-  if (
-    (query.status && query.status == visibilityStatusQuery.Public) ||
-    query.status == visibilityStatusQuery.Private
-  ) {
-    const statusRegex = new RegExp(`\\b${query.status}\\b`, "i");
-    filterQuery["publishedStatus.visibility"] = statusRegex;
+    filterQuery["publishedStatus"] = statusRegex;
   }
 
   // Category or Subcategory ID filter
@@ -322,6 +349,8 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
           {
             $project: {
               title: 1,
+              type: 1,
+              variations: 1,
               regularPrice: "$price.regularPrice",
               salePrice: "$price.salePrice",
               sku: "$inventory.sku",
@@ -348,7 +377,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
               //     },
               //   },
               // },
-              published: "$publishedStatus.date",
+              publishedStatus: 1,
             },
           },
         ],
@@ -372,78 +401,36 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
   // get counts
   const statusMap = {
     all: 0,
-    Public: 0,
-    Private: 0,
-    Published: 0,
-    Draft: 0,
+    published: 0,
+    draft: 0,
+    private: 0,
   };
 
   const statusPipeline = [
     {
       $match: {
         isDeleted: false,
-        $or: [
-          {
-            "publishedStatus.status": {
-              $in: [publishedStatusQuery.Published, publishedStatusQuery.Draft],
-            },
-          },
-          {
-            "publishedStatus.visibility": {
-              $in: [
-                visibilityStatusQuery.Public,
-                visibilityStatusQuery.Private,
-              ],
-            },
-          },
-        ],
-      },
-    },
-    {
-      $facet: {
-        status: [
-          {
-            $group: {
-              _id: "$publishedStatus.status",
-              total: { $sum: 1 },
-            },
-          },
-        ],
-        visibility: [
-          {
-            $group: {
-              _id: "$publishedStatus.visibility",
-              total: { $sum: 1 },
-            },
-          },
-        ],
-      },
-    },
-    {
-      $project: {
-        countsByStatus: {
-          $concatArrays: ["$status", "$visibility"],
+        publishedStatus: {
+          $in: Object.values(productStatus),
         },
+      },
+    },
+    {
+      $group: {
+        _id: "$publishedStatus",
+        total: { $sum: 1 },
       },
     },
   ];
 
   const result = await ProductModel.aggregate(statusPipeline);
 
-  result[0]?.countsByStatus?.forEach(
-    ({ _id, total }: { _id: string; total: number }) => {
-      if (_id in statusMap) {
-        statusMap[_id as keyof typeof statusMap] = total;
-      }
-      // Check if _id is "Public" or "Private" and add their totals to statusMap.all
-      if (
-        _id === visibilityStatusQuery.Public ||
-        _id === visibilityStatusQuery.Private
-      ) {
-        statusMap.all += total;
-      }
+  result.forEach(({ _id, total }: { _id: string; total: number }) => {
+    if (_id in statusMap) {
+      statusMap[_id as keyof typeof statusMap] = total;
     }
-  );
+    statusMap.all += total;
+  });
 
   const formattedResult = Object.entries(statusMap).map(([name, total]) => ({
     name,
@@ -452,7 +439,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
 
   const productQuery = new AggregateQueryHelperFacet(
     ProductModel,
-    pipeline,
+    pipeline as any,
     query
   )
     .search([
@@ -478,8 +465,7 @@ const getFeaturedProductsFromDB = async (query: Record<string, unknown>) => {
       $match: {
         isDeleted: false,
         featured: true,
-        "publishedStatus.status": publishedStatusQuery.Published,
-        "publishedStatus.visibility": visibilityStatusQuery.Public,
+        publishedStatus: productStatus.published,
       },
     },
     ...commonPipelineMultipleProduct,
@@ -488,6 +474,8 @@ const getFeaturedProductsFromDB = async (query: Record<string, unknown>) => {
         _id: 1,
         title: 1,
         slug: 1,
+        type: 1,
+        variations: 1,
         // shortDescription: 1,
         regularPrice: "$price.regularPrice",
         salePrice: "$price.salePrice",
@@ -512,12 +500,12 @@ const getFeaturedProductsFromDB = async (query: Record<string, unknown>) => {
   ];
 
   const productQuery = new AggregateQueryHelper(
-    ProductModel.aggregate(pipeline),
+    ProductModel.aggregate(pipeline as any),
     query
   ).paginate();
 
   const data = await productQuery.model;
-  const total = (await ProductModel.aggregate(pipeline)).length;
+  const total = (await ProductModel.aggregate(pipeline as any)).length;
   const meta = productQuery.metaData(total);
   return { meta, data };
 };
@@ -590,7 +578,44 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
       },
     },
     {
-      $unwind: "$inventory",
+      $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $lookup: {
+        from: "variations",
+        localField: "product.variations",
+        foreignField: "_id",
+        as: "variations",
+        pipeline: [
+          { $sort: { serial: 1 } },
+          {
+            $lookup: {
+              from: "prices",
+              localField: "price",
+              foreignField: "_id",
+              as: "price",
+              pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+            },
+          },
+          { $unwind: { path: "$price", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: "inventories",
+              localField: "inventory",
+              foreignField: "_id",
+              as: "inventory",
+              pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+            },
+          },
+          { $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true } },
+          {
+            $project: {
+              createdAt: 0,
+              updatedAt: 0,
+            },
+          },
+        ] as any[],
+      },
     },
     // {
     //   $lookup: {
@@ -606,6 +631,8 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
         _id: "$_id",
         title: "$product.title",
         slug: "$product.slug",
+        type: "$product.type",
+        variations: "$variations",
         // shortDescription: "$product.shortDescription",
         regularPrice: "$price.regularPrice",
         salePrice: "$price.salePrice",
@@ -672,8 +699,8 @@ const updateProductIntoDB = async (
       throw new ApiError(httpStatus.BAD_REQUEST, "The Product is deleted!");
     }
     if (
-      isProductExist.publishedStatus.status == "Published" &&
-      publishedStatus?.status == "Draft"
+      isProductExist.publishedStatus == productStatus.published &&
+      publishedStatus == productStatus.draft
     ) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
@@ -713,40 +740,75 @@ const updateProductIntoDB = async (
 
     for (const variation of variations) {
       const serial = index + 1;
+      const {
+        price: variationPrice,
+        inventory: variationInventory,
+        _id: variationId,
+        ...variationData
+      } = variation as any;
 
-      if (variation._id) {
-        // Update existing variation
-        await VariationModel.updateOne(
-          { _id: variation._id },
-          { $set: { serial, ...variation } },
-          { session }
-        );
-        variationIds.push(variation._id);
-      } else {
-        // Check if variation already exists
-        const existingVariation = await VariationModel.findOne({
-          productId: isProductExist.id,
-          attributes: (variation as TVariation).attributes,
-        });
+      let existingVariation;
 
-        if (existingVariation) {
-          await VariationModel.updateOne(
-            { _id: existingVariation._id },
-            { $set: { serial, ...variation } },
-            { session }
-          );
-          variationIds.push(existingVariation._id);
-        } else {
-          // Create new variation
-          const created = await VariationModel.create(
-            [{ productId: isProductExist.id, serial, ...variation }],
-            { session }
-          );
-          variationIds.push(created[0]?._id);
-        }
+      if (variationId) {
+        existingVariation = await VariationModel.findById(variationId);
       }
 
-      index++; // increment index at the end of each loop
+      if (!existingVariation) {
+        existingVariation = await VariationModel.findOne({
+          productId: isProductExist.id,
+          attributes: variationData.attributes,
+        });
+      }
+
+      if (existingVariation) {
+        // Update existing variation
+        if (variationPrice) {
+          await PriceModel.findByIdAndUpdate(
+            existingVariation.price,
+            variationPrice,
+            { session }
+          );
+        }
+        if (variationInventory) {
+          await InventoryModel.findByIdAndUpdate(
+            existingVariation.inventory,
+            variationInventory,
+            { session }
+          );
+        }
+        await VariationModel.findByIdAndUpdate(
+          existingVariation._id,
+          { $set: { serial, ...variationData } },
+          { session }
+        );
+        variationIds.push(existingVariation._id);
+      } else {
+        // Create new variation
+        const [newPrice] = await PriceModel.create([variationPrice], {
+          session,
+        });
+        const [newInventory] = await InventoryModel.create(
+          [variationInventory],
+          {
+            session,
+          }
+        );
+        const [createdVariation] = await VariationModel.create(
+          [
+            {
+              productId: isProductExist.id,
+              serial,
+              price: newPrice._id,
+              inventory: newInventory._id,
+              ...variationData,
+            },
+          ],
+          { session }
+        );
+        variationIds.push(createdVariation._id);
+      }
+
+      index++;
     }
 
     // if (seoData && Object.keys(seoData).length) {
@@ -775,12 +837,12 @@ const updateProductIntoDB = async (
         updateWarrantyInfo[`warrantyInfo.${key}`] = value;
       }
     }
-    const updatePublishedStatus: Record<string, unknown> = {};
-    if (publishedStatus && Object.keys(publishedStatus).length) {
-      for (const [key, value] of Object.entries(publishedStatus)) {
-        updatePublishedStatus[`publishedStatus.${key}`] = value;
-      }
-    }
+    // const updatePublishedStatus: Record<string, unknown> = {};
+    // if (publishedStatus && Object.keys(publishedStatus).length) {
+    //   for (const [key, value] of Object.entries(publishedStatus)) {
+    //     updatePublishedStatus[`publishedStatus.${key}`] = value;
+    //   }
+    // }
 
     let updateAttribute, updateBrand, updateTag;
     if (attributes?.length) {
@@ -804,7 +866,8 @@ const updateProductIntoDB = async (
           tag: updateTag,
           variations: variationIds,
           ...updateWarrantyInfo,
-          ...updatePublishedStatus,
+          // ...updatePublishedStatus,
+          ...(publishedStatus && { publishedStatus }),
           ...remainingUpdateData,
           updatedBy,
         },

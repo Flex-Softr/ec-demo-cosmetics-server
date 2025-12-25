@@ -1,25 +1,20 @@
 import httpStatus from "http-status";
 import catchAsync from "../../../utilities/catchAsync";
+import generateSlug from "../../../utilities/generateSlug";
 import successResponse from "../../../utilities/successResponse";
 import { ProductServices } from "./product.service";
-import generateSlug from "../../../utilities/generateSlug";
 import modifiedPriceData from "./product.utils";
 
 const createProduct = catchAsync(async (req, res) => {
-  const createdBy = req.user.id;
-  const { title, slug, warrantyInfo } = req.body;
-  const { duration } = warrantyInfo || {};
-  req.body.title = title.replace(/\s+/g, " ").trim();
-  req.body.slug = generateSlug(title, slug);
-
-  if (req.body.inventory.stockQuantity) {
-    req.body.inventory.stockAvailable = req.body.inventory.stockQuantity;
+  const createdBy = req.user.id || req.user._id;
+  if (!req.body.slug) {
+    req.body.slug = generateSlug(req.body.title);
+  } else {
+    req.body.slug = generateSlug(req.body.slug);
   }
 
-  modifiedPriceData(req);
-
-  if (req.body.warrantyInfo?.duration) {
-    req.body.warrantyInfo.duration = duration?.quantity + " " + duration?.unit;
+  if (req.body.inventory?.stockQuantity) {
+    req.body.inventory.stockAvailable = req.body.inventory.stockQuantity;
   }
 
   const result = await ProductServices.createProductIntoDB(createdBy, req.body);
@@ -110,10 +105,10 @@ const getBestSellingProducts = catchAsync(async (req, res) => {
 });
 
 const updateProduct = catchAsync(async (req, res) => {
-  const updatedBy = req.user.id;
+  const updatedBy = req.user.id || req.user._id;
   const ProductId = req.params.id;
-  const { title, slug, price, warrantyInfo } = req.body;
-  const { duration } = warrantyInfo || {};
+  const { title, slug, price } = req.body;
+
   if (title) {
     req.body.title = title.replace(/\s+/g, " ").trim();
     req.body.slug = generateSlug(title, slug);
@@ -122,7 +117,7 @@ const updateProduct = catchAsync(async (req, res) => {
     modifiedPriceData(req);
   }
 
-  if (req.body.inventory.stockQuantity) {
+  if (req.body?.inventory?.stockQuantity) {
     const stockQuantityIncrease =
       req.body.inventory.stockQuantity - req.body.inventory.preStockQuantity;
 
@@ -132,9 +127,6 @@ const updateProduct = catchAsync(async (req, res) => {
     req.body.inventory.stockAvailable += stockQuantityIncrease;
   }
 
-  if (req.body.warrantyInfo?.duration) {
-    req.body.warrantyInfo.duration = duration?.quantity + " " + duration?.unit;
-  }
   const result = await ProductServices.updateProductIntoDB(
     updatedBy,
     ProductId,
@@ -148,7 +140,7 @@ const updateProduct = catchAsync(async (req, res) => {
 });
 
 const deleteProduct = catchAsync(async (req, res) => {
-  const deletedBy = req.user.id;
+  const deletedBy = req.user.id || req.user._id;
   const { productIds } = req.body;
   await ProductServices.deleteProductFromDB(productIds, deletedBy);
 

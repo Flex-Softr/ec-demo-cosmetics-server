@@ -4,7 +4,8 @@ import {
   TProduct,
   TProductAttribute,
   TProductImage,
-  TPublishedStatusSchema,
+  TSeoData,
+  TTag,
   TWarrantyInfo,
 } from "./product.interface";
 // import { TAttribute } from "../attribute/attribute.interface";
@@ -15,7 +16,7 @@ import { AttributeModel } from "../attribute/attribute.model";
 import { BrandModel } from "../brand/brand.model";
 import { CategoryModel } from "../category/category.model";
 import { SubCategoryModel } from "../subCategory/subCategory.model";
-import { publishedStatus, visibilityStatus } from "./product.const";
+import { productStatus } from "./product.const";
 
 const productImageSchema = new Schema<TProductImage>(
   {
@@ -46,21 +47,29 @@ const categorySchema = new Schema<TCategorySchema>(
 
 const warrantyInfoSchema = new Schema<TWarrantyInfo>(
   {
-    duration: { type: String },
+    duration: {
+      quantity: { type: String },
+      unit: { type: String },
+    },
     terms: { type: String },
   },
   { _id: false }
 );
 
-const publishedStatusSchema = new Schema<TPublishedStatusSchema>(
+const seoDataSchema = new Schema<TSeoData>(
   {
-    status: { type: String, enum: publishedStatus, required: true },
-    visibility: { type: String, enum: visibilityStatus, required: true },
-    date: {
-      type: String,
-      required: true,
-      default: () => new Date().toLocaleDateString("en-GB"),
-    },
+    focusKeyphrase: { type: String },
+    metaTitle: { type: String },
+    slug: { type: String },
+    metaDescription: { type: String },
+  },
+  { _id: false }
+);
+
+const tagSchema = new Schema<TTag>(
+  {
+    label: { type: String },
+    value: { type: String },
   },
   { _id: false }
 );
@@ -70,18 +79,20 @@ export const productSchema = new Schema<TProduct>(
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true, unique: true },
     // permalink: { type: String, unique: true, sparse: true },
-    // type: { type: String },
+    type: { type: String, enum: ["simple", "variable"], default: "simple" },
     slug: { type: String, required: true, unique: true },
     description: { type: String },
     shortDescription: { type: String },
     additionalInfo: { type: String },
-    usageGuidelines: { type: String },
+    // usageGuidelines: { type: String },
     // downloadable: { type: Boolean, default: false },
     featured: { type: Boolean, default: false },
     // review: { type: Boolean, default: false },
     price: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: function () {
+        return this.type === "simple";
+      },
       ref: "Price",
     },
     image: {
@@ -90,7 +101,9 @@ export const productSchema = new Schema<TProduct>(
     },
     inventory: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: function () {
+        return this.type === "simple";
+      },
       ref: "Inventory",
     },
     attributes: {
@@ -103,17 +116,18 @@ export const productSchema = new Schema<TProduct>(
     warrantyInfo: {
       type: warrantyInfoSchema,
     },
-    // tag: {
-    //   type: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
-    // },
+    tag: [tagSchema],
     publishedStatus: {
-      type: publishedStatusSchema,
+      type: String,
+      enum: Object.values(productStatus),
       required: true,
     },
-    // seoData: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: "SeoData",
-    // },
+    seoData: seoDataSchema,
+    offer: {
+      flash: { type: Boolean, default: false },
+      today: { type: Boolean, default: false },
+      featured: { type: Boolean, default: false },
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       required: true,

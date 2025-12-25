@@ -1,9 +1,10 @@
-import { Request } from "express";
-import ProductModel from "./product.model";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CronJob } from "cron";
-import PriceModel from "../price/price.model";
-import { InventoryModel } from "../inventory/inventory.model";
+import { Request } from "express";
 import { PipelineStage } from "mongoose";
+import { InventoryModel } from "../inventory/inventory.model";
+import PriceModel from "../price/price.model";
+import ProductModel from "./product.model";
 
 const modifiedPriceData = (req: Request) => {
   const { price } = req.body;
@@ -74,7 +75,7 @@ export const deleteDraftProducts = new CronJob(
 
 export const commonPipelineSingleProduct = (
   pipeline: PipelineStage[] | undefined = []
-) => [
+): PipelineStage[] => [
   {
     $lookup: {
       from: "images",
@@ -118,15 +119,39 @@ export const commonPipelineSingleProduct = (
       foreignField: "_id",
       as: "variations",
       pipeline: [
-        ...pipeline,
+        ...(pipeline || []),
         { $sort: { serial: 1 } },
+        {
+          $lookup: {
+            from: "prices",
+            localField: "price",
+            foreignField: "_id",
+            as: "price",
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+          },
+        },
+        {
+          $unwind: { path: "$price", preserveNullAndEmptyArrays: true },
+        },
+        {
+          $lookup: {
+            from: "inventories",
+            localField: "inventory",
+            foreignField: "_id",
+            as: "inventory",
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+          },
+        },
+        {
+          $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
+        },
         {
           $project: {
             createdAt: 0,
             updatedAt: 0,
           },
         },
-      ],
+      ] as any[],
     },
   },
   {
@@ -169,10 +194,10 @@ export const commonPipelineSingleProduct = (
     $unwind: "$thumbnail",
   },
   {
-    $unwind: "$price",
+    $unwind: { path: "$price", preserveNullAndEmptyArrays: true },
   },
   {
-    $unwind: "$inventory",
+    $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
   },
   {
     $unwind: "$myCategory",
@@ -189,6 +214,7 @@ export const commonPipelineSingleProduct = (
       id: 1,
       title: 1,
       slug: 1,
+      type: 1,
       description: 1,
       shortDescription: 1,
       additionalInfo: 1,
@@ -246,12 +272,13 @@ export const commonPipelineSingleProduct = (
       brand: "$brand",
       warranty: 1,
       warrantyInfo: 1,
+      featured: 1,
       publishedStatus: 1,
     },
   },
 ];
 
-export const commonPipelineMultipleProduct = [
+export const commonPipelineMultipleProduct: PipelineStage[] = [
   {
     $lookup: {
       from: "prices",
@@ -261,7 +288,7 @@ export const commonPipelineMultipleProduct = [
     },
   },
   {
-    $unwind: "$price",
+    $unwind: { path: "$price", preserveNullAndEmptyArrays: true },
   },
   {
     $lookup: {
@@ -283,7 +310,7 @@ export const commonPipelineMultipleProduct = [
     },
   },
   {
-    $unwind: "$inventory",
+    $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
   },
   {
     $lookup: {
@@ -302,6 +329,47 @@ export const commonPipelineMultipleProduct = [
     },
   },
   { $unwind: "$category" },
+  {
+    $lookup: {
+      from: "variations",
+      localField: "variations",
+      foreignField: "_id",
+      as: "variations",
+      pipeline: [
+        { $sort: { serial: 1 } },
+        {
+          $lookup: {
+            from: "prices",
+            localField: "price",
+            foreignField: "_id",
+            as: "price",
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+          },
+        },
+        {
+          $unwind: { path: "$price", preserveNullAndEmptyArrays: true },
+        },
+        {
+          $lookup: {
+            from: "inventories",
+            localField: "inventory",
+            foreignField: "_id",
+            as: "inventory",
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+          },
+        },
+        {
+          $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
+        },
+        {
+          $project: {
+            createdAt: 0,
+            updatedAt: 0,
+          },
+        },
+      ] as any[],
+    },
+  },
   {
     $lookup: {
       from: "brands",

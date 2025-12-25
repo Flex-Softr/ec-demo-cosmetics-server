@@ -51,7 +51,7 @@ app.use(ecSIDHandler);
 
 // Root route
 app.get("/", (req, res) => {
-  res.redirect(`http://${config.main_domain}`);
+  res.send(`Server is running on ${config.env} mode`);
 });
 
 // static files

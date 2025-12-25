@@ -1,10 +1,19 @@
 import httpStatus from "http-status";
+import ApiError from "../../errorHandlers/ApiError";
 import catchAsync from "../../utilities/catchAsync";
 import successResponse from "../../utilities/successResponse";
 import { ImageServices } from "./image.service";
 
 const createImage = catchAsync(async (req, res) => {
-  const uploadedBy = req.user.id;
+  const uploadedBy = req.user.id || req.user._id;
+
+  if (!uploadedBy) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "User not authorized or ID missing"
+    );
+  }
+
   const files = req.files as Express.Multer.File[];
   const images = files?.map(({ path, originalname }: Express.Multer.File) => {
     return { src: path, alt: originalname, uploadedBy };

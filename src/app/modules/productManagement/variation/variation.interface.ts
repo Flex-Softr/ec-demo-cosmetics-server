@@ -9,7 +9,7 @@ export type TVariation = {
   attributes: {
     [key: string]: string;
   };
-  price: TPrice;
-  inventory: TInventory;
+  price: Types.ObjectId | TPrice;
+  inventory: Types.ObjectId | TInventory;
   isDeleted?: boolean;
 };
