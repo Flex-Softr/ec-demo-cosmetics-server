@@ -9,11 +9,13 @@ import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
 import { convertIso } from "../../../utilities/ISOConverter";
 import { TJwtPayload } from "../../authManagement/auth/auth.interface";
 import { Courier } from "../../courier/courier.model";
+import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
 import { TPrice } from "../../productManagement/price/price.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
+import { OrderPayment } from "../orderPayment/orderPayment.model";
 import { OrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.model";
 import { TShipping } from "../shipping/shipping.interface";
 import { Shipping } from "../shipping/shipping.model";
@@ -24,8 +26,8 @@ import { OrderHelper } from "./order.helper";
 import {
   TOrder,
   TOrderDeliveryStatus,
+  TOrderedProduct,
   TOrderStatus,
-  TProductDetails,
   TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
@@ -935,7 +937,7 @@ const updateOrderStatusIntoDB = async (
         const orderPreviousStatus = order?.status;
 
         const orderedProducts =
-          order?.productDetails as unknown as TUpStOnCanDelProducts[];
+          order?.orderedProducts as unknown as TUpStOnCanDelProducts[];
         // If the admin try to retrieve a canceled order
         if (
           orderPreviousStatus === "canceled" &&
@@ -1031,7 +1033,7 @@ const updateProcessingStatusIntoDB = async (
           warranty,
           productWarranty,
           title: productTitle,
-        } of order.productDetails) {
+        } of order.orderedProducts) {
           if (productWarranty && !warranty) {
             throw new ApiError(
               httpStatus.BAD_REQUEST,
@@ -1193,12 +1195,12 @@ const bookCourierAndUpdateStatusIntoDB = async (
           session
         );
         if (
-          (order?.productDetails as TProductDetails[]).map(
+          (order?.orderedProducts as TOrderedProduct[]).map(
             (item) => item.warranty
           ).length
         ) {
           await deleteWarrantyFromOrder(
-            order?.productDetails || [],
+            (order?.orderedProducts as TOrderedProduct[]) || [],
             order?._id,
             session
           );
@@ -1295,10 +1297,11 @@ const updateOrderDetailsByAdminIntoDB = async (
     followUpDate,
     monitoringNotes,
     reasonNotes,
-    productDetails: updatedProductDetails,
+    orderedProducts: updatedOrderedProducts,
     status,
     monitoringStatus,
     trackingStatus,
+    payment,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = payload as any;
 
@@ -1320,6 +1323,43 @@ const updateOrderDetailsByAdminIntoDB = async (
       ).session(session);
     }
 
+    // Update -- payment
+    if (payment) {
+      if (payment.paymentMethod) {
+        const paymentMethod = await PaymentMethod.findById(
+          payment.paymentMethod
+        ).session(session);
+        if (!paymentMethod) {
+          throw new ApiError(httpStatus.BAD_REQUEST, "No payment method found");
+        }
+      }
+      const paymentSetOptions: Record<string, unknown> = {
+        paymentMethod: payment.paymentMethod,
+        paymentDetails: payment.paymentDetails || {},
+      };
+      const paymentUnsetOptions: Record<string, unknown> = {};
+
+      if (payment.phoneNumber) {
+        paymentSetOptions.phoneNumber = payment.phoneNumber;
+      } else {
+        paymentUnsetOptions.phoneNumber = 1;
+      }
+
+      if (payment.transactionId) {
+        paymentSetOptions.transactionId = payment.transactionId;
+      } else {
+        paymentUnsetOptions.transactionId = 1;
+      }
+
+      await OrderPayment.findOneAndUpdate(
+        { _id: findOrder.payment },
+        {
+          $set: paymentSetOptions,
+          $unset: paymentUnsetOptions,
+        }
+      ).session(session);
+    }
+
     const updatedDoc: Record<string, unknown> = {};
     let increments = 0;
     let decrements = 0;
@@ -1328,18 +1368,18 @@ const updateOrderDetailsByAdminIntoDB = async (
     let newSubtotal = 0;
     let newWarrantyAmount = 0;
     if (
-      updatedProductDetails ||
-      (updatedProductDetails as unknown as TProductDetails[])?.length > 0
+      updatedOrderedProducts ||
+      (updatedOrderedProducts as unknown as TOrderedProduct[])?.length > 0
     ) {
-      for (const updatedProduct of updatedProductDetails || []) {
+      for (const updatedProduct of updatedOrderedProducts || []) {
         if (updatedProduct.id) {
-          const existingProductIndex = findOrder.productDetails.findIndex(
+          const existingProductIndex = findOrder.orderedProducts.findIndex(
             (product) =>
               product?._id?.toString() === updatedProduct?.id?.toString()
           );
 
           if (updatedProduct.isDelete) {
-            const removedProduct = findOrder.productDetails.splice(
+            const removedProduct = findOrder.orderedProducts.splice(
               existingProductIndex,
               1
             );
@@ -1363,7 +1403,7 @@ const updateOrderDetailsByAdminIntoDB = async (
           } else {
             // Update existing product details
             const currentProduct =
-              findOrder.productDetails[existingProductIndex];
+              findOrder.orderedProducts[existingProductIndex];
             const previousQuantity = currentProduct?.quantity;
 
             if (updatedProduct.quantity || updatedProduct.quantity === 0) {
@@ -1492,12 +1532,12 @@ const updateOrderDetailsByAdminIntoDB = async (
               }
             }
           }
-        } else if (updatedProduct.newProductId) {
+        } else if (updatedProduct.product) {
           const productInfo = (
             await ProductModel.aggregate([
               {
                 $match: {
-                  _id: new Types.ObjectId(updatedProduct.newProductId),
+                  _id: new Types.ObjectId(updatedProduct.product),
                 },
               },
               {
@@ -1509,13 +1549,38 @@ const updateOrderDetailsByAdminIntoDB = async (
                 },
               },
               {
-                $unwind: "$priceInfo",
+                $unwind: {
+                  path: "$priceInfo",
+                  preserveNullAndEmptyArrays: true,
+                },
               },
               {
                 $lookup: {
                   from: "variations",
-                  localField: "variations",
-                  foreignField: "_id",
+                  let: { variations: "$variations" },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $in: ["$_id", { $ifNull: ["$$variations", []] }],
+                        },
+                      },
+                    },
+                    {
+                      $lookup: {
+                        from: "prices",
+                        localField: "price",
+                        foreignField: "_id",
+                        as: "price",
+                      },
+                    },
+                    {
+                      $unwind: {
+                        path: "$price",
+                        preserveNullAndEmptyArrays: true,
+                      },
+                    },
+                  ],
                   as: "variations",
                 },
               },
@@ -1563,11 +1628,13 @@ const updateOrderDetailsByAdminIntoDB = async (
           if (productInfo?.variations?.length)
             if (!selectedVariation)
               throw new ApiError(httpStatus.BAD_REQUEST, "Invalid variation");
-          const { salePrice, regularPrice } = productInfo?.price as TPrice;
-          const unitPrice = salePrice || regularPrice;
+          const { salePrice, regularPrice } = (productInfo?.price ||
+            {}) as TPrice;
+          const unitPrice = salePrice || regularPrice || 0;
           const variationUnitPrice =
-            selectedVariation?.price.salePrice ||
-            selectedVariation?.price.regularPrice;
+            (selectedVariation?.price as TPrice)?.salePrice ||
+            (selectedVariation?.price as TPrice)?.regularPrice ||
+            0;
 
           const newProductDetails = {
             product: productInfo?._id,
@@ -1596,13 +1663,13 @@ const updateOrderDetailsByAdminIntoDB = async (
           }
 
           if (newProductDetails) {
-            findOrder.productDetails.push(
+            findOrder.orderedProducts.push(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               newProductDetails as any
             );
           }
           if (selectedVariation) {
-            if (selectedVariation?.inventory?.manageStock) {
+            if ((selectedVariation?.inventory as TInventory)?.manageStock) {
               await VariationModel.updateOne(
                 { _id: selectedVariation?._id },
                 {
@@ -1624,7 +1691,7 @@ const updateOrderDetailsByAdminIntoDB = async (
         }
       }
 
-      findOrder.productDetails.forEach((product) => {
+      findOrder.orderedProducts.forEach((product) => {
         if (product.isWarrantyClaim) {
           newWarrantyAmount += product.total;
         } else {
@@ -1632,7 +1699,7 @@ const updateOrderDetailsByAdminIntoDB = async (
         }
       });
 
-      updatedDoc.productDetails = findOrder.productDetails;
+      updatedDoc.orderedProducts = findOrder.orderedProducts;
     } else {
       newSubtotal = Number(findOrder.subtotal || 0);
       newWarrantyAmount = Number(findOrder.warrantyAmount || 0);
@@ -1727,7 +1794,7 @@ const deleteOrdersByIdFromBD = async (orderIds: string[]) => {
       const order = await Order.findOne({ _id: orderId });
       if (order) {
         // update quantity
-        for (const item of order.productDetails) {
+        for (const item of order.orderedProducts) {
           const product = await ProductModel.findById(item.product, {
             inventory: 1,
             title: 1,
@@ -2008,8 +2075,8 @@ const returnAndPartialManagementIntoDB = async (
 
       if (status === "returned") {
         await Promise.all([
-          updateStockOrderCancelDelete(order.productDetails, session),
-          deleteWarrantyFromOrder(order.productDetails, order._id, session),
+          updateStockOrderCancelDelete(order.orderedProducts, session),
+          deleteWarrantyFromOrder(order.orderedProducts, order._id, session),
         ]);
       }
     }
@@ -2103,7 +2170,7 @@ const getMobileNumbersForSendingSMSFromDB = async (
   }
   if (query.productIds) {
     const ids = (query.productIds as string).split(",");
-    matchQuery["productDetails.product"] = {
+    matchQuery["orderedProducts.product"] = {
       $in: ids.map((id) => new Types.ObjectId(id)),
     };
   }

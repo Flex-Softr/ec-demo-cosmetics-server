@@ -105,10 +105,11 @@ const bookCourierAndUpdateStatus = z.object({
   }),
 });
 
-const productDetailsSchema = () =>
+const orderedProductsSchema = () =>
   z.object({
     id: z.string().optional(),
-    newProductId: z.string().optional(),
+    product: z.string().optional(),
+    variation: z.string().optional(),
     isWarrantyClaim: z.boolean().optional(),
     quantity: z.number().optional(),
     claimedCodes: z
@@ -131,7 +132,7 @@ const updateOrderDetailsByAdmin = z.object({
     monitoringNotes: z.string().optional(),
     shipping: shippingValidationZodSchema(true).optional(),
     followUpDate: validateDateInput().optional(),
-    productDetails: z.array(productDetailsSchema()).optional(),
+    orderedProducts: z.array(orderedProductsSchema()).optional(),
     attributes: z
       .array(
         z.object({
@@ -141,6 +142,7 @@ const updateOrderDetailsByAdmin = z.object({
       )
       .optional(),
     status: z.string().optional(),
+    payment: paymentZodSchema.optional(),
   }),
 });
 

@@ -1,8 +1,8 @@
 import mongoose, { Schema, model } from "mongoose";
 import { orderSources, orderStatus } from "./order.const";
-import { TCourierDetails, TOrder, TProductDetails } from "./order.interface";
+import { TCourierDetails, TOrder, TOrderedProduct } from "./order.interface";
 
-const ProductDetailsSchema = new Schema<TProductDetails>({
+const OrderedProductsSchema = new Schema<TOrderedProduct>({
   product: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -49,7 +49,12 @@ const ProductDetailsSchema = new Schema<TProductDetails>({
   },
   prevWarrantyInformation: {
     duration: {
-      type: String,
+      quantity: {
+        type: String,
+      },
+      unit: {
+        type: String,
+      },
     },
     startDate: {
       type: String,
@@ -87,7 +92,7 @@ const OrderSchema = new Schema<TOrder>(
     sessionId: {
       type: String,
     },
-    productDetails: [ProductDetailsSchema],
+    orderedProducts: [OrderedProductsSchema],
     couponDetails: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Coupon",

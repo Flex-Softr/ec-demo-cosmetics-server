@@ -39,17 +39,17 @@ const getWarrantyData = async (
           name: "$shippingCharge.name",
           amount: "$shippingCharge.amount",
         },
-        productDetails: 1,
+        orderedProducts: 1,
         createdAt: 1,
       },
     },
     {
-      $unwind: "$productDetails",
+      $unwind: "$orderedProducts",
     },
     {
       $lookup: {
         from: "products",
-        localField: "productDetails.product",
+        localField: "orderedProducts.product",
         foreignField: "_id",
         as: "productInfo",
       },
@@ -71,7 +71,7 @@ const getWarrantyData = async (
     {
       $lookup: {
         from: "warranties",
-        localField: "productDetails.warranty",
+        localField: "orderedProducts.warranty",
         foreignField: "_id",
         as: "warranty",
       },
@@ -93,7 +93,7 @@ const getWarrantyData = async (
     {
       $lookup: {
         from: "warranty_claim_histories", // Collection name for warranty claim histories
-        localField: "productDetails.warrantyClaimHistory",
+        localField: "orderedProducts.warrantyClaimHistory",
         foreignField: "_id",
         as: "warrantyClaimHistory",
       },
@@ -110,7 +110,7 @@ const getWarrantyData = async (
         orderId: 1,
         shipping: 1,
         product: {
-          _id: "$productDetails._id",
+          _id: "$orderedProducts._id",
           productId: "$productInfo._id",
           title: "$productInfo.title",
           image: { src: "$productThumb.src", alt: "$productThumb.alt" },
@@ -120,11 +120,11 @@ const getWarrantyData = async (
             endsDate: "$warranty.endsDate",
             warrantyCodes: "$warranty.warrantyCodes",
           },
-          variation: "$productDetails.variation",
-          attributes: "$productDetails.attributes",
+          variation: "$orderedProducts.variation",
+          attributes: "$orderedProducts.attributes",
           warrantyClaimHistory: "$warrantyClaimHistory",
-          unitPrice: "$productDetails.unitPrice",
-          quantity: "$productDetails.quantity",
+          unitPrice: "$orderedProducts.unitPrice",
+          quantity: "$orderedProducts.quantity",
         },
         createdAt: 1,
       },

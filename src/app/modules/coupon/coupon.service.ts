@@ -7,7 +7,7 @@ import optionalAuthUserQuery from "../../types/optionalAuthUserQuery";
 import { TJwtPayload } from "../authManagement/auth/auth.interface";
 import { OrderHelper } from "../orderManagement/order/order.helper";
 import {
-  TProductDetails,
+  TOrderedProduct,
   TSanitizedOrProduct,
 } from "../orderManagement/order/order.interface";
 import { TCouponData } from "./coupon.interface";
@@ -413,7 +413,7 @@ const calculateCouponDiscount = async (
   body: {
     shippingCharge: mongoose.Types.ObjectId;
     salesPage: boolean;
-    orderedProducts: TProductDetails[];
+    orderedProducts: TOrderedProduct[];
     coupon?: string;
   },
   user: TOptionalAuthGuardPayload

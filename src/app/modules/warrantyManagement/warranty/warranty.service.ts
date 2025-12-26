@@ -123,15 +123,15 @@ const createWarrantyIntoDB = async (
         await Order.findOneAndUpdate(
           {
             _id: order_id,
-            "productDetails._id": item._id,
+            "orderedProducts._id": item._id,
           },
           {
             $set: {
-              "productDetails.$.warranty": warrantyRes._id,
+              "orderedProducts.$.warranty": warrantyRes._id,
               status: "warranty added",
             },
             $unset: {
-              "productDetails.$.prevWarrantyInformation": 1,
+              "orderedProducts.$.prevWarrantyInformation": 1,
             },
           },
           { session }

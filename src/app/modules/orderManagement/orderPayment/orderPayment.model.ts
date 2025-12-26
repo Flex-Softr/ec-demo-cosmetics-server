@@ -16,6 +16,10 @@ const PaymentSchema = new Schema<TPayment>({
   transactionId: {
     type: String,
   },
+  paymentDetails: {
+    type: Map,
+    of: String,
+  },
 });
 
 export const OrderPayment = model<TPayment>("OrderPayment", PaymentSchema);

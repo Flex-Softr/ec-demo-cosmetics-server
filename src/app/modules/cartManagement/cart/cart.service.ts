@@ -37,6 +37,9 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
     },
     {
       path: "variation",
+      populate: {
+        path: "price",
+      },
     },
   ]);
 
@@ -55,11 +58,11 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
         },
       },
       price: {
-        regularPrice: variation?.price?.regularPrice
-          ? variation?.price?.regularPrice
+        regularPrice: (variation?.price as TPrice)?.regularPrice
+          ? (variation?.price as TPrice)?.regularPrice
           : price?.regularPrice,
-        salePrice: variation?.price?.salePrice
-          ? variation?.price?.salePrice
+        salePrice: (variation?.price as TPrice)?.salePrice
+          ? (variation?.price as TPrice)?.salePrice
           : price?.salePrice,
       },
       variation: item?.variation?._id,

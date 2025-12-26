@@ -22,14 +22,14 @@ import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrant
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
 import {
   TFindOrderForUpdatingOrder,
+  TOrderedProduct,
   TOrderStatus,
-  TProductDetails,
   TSanitizedOrProduct,
   TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
 
-type TsnOrderProduct = TProductDetails[] | TWarrantyClaimedProductDetails[];
+type TsnOrderProduct = TOrderedProduct[] | TWarrantyClaimedProductDetails[];
 
 const sanitizeOrderedProducts = async (
   orderedProducts: TsnOrderProduct,
@@ -53,6 +53,14 @@ const sanitizeOrderedProducts = async (
       .populate([
         {
           path: "variations",
+          populate: [
+            {
+              path: "price",
+            },
+            {
+              path: "inventory",
+            },
+          ],
         },
         { path: "price" },
         { path: "category.name" },
@@ -90,8 +98,8 @@ const sanitizeOrderedProducts = async (
             ? [findVariation]
             : null,
         },
-        price: findVariation?.price || product?.price,
-        stock: findVariation?.inventory || product?.inventory,
+        price: (findVariation?.price || product?.price) as TPrice,
+        stock: (findVariation?.inventory || product?.inventory) as TInventory,
         defaultInventory: product?.inventory?._id,
         variations: undefined,
         inventory: undefined,
@@ -136,42 +144,42 @@ const findOrderForUpdatingOrder = async (
       },
       {
         $unwind: {
-          path: "$productDetails",
+          path: "$orderedProducts",
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
           from: "products",
-          localField: "productDetails.product",
+          localField: "orderedProducts.product",
           foreignField: "_id",
-          as: "productDetails.productInfo",
+          as: "orderedProducts.productInfo",
         },
       },
       {
         $unwind: {
-          path: "$productDetails.productInfo",
+          path: "$orderedProducts.productInfo",
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
           from: "inventories",
-          localField: "productDetails.productInfo.inventory",
+          localField: "orderedProducts.productInfo.inventory",
           foreignField: "_id",
-          as: "productDetails.productInfo.inventoryInfo",
+          as: "orderedProducts.productInfo.inventoryInfo",
         },
       },
       {
         $unwind: {
-          path: "$productDetails.productInfo.inventoryInfo",
+          path: "$orderedProducts.productInfo.inventoryInfo",
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
           from: "warranties",
-          localField: "productDetails.warranty",
+          localField: "orderedProducts.warranty",
           foreignField: "_id",
           as: "productWarrantyDetails",
         },
@@ -200,7 +208,7 @@ const findOrderForUpdatingOrder = async (
       {
         $lookup: {
           from: "variations",
-          localField: "productDetails.variation",
+          localField: "orderedProducts.variation",
           foreignField: "_id",
           as: "variation",
         },
@@ -213,10 +221,10 @@ const findOrderForUpdatingOrder = async (
       },
       {
         $addFields: {
-          "productDetails.productInfo.variations": {
+          "orderedProducts.productInfo.variations": {
             $cond: {
-              if: { $isArray: "$productDetails.productInfo.variations" },
-              then: "$productDetails.productInfo.variations",
+              if: { $isArray: "$orderedProducts.productInfo.variations" },
+              then: "$orderedProducts.productInfo.variations",
               else: [],
             },
           },
@@ -225,7 +233,7 @@ const findOrderForUpdatingOrder = async (
       {
         $lookup: {
           from: "variations",
-          localField: "productDetails.productInfo.variations",
+          localField: "orderedProducts.productInfo.variations",
           foreignField: "_id",
           as: "allVariations",
         },
@@ -233,26 +241,26 @@ const findOrderForUpdatingOrder = async (
       {
         $group: {
           _id: "$_id",
-          // Push product details only if a valid product exists (i.e. productDetails.product is not null)
-          productDetails: {
+          // Push product details only if a valid product exists (i.e. orderedProducts.product is not null)
+          orderedProducts: {
             $push: {
               $cond: [
-                { $ifNull: ["$productDetails.product", false] },
+                { $ifNull: ["$orderedProducts.product", false] },
                 {
-                  _id: "$productDetails._id",
-                  product: "$productDetails.product",
-                  productTitle: "$productDetails.productInfo.title",
-                  attributes: "$productDetails.attributes",
-                  unitPrice: "$productDetails.unitPrice",
-                  quantity: "$productDetails.quantity",
-                  total: "$productDetails.total",
-                  warranty: "$productDetails.warranty",
+                  _id: "$orderedProducts._id",
+                  product: "$orderedProducts.product",
+                  productTitle: "$orderedProducts.productInfo.title",
+                  attributes: "$orderedProducts.attributes",
+                  unitPrice: "$orderedProducts.unitPrice",
+                  quantity: "$orderedProducts.quantity",
+                  total: "$orderedProducts.total",
+                  warranty: "$orderedProducts.warranty",
                   productWarrantyDetails: {
                     warrantyCodes: "$productWarrantyDetails.warrantyCodes",
                   },
-                  isWarrantyClaim: "$productDetails.isWarrantyClaim",
-                  claimedCodes: "$productDetails.claimedCodes",
-                  variation: "$productDetails.variation",
+                  isWarrantyClaim: "$orderedProducts.isWarrantyClaim",
+                  claimedCodes: "$orderedProducts.claimedCodes",
+                  variation: "$orderedProducts.variation",
                   variations: "$allVariations",
                   inventoryInfo: {
                     variationInventory: {
@@ -263,15 +271,15 @@ const findOrderForUpdatingOrder = async (
                       lowStockWarning: "$variation.inventory.lowStockWarning",
                     },
                     defaultInventory: {
-                      _id: "$productDetails.productInfo.inventoryInfo._id",
+                      _id: "$orderedProducts.productInfo.inventoryInfo._id",
                       stockAvailable:
-                        "$productDetails.productInfo.inventoryInfo.stockAvailable",
+                        "$orderedProducts.productInfo.inventoryInfo.stockAvailable",
                       stockStatus:
-                        "$productDetails.productInfo.inventoryInfo.stockStatus",
+                        "$orderedProducts.productInfo.inventoryInfo.stockStatus",
                       manageStock:
-                        "$productDetails.productInfo.inventoryInfo.manageStock",
+                        "$orderedProducts.productInfo.inventoryInfo.manageStock",
                       lowStockWarning:
-                        "$productDetails.productInfo.inventoryInfo.lowStockWarning",
+                        "$orderedProducts.productInfo.inventoryInfo.lowStockWarning",
                     },
                   },
                 },
@@ -294,6 +302,7 @@ const findOrderForUpdatingOrder = async (
           advance: { $first: "$advance" },
           warrantyAmount: { $first: "$warrantyAmount" },
           total: { $first: "$total" },
+          payment: { $first: "$payment" },
           status: { $first: "$status" },
           deliveryStatus: { $first: "$deliveryStatus" },
         },
@@ -452,18 +461,29 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         amount: "$shippingCharge.amount",
       },
       payment: {
-        paymentMethod: {
-          _id: "$paymentMethod._id",
-          name: "$paymentMethod.name",
-          image: {
-            src: {
-              $concat: [config.image_server, "/", "$paymentMethodImage.src"],
+        $cond: {
+          if: { $not: ["$payment"] },
+          then: null,
+          else: {
+            paymentMethod: {
+              _id: "$paymentMethod._id",
+              name: "$paymentMethod.name",
+              image: {
+                src: {
+                  $concat: [
+                    config.image_server,
+                    "/",
+                    "$paymentMethodImage.src",
+                  ],
+                },
+                alt: "$paymentMethodImage.alt",
+              },
             },
-            alt: "$paymentMethodImage.alt",
+            phoneNumber: "$payment.phoneNumber",
+            transactionId: "$payment.transactionId",
+            paymentDetails: "$payment.paymentDetails",
           },
         },
-        phoneNumber: "$payment.phoneNumber",
-        transactionId: "$payment.transactionId",
       },
       courier: {
         name: "$courierData.name",
@@ -486,7 +506,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       orderNotes: 1,
       followUpDate: 1,
       orderSource: 1,
-      productDetails: 1,
+      orderedProducts: 1,
       deliveryStatus: 1,
       monitoringStatus: 1,
       trackingStatus: 1,
@@ -496,12 +516,12 @@ const orderDetailsPipeline = (): PipelineStage[] => [
     },
   },
   {
-    $unwind: { path: "$productDetails", preserveNullAndEmptyArrays: true },
+    $unwind: { path: "$orderedProducts", preserveNullAndEmptyArrays: true },
   },
   {
     $lookup: {
       from: "products",
-      localField: "productDetails.product",
+      localField: "orderedProducts.product",
       foreignField: "_id",
       as: "productInfo",
     },
@@ -529,7 +549,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
               input: "$productInfo.variations",
               as: "variation",
               cond: {
-                $eq: ["$$variation._id", "$productDetails.variation"],
+                $eq: ["$$variation._id", "$orderedProducts.variation"],
               },
             },
           },
@@ -541,7 +561,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
   {
     $lookup: {
       from: "warranties",
-      localField: "productDetails.warranty",
+      localField: "orderedProducts.warranty",
       foreignField: "_id",
       as: "warranty",
     },
@@ -561,10 +581,10 @@ const orderDetailsPipeline = (): PipelineStage[] => [
     $addFields: {
       product: {
         $cond: {
-          if: { $not: ["$productDetails"] },
+          if: { $not: ["$orderedProducts"] },
           then: null,
           else: {
-            _id: "$productDetails._id",
+            _id: "$orderedProducts._id",
             productId: "$productInfo._id",
             title: "$productInfo.title",
             image: {
@@ -573,12 +593,12 @@ const orderDetailsPipeline = (): PipelineStage[] => [
               },
               alt: "$productThumb.alt",
             },
-            unitPrice: "$productDetails.unitPrice",
-            isWarrantyClaim: "$productDetails.isWarrantyClaim",
-            claimedCodes: "$productDetails.claimedCodes",
-            quantity: "$productDetails.quantity",
-            total: "$productDetails.total",
-            attributes: "$productDetails.attributes",
+            unitPrice: "$orderedProducts.unitPrice",
+            isWarrantyClaim: "$orderedProducts.isWarrantyClaim",
+            claimedCodes: "$orderedProducts.claimedCodes",
+            quantity: "$orderedProducts.quantity",
+            total: "$orderedProducts.total",
+            attributes: "$orderedProducts.attributes",
             warranty: {
               _id: "$warranty._id",
               warrantyCodes: "$warranty.warrantyCodes",
@@ -600,15 +620,27 @@ const orderDetailsPipeline = (): PipelineStage[] => [
                   _id: "$variation._id",
                   attributes: "$variation.attributes",
                   price: {
-                    regularPrice: "$variation.price.regularPrice",
-                    salePrice: "$variation.price.salePrice",
-                    discountPercent: "$variation.price.discountPercent",
+                    $cond: {
+                      if: { $ifNull: ["$variation.price", false] },
+                      then: {
+                        regularPrice: "$variation.price.regularPrice",
+                        salePrice: "$variation.price.salePrice",
+                        discountPercent: "$variation.price.discountPercent",
+                      },
+                      else: "$$REMOVE", // or null
+                    },
                   },
                   inventory: {
-                    stockStatus: "$variation.inventory.stockStatus",
-                    stockAvailable: "$variation.inventory.stockAvailable",
-                    manageStock: "$variation.inventory.manageStock",
-                    lowStockWarning: "$variation.inventory.lowStockWarning",
+                    $cond: {
+                      if: { $ifNull: ["$variation.inventory", false] },
+                      then: {
+                        stockStatus: "$variation.inventory.stockStatus",
+                        stockAvailable: "$variation.inventory.stockAvailable",
+                        manageStock: "$variation.inventory.manageStock",
+                        lowStockWarning: "$variation.inventory.lowStockWarning",
+                      },
+                      else: "$$REMOVE", // or null
+                    },
                   },
                 },
                 else: null,
@@ -684,12 +716,12 @@ const orderStatusUpdatingPipeline = (
       },
     },
     {
-      $unwind: { path: "$productDetails", preserveNullAndEmptyArrays: true },
+      $unwind: { path: "$orderedProducts", preserveNullAndEmptyArrays: true },
     },
     {
       $lookup: {
         from: "products",
-        localField: "productDetails.product",
+        localField: "orderedProducts.product",
         foreignField: "_id",
         as: "productInfo",
       },
@@ -729,7 +761,7 @@ const orderStatusUpdatingPipeline = (
     //             input: "$productInfo.variations",
     //             as: "variation",
     //             cond: {
-    //               $eq: ["$$variation._id", "$productDetails.variation"],
+    //               $eq: ["$$variation._id", "$orderedProducts.variation"],
     //             },
     //           },
     //         },
@@ -741,7 +773,7 @@ const orderStatusUpdatingPipeline = (
     {
       $lookup: {
         from: "variations",
-        localField: "productDetails.variation",
+        localField: "orderedProducts.variation",
         foreignField: "_id",
         as: "variationData",
       },
@@ -753,22 +785,36 @@ const orderStatusUpdatingPipeline = (
       },
     },
     {
+      $lookup: {
+        from: "inventories",
+        localField: "variationData.inventory",
+        foreignField: "_id",
+        as: "variationInventoryData",
+      },
+    },
+    {
+      $unwind: {
+        path: "$variationInventoryData",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $addFields: {
         product: {
           $cond: {
-            if: { $not: ["$productDetails"] },
+            if: { $not: ["$orderedProducts"] },
             then: null,
             else: {
-              _id: "$productDetails._id",
+              _id: "$orderedProducts._id",
               productId: "$productInfo._id",
               title: "$productInfo.title",
-              unitPrice: "$productDetails.unitPrice",
-              isWarrantyClaim: "$productDetails.isWarrantyClaim",
-              warranty: "$productDetails.warranty",
+              unitPrice: "$orderedProducts.unitPrice",
+              isWarrantyClaim: "$orderedProducts.isWarrantyClaim",
+              warranty: "$orderedProducts.warranty",
               productWarranty: "$productInfo.warranty",
-              quantity: "$productDetails.quantity",
+              quantity: "$orderedProducts.quantity",
               variation: "$variationData",
-              total: "$productDetails.total",
+              total: "$orderedProducts.total",
               defaultInventory: {
                 _id: "$defaultInventoryData._id",
                 stockAvailable: "$defaultInventoryData.stockAvailable",
@@ -778,9 +824,10 @@ const orderStatusUpdatingPipeline = (
               variationDetails: {
                 _id: "$variationData._id",
                 inventory: {
-                  stockAvailable: "$variationData.inventory.stockAvailable",
-                  manageStock: "$variationData.inventory.manageStock",
-                  lowStockWarning: "$variationData.inventory.lowStockWarning",
+                  _id: "$variationInventoryData._id",
+                  stockAvailable: "$variationInventoryData.stockAvailable",
+                  manageStock: "$variationInventoryData.manageStock",
+                  lowStockWarning: "$variationInventoryData.lowStockWarning",
                 },
               },
             },
@@ -797,7 +844,7 @@ const orderStatusUpdatingPipeline = (
         total: { $first: "$total" },
         shippingData: { $first: "$shippingInfo" },
         courierNotes: { $first: "$courierNotes" },
-        productDetails: {
+        orderedProducts: {
           $push: {
             $cond: {
               if: { $not: ["$product"] },
@@ -810,11 +857,11 @@ const orderStatusUpdatingPipeline = (
     },
     {
       $addFields: {
-        productDetails: {
+        orderedProducts: {
           $cond: {
-            if: { $eq: [{ $size: "$productDetails" }, 0] },
+            if: { $eq: [{ $size: "$orderedProducts" }, 0] },
             then: null,
-            else: "$productDetails",
+            else: "$orderedProducts",
           },
         },
       },
@@ -909,17 +956,18 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
       },
       orderNotes: 1,
       followUpDate: 1,
-      productDetails: 1,
+      productDetails: 0,
+      orderedProducts: 1,
       createdAt: 1,
     },
   },
   {
-    $unwind: { path: "$productDetails", preserveNullAndEmptyArrays: true },
+    $unwind: { path: "$orderedProducts", preserveNullAndEmptyArrays: true },
   },
   {
     $lookup: {
       from: "products",
-      localField: "productDetails.product",
+      localField: "orderedProducts.product",
       foreignField: "_id",
       as: "productInfo",
     },
@@ -947,7 +995,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
               input: "$productInfo.variations",
               as: "variation",
               cond: {
-                $eq: ["$$variation._id", "$productDetails.variation"],
+                $eq: ["$$variation._id", "$orderedProducts.variation"],
               },
             },
           },
@@ -960,10 +1008,10 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
     $addFields: {
       product: {
         $cond: {
-          if: { $not: ["$productDetails"] },
+          if: { $not: ["$orderedProducts"] },
           then: null,
           else: {
-            _id: "$productDetails._id",
+            _id: "$orderedProducts._id",
             productId: "$productInfo._id",
             title: "$productInfo.title",
             image: {
@@ -972,11 +1020,11 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
               },
               alt: "$productThumb.alt",
             },
-            unitPrice: "$productDetails.unitPrice",
-            isWarrantyClaim: "$productDetails.isWarrantyClaim",
-            claimedCodes: "$productDetails.claimedCodes",
-            quantity: "$productDetails.quantity",
-            total: "$productDetails.total",
+            unitPrice: "$orderedProducts.unitPrice",
+            isWarrantyClaim: "$orderedProducts.isWarrantyClaim",
+            claimedCodes: "$orderedProducts.claimedCodes",
+            quantity: "$orderedProducts.quantity",
+            total: "$orderedProducts.total",
             variation: {
               $cond: {
                 if: {
@@ -1064,6 +1112,14 @@ const sanitizeCartItemsForOrder = async (userQuery: {
     },
     {
       path: "variation",
+      populate: [
+        {
+          path: "price",
+        },
+        {
+          path: "inventory",
+        },
+      ],
     },
   ]);
 
@@ -1078,17 +1134,17 @@ const sanitizeCartItemsForOrder = async (userQuery: {
         _id: product?._id,
         title: product?.title,
         price: {
-          regularPrice: variation?.price?.regularPrice
-            ? variation?.price?.regularPrice
+          regularPrice: (variation?.price as TPrice)?.regularPrice
+            ? (variation?.price as TPrice)?.regularPrice
             : price?.regularPrice,
-          salePrice: variation?.price?.salePrice
-            ? variation?.price?.salePrice
+          salePrice: (variation?.price as TPrice)?.salePrice
+            ? (variation?.price as TPrice)?.salePrice
             : price?.salePrice,
-          discountPercent: variation?.price?.discountPercent
-            ? variation?.price?.discountPercent
+          discountPercent: (variation?.price as TPrice)?.discountPercent
+            ? (variation?.price as TPrice)?.discountPercent
             : price?.discountPercent,
-          priceSave: variation?.price?.priceSave
-            ? variation?.price?.priceSave
+          priceSave: (variation?.price as TPrice)?.priceSave
+            ? (variation?.price as TPrice)?.priceSave
             : price?.priceSave,
         },
         category,
@@ -1097,7 +1153,7 @@ const sanitizeCartItemsForOrder = async (userQuery: {
           ? [variation]
           : undefined,
         stock: Object.keys(variation || {}).length
-          ? variation.inventory
+          ? (variation?.inventory as TInventory)
           : inventory,
         defaultInventory: inventory?._id,
       },

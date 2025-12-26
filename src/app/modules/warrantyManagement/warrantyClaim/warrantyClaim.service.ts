@@ -291,17 +291,17 @@ const createNewWarrantyClaimOrderIntoDB = async (
   try {
     session.startTransaction();
 
-    const productsDetails: TWarrantyClaimedProductDetails[] = [];
+    const orderedProducts: TWarrantyClaimedProductDetails[] = [];
 
     for (const item of claimReq?.warrantyClaimReqData || []) {
-      const productDetails = (
+      const existingOrderedProducts = (
         await Order.findOne(
           { _id: item.order_id },
-          { "productDetails.warranty": 1, "productDetails._id": 1 }
+          { "orderedProducts.warranty": 1, "orderedProducts._id": 1 }
         )
-      )?.productDetails;
+      )?.orderedProducts;
 
-      const updatingWarrantyId = productDetails
+      const updatingWarrantyId = existingOrderedProducts
         ?.find((pdt) => pdt?._id?.toString() === item.orderItemId.toString())
         ?.warranty?.toString();
 
@@ -350,14 +350,14 @@ const createNewWarrantyClaimOrderIntoDB = async (
         warrantyClaimHistory: history,
       };
 
-      productsDetails.push(
+      orderedProducts.push(
         newProductDetailsItem as unknown as TWarrantyClaimedProductDetails
       );
     }
 
     order = await createNewOrder({ body, user }, session, {
       warrantyClaim: true,
-      productsDetails,
+      orderedProducts,
     });
 
     // Update the warranty claim request
@@ -387,7 +387,7 @@ const updateClaimProductVariationIntoDB = async (
   claimId: string,
   payload: { itemId: string; newVariation: string }
 ) => {
-  const productDetails = (
+  const claimDetails = (
     await WarrantyClaim.aggregate([
       {
         $match: {
@@ -437,7 +437,7 @@ const updateClaimProductVariationIntoDB = async (
     ])
   )[0];
 
-  const attribute = (productDetails?.warrantyClaimReqData || [])
+  const attribute = (claimDetails?.warrantyClaimReqData || [])
     ?.find((item: { _id: string }) => item?._id.toString() === payload.itemId)
     ?.product?.variations?.find(
       (item: { _id: Types.ObjectId } & TVariation) => {

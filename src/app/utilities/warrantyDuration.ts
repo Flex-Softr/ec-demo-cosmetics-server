@@ -1,22 +1,29 @@
-export const warrantyDuration = (duration: string) => {
+export const warrantyDuration = (duration: {
+  quantity: string;
+  unit: string;
+}) => {
   const date = new Date(); // Get the current date as the starting point
-  function addDurationToDate(duration: string) {
-    // Split the duration string into number and unit
-    const durationArray = duration.split(" ");
-    const number = parseInt(durationArray[0]);
-    const unit = durationArray[1];
+
+  function addDurationToDate(duration: { quantity: string; unit: string }) {
+    const number = parseInt(duration.quantity);
+    const unit = duration.unit;
+
     // Calculate the end date based on the unit
     const endDate = new Date(date);
-    switch (unit) {
+    switch (unit.toLowerCase()) {
+      case "day":
       case "days":
         endDate.setDate(date.getDate() + number);
         break;
+      case "week":
       case "weeks":
         endDate.setDate(date.getDate() + number * 7);
         break;
+      case "month":
       case "months":
         endDate.setMonth(date.getMonth() + number);
         break;
+      case "year":
       case "years":
         endDate.setFullYear(date.getFullYear() + number);
         break;

@@ -23,9 +23,16 @@ const checkInventory = async (payload: {
       {
         _id: product,
       },
-      { variations: 1 }
+      { variations: 1, price: 1 } // Added price: 1 to projection
     )
-      .populate([{ path: "variations" }])
+      .populate([
+        {
+          path: "variations",
+          populate: {
+            path: "inventory",
+          },
+        },
+      ])
       .lean();
 
     const specificVariation = productData?.variations?.find(
@@ -36,8 +43,9 @@ const checkInventory = async (payload: {
       throw new ApiError(httpStatus.BAD_REQUEST, "No product found");
     }
 
-    availableStock = specificVariation?.inventory?.stockAvailable || 0;
-    manageStock = specificVariation?.inventory?.manageStock;
+    availableStock =
+      (specificVariation?.inventory as TInventory)?.stockAvailable || 0;
+    manageStock = (specificVariation?.inventory as TInventory)?.manageStock;
   } else {
     const productData = await ProductModel.findById(product, {
       inventory: 1,

@@ -12,7 +12,6 @@ import { Coupon } from "../../coupon/coupon.model";
 import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
-import VariationModel from "../../productManagement/variation/variation.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { TPaymentData } from "../orderPayment/orderPayment.interface";
@@ -24,9 +23,9 @@ import { OrderHelper } from "./order.helper";
 import {
   TCourierResponse,
   TOrder,
+  TOrderedProduct,
   TOrderSource,
   TOrderStatus,
-  TProductDetails,
   TSanitizedOrProduct,
 } from "./order.interface";
 import { Order } from "./order.model";
@@ -60,6 +59,7 @@ export type TUpStOnCanDelProducts = {
   variationDetails: {
     _id: Types.ObjectId;
     inventory: {
+      _id: Types.ObjectId;
       stockAvailable: number;
       manageStock: boolean;
       lowStockWarning: number;
@@ -69,12 +69,12 @@ export type TUpStOnCanDelProducts = {
 
 // This function can update the stock of canceled and deleted orders
 export const updateStockOrderCancelDelete = async (
-  productDetails: TUpStOnCanDelProducts[],
+  orderedProducts: TUpStOnCanDelProducts[],
   session: mongoose.mongo.ClientSession,
   inc: boolean = true
 ) => {
   const variationMissingProducts = [];
-  for (const item of productDetails) {
+  for (const item of orderedProducts) {
     let updateType = item.quantity;
     if (!inc) {
       updateType = -item.quantity;
@@ -82,13 +82,13 @@ export const updateStockOrderCancelDelete = async (
     if (item?.variation) {
       if (item?.variationDetails) {
         if (item?.variationDetails?.inventory?.manageStock) {
-          await VariationModel.updateOne(
+          await InventoryModel.updateOne(
             {
-              _id: item?.variation,
+              _id: item?.variationDetails?.inventory?._id,
             },
             {
               $inc: {
-                "inventory.stockAvailable": updateType,
+                stockAvailable: updateType,
               },
             }
           ).session(session);
@@ -115,13 +115,13 @@ export const updateStockOrderCancelDelete = async (
 
 // This function will delete warranty information from warranty collection and update order product details
 export const deleteWarrantyFromOrder = async (
-  productDetails: TProductDetails[],
+  orderedProducts: TOrderedProduct[],
   orderId: Types.ObjectId,
   session: mongoose.mongo.ClientSession
 ) => {
   const deleteQuery = {
     _id: {
-      $in: productDetails
+      $in: orderedProducts
         .map((item) => item.warranty)
         .map(
           (item) => new mongoose.Types.ObjectId(item as mongoose.Types.ObjectId)
@@ -131,8 +131,8 @@ export const deleteWarrantyFromOrder = async (
 
   await Warranty.deleteMany(deleteQuery).session(session);
   await Order.updateOne(
-    { _id: orderId, "productDetails.warranty": { $exists: true } },
-    { $unset: { "productDetails.$.warranty": 1 } }
+    { _id: orderId, "orderedProducts.warranty": { $exists: true } },
+    { $unset: { "orderedProducts.$.warranty": 1 } }
   ).session(session);
 };
 
@@ -142,8 +142,8 @@ export const createNewOrder = async (
   session: ClientSession,
   warrantyClaimOrderData?: {
     warrantyClaim?: boolean;
-    productsDetails?:
-      | Partial<TProductDetails[]>
+    orderedProducts?:
+      | Partial<TOrderedProduct[]>
       | TWarrantyClaimedProductDetails[];
   }
 ) => {
@@ -166,7 +166,7 @@ export const createNewOrder = async (
     orderSource: TOrderSource;
     custom: boolean;
     salesPage: boolean;
-    orderedProducts: TProductDetails[];
+    orderedProducts: TOrderedProduct[];
     coupon?: string;
   };
 
@@ -214,10 +214,10 @@ export const createNewOrder = async (
       await OrderHelper.sanitizeOrderedProducts(orderedProducts);
   } else if (
     warrantyClaimOrderData?.warrantyClaim &&
-    warrantyClaimOrderData?.productsDetails
+    warrantyClaimOrderData?.orderedProducts
   ) {
     orderedProductInfo = await OrderHelper.sanitizeOrderedProducts(
-      warrantyClaimOrderData?.productsDetails as TProductDetails[],
+      warrantyClaimOrderData?.orderedProducts as TOrderedProduct[],
       true
     );
   } else {
@@ -252,49 +252,64 @@ export const createNewOrder = async (
   onlyProductsCosts = cost;
 
   // Execute DB operations after mapping
-  await Promise.all(
-    orderedProductData.map(async ({ item }) => {
-      if (item?.product?.stock?.manageStock) {
-        const currentStock =
-          Number(item?.product?.stock?.stockAvailable || 0) - item.quantity;
-        if (currentStock < item?.product?.stock?.lowStockWarning) {
-          await lowStockWarningEmail({
-            productName: item?.product?.title,
-            currentStock,
-            sku: item?.product?.stock?.sku,
-          });
-        }
-        if (item.variation) {
-          await VariationModel.updateOne(
-            { _id: item.variation },
-            { $inc: { "inventory.stockAvailable": -item.quantity } }
-          ).session(session);
-        } else {
-          await InventoryModel.updateOne(
-            { _id: item?.product?.defaultInventory },
-            { $inc: { stockAvailable: -item.quantity } }
-          ).session(session);
-        }
+  for (const { item } of orderedProductData) {
+    if (item?.product?.stock?.manageStock) {
+      const currentStock =
+        Number(item?.product?.stock?.stockAvailable || 0) - item.quantity;
+      if (currentStock < item?.product?.stock?.lowStockWarning) {
+        await lowStockWarningEmail({
+          productName: item?.product?.title,
+          currentStock,
+          sku: item?.product?.stock?.sku,
+        });
       }
-    })
-  );
+      if (item.variation) {
+        await InventoryModel.updateOne(
+          { _id: item?.product?.stock?._id },
+          { $inc: { stockAvailable: -item.quantity } }
+        ).session(session);
+      } else {
+        await InventoryModel.updateOne(
+          { _id: item?.product?.defaultInventory },
+          { $inc: { stockAvailable: -item.quantity } }
+        ).session(session);
+      }
+    }
+  }
 
   // Extract results after DB operations are done
   const finalOrderedProductData = orderedProductData.map(
     ({ result }) => result
   );
 
-  orderData.productDetails = finalOrderedProductData as TProductDetails[];
+  orderData.orderedProducts = finalOrderedProductData as TOrderedProduct[];
 
   const paymentMethod = await PaymentMethod.findById(payment.paymentMethod);
   if (!paymentMethod) {
-    {
-      throw new ApiError(httpStatus.BAD_REQUEST, "No payment found");
-    }
+    throw new ApiError(httpStatus.BAD_REQUEST, "No payment found");
   }
-  if (paymentMethod?.isPaymentDetailsNeeded) {
-    if (!payment.phoneNumber || !payment.transactionId) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid request.");
+
+  if (paymentMethod?.required_inputs?.length > 0) {
+    const requiredInputs = paymentMethod.required_inputs;
+    for (const input of requiredInputs) {
+      if (input.is_required) {
+        // Check in standard fields first (for backward compatibility if they map there)
+        const valueInStandardFields =
+          input.name === "Phone Number" || input.name === "phoneNumber"
+            ? payment.phoneNumber
+            : input.name === "Transaction ID" || input.name === "transactionId"
+              ? payment.transactionId
+              : undefined;
+
+        const valueInDetails = payment.paymentDetails?.[input.name];
+
+        if (!valueInStandardFields && !valueInDetails) {
+          throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            `${input.name} is required for ${paymentMethod.name}`
+          );
+        }
+      }
     }
   }
   payment.orderId = orderId;

@@ -1,5 +1,5 @@
 import mongoose, { Document, Types } from "mongoose";
-import { TProductDetails } from "../../orderManagement/order/order.interface";
+import { TOrderedProduct } from "../../orderManagement/order/order.interface";
 import { TShipping } from "../../orderManagement/shipping/shipping.interface";
 import { TVariation } from "../../productManagement/product/product.interface";
 import { TUser } from "../../userManagement/user/user.interface";
@@ -17,14 +17,17 @@ export type TWarrantyClaimedVideosAndImages = {
 };
 
 export type TWarrantyClaimPrevWarrantyInformation = {
-  duration?: string;
+  duration: {
+    quantity: string;
+    unit: string;
+  };
   startDate?: string;
   endsDate?: string;
 };
 
 export type TWarrantyClaimReqData = {
   order_id: Types.ObjectId;
-  orderItemId: Types.ObjectId | TProductDetails;
+  orderItemId: Types.ObjectId | TOrderedProduct;
   productId: Types.ObjectId;
   variation: Types.ObjectId | TVariation;
   attributes?: {
@@ -55,7 +58,7 @@ export type TWarrantyClaimData = {
 
 export type TWarrantyClaim = TWarrantyClaimData & Document;
 
-export type TWarrantyClaimedProductDetails = TProductDetails & {
+export type TWarrantyClaimedProductDetails = TOrderedProduct & {
   claimedCodes: TClaimedCodes[];
   prevWarrantyInformation: TWarrantyClaimPrevWarrantyInformation;
   warrantyClaimHistory: Types.ObjectId;

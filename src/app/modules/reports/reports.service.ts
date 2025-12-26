@@ -269,15 +269,15 @@ const getBestSellingProductsFromDB = async () => {
       $match: { status: { $ne: "deleted" } },
     },
     {
-      $unwind: "$productDetails",
+      $unwind: "$orderedProducts",
     },
     {
       $group: {
-        _id: "$productDetails.product",
-        totalQuantity: { $sum: "$productDetails.quantity" },
+        _id: "$orderedProducts.product",
+        totalQuantity: { $sum: "$orderedProducts.quantity" },
         totalWarrantyClaims: {
           $sum: {
-            $cond: [{ $eq: ["$productDetails.isWarrantyClaim", true] }, 1, 0],
+            $cond: [{ $eq: ["$orderedProducts.isWarrantyClaim", true] }, 1, 0],
           },
         },
       },

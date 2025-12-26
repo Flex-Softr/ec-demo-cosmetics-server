@@ -5,12 +5,12 @@ export const findOrderWithWarrantyPipeline = (
 ) => [
   { $match: { _id: new mongoose.Types.ObjectId(order_id) } },
   {
-    $unwind: "$productDetails",
+    $unwind: "$orderedProducts",
   },
   {
     $lookup: {
       from: "products",
-      localField: "productDetails.product",
+      localField: "orderedProducts.product",
       foreignField: "_id",
       as: "productInfo",
     },
@@ -21,7 +21,7 @@ export const findOrderWithWarrantyPipeline = (
   {
     $lookup: {
       from: "warranties",
-      localField: "productDetails.warranty",
+      localField: "orderedProducts.warranty",
       foreignField: "_id",
       as: "warranty",
     },
@@ -47,23 +47,23 @@ export const findOrderWithWarrantyPipeline = (
       deliveryStatus: 1,
       statusHistory: 1,
       product: {
-        _id: "$productDetails._id",
+        _id: "$orderedProducts._id",
         product: {
           _id: "$productInfo._id",
           title: "$productInfo.title",
           warranty: "$productInfo.warranty",
           warrantyInfo: "$productInfo.warrantyInfo",
         },
-        prevWarrantyInformation: "$productDetails.prevWarrantyInformation",
-        isWarrantyClaim: "$productDetails.isWarrantyClaim",
+        prevWarrantyInformation: "$orderedProducts.prevWarrantyInformation",
+        isWarrantyClaim: "$orderedProducts.isWarrantyClaim",
         warranty: {
           _id: "$warranty._id",
           warrantyCodes: "$warranty.warrantyCodes",
           createdAt: "$warranty.createdAt",
         },
-        unitPrice: "$productDetails.unitPrice",
-        quantity: "$productDetails.quantity",
-        total: "$productDetails.total",
+        unitPrice: "$orderedProducts.unitPrice",
+        quantity: "$orderedProducts.quantity",
+        total: "$orderedProducts.total",
       },
       createdAt: 1,
     },

@@ -52,7 +52,7 @@ export type TOrderSource = {
   lpNo?: string;
 };
 
-export type TProductDetails = {
+export type TOrderedProduct = {
   product: mongoose.Types.ObjectId | TProduct;
   variation?: Types.ObjectId | TVariation;
   attributes?: {
@@ -79,7 +79,7 @@ export type TOrderData = {
   orderId: string;
   userId: Types.ObjectId | TUser;
   sessionId: string;
-  productDetails: TProductDetails[];
+  orderedProducts: TOrderedProduct[];
   couponDetails?: Types.ObjectId;
   couponDiscount?: number;
   subtotal?: number;
@@ -117,10 +117,10 @@ export type TSanitizedOrProduct = {
   product: {
     _id: mongoose.Types.ObjectId;
     title: string;
-    price: TPrice;
+    price?: TPrice;
     isDeleted: boolean;
-    stock: TInventory;
-    defaultInventory: Types.ObjectId;
+    stock?: TInventory;
+    defaultInventory?: Types.ObjectId;
     isVariationAvailable?: boolean;
     category: TCategory | mongoose.Types.ObjectId;
   };
@@ -164,7 +164,7 @@ export type TOrderDeliveryStatus =
 
 export type TFindOrderForUpdatingOrder = {
   _id: Types.ObjectId;
-  productDetails: {
+  orderedProducts: {
     _id: Types.ObjectId;
     product: Types.ObjectId;
     productTitle: string;
@@ -189,6 +189,7 @@ export type TFindOrderForUpdatingOrder = {
   tax: number;
   shippingCharge: { _id: Types.ObjectId; amount: number };
   discount: number;
+  payment: Types.ObjectId;
   shipping: Types.ObjectId;
   advance: number;
   couponDiscount: number;

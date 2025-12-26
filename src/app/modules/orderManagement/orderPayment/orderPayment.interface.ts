@@ -6,6 +6,7 @@ export type TPaymentData = {
   paymentMethod: Types.ObjectId | TPaymentMethod;
   phoneNumber?: string;
   transactionId?: string;
+  paymentDetails?: Record<string, string>;
 };
 
 export type TPayment = TPaymentData | Document;

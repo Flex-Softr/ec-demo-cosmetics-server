@@ -17,8 +17,14 @@ const WarrantySchema = new Schema<TWarranty>(
       required: true,
     },
     duration: {
-      type: String,
-      required: true,
+      quantity: {
+        type: String,
+        required: true,
+      },
+      unit: {
+        type: String,
+        required: true,
+      },
     },
     startDate: {
       type: String,

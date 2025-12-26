@@ -516,12 +516,12 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
       $match: { status: { $ne: "deleted" } },
     },
     {
-      $unwind: "$productDetails",
+      $unwind: "$orderedProducts",
     },
     {
       $group: {
-        _id: "$productDetails.product",
-        totalQuantity: { $sum: "$productDetails.quantity" },
+        _id: "$orderedProducts.product",
+        totalQuantity: { $sum: "$orderedProducts.quantity" },
       },
     },
     {
