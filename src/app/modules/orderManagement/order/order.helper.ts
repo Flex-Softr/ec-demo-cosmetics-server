@@ -956,7 +956,6 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
       },
       orderNotes: 1,
       followUpDate: 1,
-      productDetails: 0,
       orderedProducts: 1,
       createdAt: 1,
     },
