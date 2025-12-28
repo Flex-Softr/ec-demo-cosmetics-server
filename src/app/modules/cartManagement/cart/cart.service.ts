@@ -111,7 +111,30 @@ const addToCartIntoDB = async (
     sessionId: user.sessionId,
     ...payload,
   };
-  await CartItem.create(cartItemData);
+
+  const query = optionalAuthUserQuery(user);
+  const existingCartItem = await CartItem.findOne({
+    ...query,
+    product: payload.product,
+    variation: payload.variation,
+  });
+
+  if (existingCartItem) {
+    const newQuantity =
+      existingCartItem.quantity + Number(payload.quantity || 1);
+    await CartHelper.checkInventory({
+      quantity: newQuantity,
+      item: {
+        product: product?._id as Types.ObjectId,
+        variation: payload.variation as Types.ObjectId,
+      },
+    });
+
+    existingCartItem.quantity = newQuantity;
+    await existingCartItem.save();
+  } else {
+    await CartItem.create(cartItemData);
+  }
 };
 
 const updateQuantityIntoDB = async (

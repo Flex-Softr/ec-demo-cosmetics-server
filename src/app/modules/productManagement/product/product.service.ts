@@ -121,11 +121,11 @@ const createProductIntoDB = async (
   }
 };
 
-const getAProductCustomerFromDB = async (id: string) => {
+const getAProductCustomerFromDB = async (slug: string) => {
   const pipeline = [
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(id),
+        slug: slug,
         isDeleted: false,
         publishedStatus: productStatus.published,
       },

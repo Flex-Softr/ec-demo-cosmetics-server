@@ -45,7 +45,7 @@ router.get(
   ProductControllers.getAProductAdmin
 );
 
-router.get("/:id", ProductControllers.getAProductCustomer);
+router.get("/:slug", ProductControllers.getAProductCustomer);
 
 router.get("/", ProductControllers.getAllProductsCustomer);
 
