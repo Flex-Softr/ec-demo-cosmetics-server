@@ -65,7 +65,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
           ? (variation?.price as TPrice)?.salePrice
           : price?.salePrice,
       },
-      variation: item?.variation?._id,
+      variation: variation,
       quantity: item?.quantity,
       _id: item?._id,
     };
