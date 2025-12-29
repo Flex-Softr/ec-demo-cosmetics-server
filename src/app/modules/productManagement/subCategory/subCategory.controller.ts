@@ -20,7 +20,7 @@ const createSubCategory = catchAsync(async (req, res) => {
 });
 
 const getAllSubCategories = catchAsync(async (req, res) => {
-  const result = await SubCategoryServices.getAllSubCategoriesFromDB();
+  const result = await SubCategoryServices.getAllSubCategoriesFromDB(req.query);
   successResponse(res, {
     statusCode: httpStatus.OK,
     message: "Sub categories retrieved successfully",
@@ -60,8 +60,10 @@ const deleteSubCategory = catchAsync(async (req, res) => {
 });
 const getAllSubCategoriesCategory = catchAsync(async (req, res) => {
   const categoryId = req.params.id;
-  const result =
-    await SubCategoryServices.getSubCategoriesByCategoryFromDB(categoryId);
+  const result = await SubCategoryServices.getSubCategoriesByCategoryFromDB(
+    categoryId,
+    req.query
+  );
   successResponse(res, {
     statusCode: httpStatus.OK,
     message: "Sub categories retrieved successfully",

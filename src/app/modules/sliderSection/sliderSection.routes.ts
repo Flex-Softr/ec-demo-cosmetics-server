@@ -1,6 +1,6 @@
 import express from "express";
-import authGuard from "../../../middlewares/authGuard";
-import validateRequest from "../../../middlewares/validateRequest";
+import authGuard from "../../middlewares/authGuard";
+import validateRequest from "../../middlewares/validateRequest";
 import { SliderSectionController } from "./sliderSection.controller";
 import { SliderSectionValidation } from "./sliderSection.validation";
 

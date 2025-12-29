@@ -7,6 +7,7 @@ export type TBrand = {
   logo?: string;
   description?: string;
   createdBy: Types.ObjectId;
+  updatedBy?: Types.ObjectId;
   isDeleted: boolean;
   isActive: boolean;
 };

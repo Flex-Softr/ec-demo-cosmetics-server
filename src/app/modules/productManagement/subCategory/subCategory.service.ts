@@ -47,10 +47,14 @@ const createSubCategoryIntoDB = async (
   }
 };
 
-const getAllSubCategoriesFromDB = async () => {
+const getAllSubCategoriesFromDB = async (query?: Record<string, unknown>) => {
+  const matchQuery: Record<string, unknown> = { isDeleted: false };
+  if (query?.isActive) {
+    matchQuery.isActive = query.isActive === "true";
+  }
   const result = await SubCategoryModel.find(
-    { isDeleted: false },
-    "name slug image description"
+    matchQuery,
+    "name slug image description isActive"
   ).populate("category", "name slug image description");
   return result;
 };
@@ -95,11 +99,22 @@ const deleteSubCategoryFromDB = async (
   return result;
 };
 
-const getSubCategoriesByCategoryFromDB = async (categoryId: string) => {
-  const result = await SubCategoryModel.find({
+const getSubCategoriesByCategoryFromDB = async (
+  categoryId: string,
+  query?: Record<string, unknown>
+) => {
+  const matchQuery: Record<string, unknown> = {
     category: categoryId,
     isDeleted: false,
-  }).populate({
+  };
+  if (query?.isActive) {
+    matchQuery.isActive = query.isActive === "true";
+  }
+
+  const result = await SubCategoryModel.find(
+    matchQuery,
+    "name slug image description isActive category"
+  ).populate({
     path: "image",
     select: "_id src alt uploadedBy isDeleted createdAt updatedAt",
   });

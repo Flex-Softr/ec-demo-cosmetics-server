@@ -18,11 +18,12 @@ import { ProductRoutes } from "../modules/productManagement/product/product.rout
 import { ReviewRoutes } from "../modules/productManagement/review/review.route";
 import { SubCategoryRoutes } from "../modules/productManagement/subCategory/subCategory.routes";
 import { TagRoutes } from "../modules/productManagement/tag/tag.route";
+import { VariationRoutes } from "../modules/productManagement/variation/variation.route";
 import { ReportsRoutes } from "../modules/reports/reports.routes";
+import { SliderBannerRoutes } from "../modules/sliderSection/sliderSection.routes";
 import { OrderSMSNotificationRotes } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.routes";
 import { SmsRoutes } from "../modules/smsManagement/sms/sms.routes";
 import { SMSReportRoutes } from "../modules/smsManagement/smsReport/smsReport.routes";
-import { SliderBannerRoutes } from "../modules/themeOption/sliderSection/sliderSection.routes";
 import { UpazilaRoutes } from "../modules/upazila/upazila.routes";
 import { AdminRoutes } from "../modules/userManagement/admin/admin.routes";
 import { CustomerRoutes } from "../modules/userManagement/customer/customer.routes";
@@ -30,7 +31,6 @@ import { PermissionRoutes } from "../modules/userManagement/permission/permissio
 import { UserRoutes } from "../modules/userManagement/user/user.routes";
 import { WarrantyRoutes } from "../modules/warrantyManagement/warranty/warranty.routes";
 import { WarrantyClaimRoutes } from "../modules/warrantyManagement/warrantyClaim/warrantyClaim.routes";
-import { VariationRoutes } from "../modules/productManagement/variation/variation.route";
 
 type TModuleTypes = {
   path: string;

@@ -15,7 +15,12 @@ const brandSchema = new Schema<TBrand>(
       required: true,
       ref: "User",
     },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     isDeleted: { type: Boolean, default: false },
+
     isActive: { type: Boolean, default: true },
   },
 

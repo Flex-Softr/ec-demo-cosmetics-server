@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 import { Types } from "mongoose";
-import catchAsync from "../../../utilities/catchAsync";
+import catchAsync from "../../utilities/catchAsync";
 import { SliderSectionService } from "./sliderSection.service";
 
 // Create Slider Section
@@ -22,16 +22,7 @@ const createSliderSection = catchAsync(async (req: Request, res: Response) => {
 
 // Get Slider Sections (with query parameter filtering for isActive)
 const getSliderSections = catchAsync(async (req: Request, res: Response) => {
-  const { isActive } = req.query;
-  let isActiveFilter;
-
-  if (isActive === "true") {
-    isActiveFilter = true;
-  } else if (isActive === "false") {
-    isActiveFilter = false;
-  }
-
-  const result = await SliderSectionService.getSliderSections(isActiveFilter);
+  const result = await SliderSectionService.getSliderSections(req.query);
   res.status(httpStatus.OK).json({
     success: true,
     data: result,

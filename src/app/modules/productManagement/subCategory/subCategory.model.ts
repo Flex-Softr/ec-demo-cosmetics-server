@@ -26,7 +26,9 @@ const subCategorySchema = new Schema<TSubCategory>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
   },
+
   {
     timestamps: true,
   }

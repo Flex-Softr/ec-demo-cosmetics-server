@@ -26,11 +26,12 @@ const getAllAttributes = catchAsync(async (req, res) => {
 });
 
 const updateAttribute = catchAsync(async (req, res) => {
-  const createdBy = req.user.id;
+  const updatedBy = req.user.id;
   const attributeId = req.params.id;
   const result = await AttributeServices.updateAttributeIntoDB(
-    createdBy,
+    updatedBy,
     attributeId,
+
     req.body
   );
   successResponse(res, {

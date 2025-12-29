@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import { TSliderSection } from "./sliderSection.interface";
 
 import httpStatus from "http-status";
-import ApiError from "../../../errorHandlers/ApiError";
+import ApiError from "../../errorHandlers/ApiError";
 import { SliderSectionModel } from "./sliderSection.model";
 
 // Create Slider Section
@@ -31,12 +31,14 @@ const createSliderSection = async (
 };
 
 // Get Slider Sections with optional filtering by isActive
-const getSliderSections = async (isActive?: boolean) => {
-  const matchStage: { isActive?: boolean } = {}; // Base match condition
+const getSliderSections = async (query?: Record<string, unknown>) => {
+  const matchStage: Record<string, unknown> = {
+    isDeleted: { $ne: true },
+  }; // Base match condition
 
   // If isActive is provided, add it to the match conditions
-  if (isActive !== undefined) {
-    matchStage.isActive = isActive;
+  if (query?.isActive) {
+    matchStage.isActive = query.isActive === "true";
   }
 
   const pipeline = [

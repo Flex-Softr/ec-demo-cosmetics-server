@@ -41,11 +41,12 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
 };
 
 const updateBrandIntoDB = async (
-  createdBy: Types.ObjectId,
+  updatedBy: Types.ObjectId,
   id: string,
   payload: TBrand
 ) => {
-  payload.createdBy = createdBy;
+  payload.updatedBy = updatedBy;
+
   const isBrandExist = await BrandModel.findById(id);
 
   if (!isBrandExist) {

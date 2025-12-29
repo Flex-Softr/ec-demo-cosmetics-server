@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import { Schema, model } from "mongoose";
-import ApiError from "../../../errorHandlers/ApiError";
-import { ImageModel } from "../../image/image.model";
+import ApiError from "../../errorHandlers/ApiError";
+import { ImageModel } from "../image/image.model";
 import { TSliderSection } from "./sliderSection.interface";
 
 // Define the schema for the slider section

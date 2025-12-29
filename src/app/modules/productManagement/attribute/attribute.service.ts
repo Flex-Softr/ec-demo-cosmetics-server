@@ -71,12 +71,14 @@ const updateAttributeIntoDB = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "The attribute is deleted!");
   }
 
-  const { name, values = [] } = payload;
+  const { name, values = [], ...remainingData } = payload;
   let result;
-  if (name) {
+
+  // Update root level fields (name, isActive, updatedBy, etc.)
+  if (name || Object.keys(remainingData).length > 0) {
     result = await AttributeModel.findByIdAndUpdate(
       id,
-      { name },
+      { name, ...remainingData },
       { new: true }
     );
   }

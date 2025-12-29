@@ -6,6 +6,7 @@ const subCategory = z.object({
     image: z.string().optional(),
     description: z.string().optional(),
     category: z.string().min(1, { message: "Category name is required!" }),
+    isActive: z.boolean().optional(),
   }),
 });
 
@@ -15,6 +16,7 @@ const updateSubCategory = z.object({
     image: z.string().optional(),
     description: z.string().optional(),
     category: z.string().optional(),
+    isActive: z.boolean().optional(),
   }),
 });
 

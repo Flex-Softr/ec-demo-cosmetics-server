@@ -43,8 +43,10 @@ const getSingleCourier = catchAsync(async (req: Request, res: Response) => {
 const updateCourier = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, slug } = req.body;
-  req.body.name = name.replace(/\s+/g, " ").trim();
-  req.body.slug = generateSlug(name, slug);
+  if (name) {
+    req.body.name = name.replace(/\s+/g, " ").trim();
+    req.body.slug = generateSlug(name, slug);
+  }
 
   const result = await CourierServices.updateCourierIntoDB(id, req.body);
 
