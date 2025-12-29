@@ -22,4 +22,5 @@ export type TCategory = {
   updatedBy: Types.ObjectId;
   deletedBy: Types.ObjectId;
   isDeleted: boolean;
+  isActive: boolean;
 };

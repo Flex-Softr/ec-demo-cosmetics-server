@@ -1,8 +1,8 @@
-import { Schema, model } from "mongoose";
-import { TCategory } from "./category.interface";
-import { ImageModel } from "../../image/image.model";
-import ApiError from "../../../errorHandlers/ApiError";
 import httpStatus from "http-status";
+import { Schema, model } from "mongoose";
+import ApiError from "../../../errorHandlers/ApiError";
+import { ImageModel } from "../../image/image.model";
+import { TCategory } from "./category.interface";
 
 // const subcategorySchema = new Schema<TCategory>({
 //   name: { type: String, required: true, unique: true },
@@ -33,7 +33,9 @@ const categorySchema = new Schema<TCategory>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
   },
+
   {
     timestamps: true,
   }

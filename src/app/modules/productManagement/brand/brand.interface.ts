@@ -8,4 +8,5 @@ export type TBrand = {
   description?: string;
   createdBy: Types.ObjectId;
   isDeleted: boolean;
+  isActive: boolean;
 };

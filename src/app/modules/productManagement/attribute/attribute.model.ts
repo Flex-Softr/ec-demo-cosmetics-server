@@ -24,7 +24,9 @@ const attributeSchema = new Schema<TAttribute>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
   },
+
   {
     timestamps: true,
   }

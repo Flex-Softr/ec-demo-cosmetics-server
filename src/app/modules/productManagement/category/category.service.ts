@@ -28,9 +28,14 @@ const createCategoryIntoDB = async (
   }
 };
 
-const getAllCategoriesFromDB = async () => {
+const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
+  const matchQuery: Record<string, unknown> = { isDeleted: false };
+  if (query?.isActive) {
+    matchQuery.isActive = query.isActive === "true";
+  }
+
   const pipeline = [
-    { $match: { isDeleted: false } },
+    { $match: matchQuery },
     {
       $lookup: {
         from: "images",
@@ -63,6 +68,7 @@ const getAllCategoriesFromDB = async () => {
           alt: "$image.alt",
         },
         description: 1,
+        isActive: 1,
         subcategories: "$subCategory",
       },
     },

@@ -9,6 +9,7 @@ const createCourier = z.object({
     apiKey: z.string().optional(),
     secretKey: z.string().optional(),
     credentials: z.array(z.string()).optional(),
+    isActive: z.boolean().optional(),
   }),
 });
 

@@ -5,6 +5,7 @@ const category = z.object({
     name: z.string().min(1, { message: "Category name is required!" }),
     image: z.string().optional(),
     description: z.string().optional(),
+    isActive: z.boolean().optional(),
   }),
 });
 
@@ -13,6 +14,7 @@ const updateCategory = z.object({
     name: z.string().optional(),
     image: z.string().optional(),
     description: z.string().optional(),
+    isActive: z.boolean().optional(),
   }),
 });
 

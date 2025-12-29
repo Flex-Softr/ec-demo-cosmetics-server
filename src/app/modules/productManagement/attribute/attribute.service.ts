@@ -1,8 +1,8 @@
+import httpStatus from "http-status";
 import { Types } from "mongoose";
+import ApiError from "../../../errorHandlers/ApiError";
 import { TAttribute } from "./attribute.interface";
 import { AttributeModel } from "./attribute.model";
-import httpStatus from "http-status";
-import ApiError from "../../../errorHandlers/ApiError";
 
 const createAttributeIntoDB = async (
   createdBy: Types.ObjectId,
@@ -27,16 +27,20 @@ const createAttributeIntoDB = async (
   }
 };
 
-const getAllAttributesFromDB = async () => {
+const getAllAttributesFromDB = async (query?: Record<string, unknown>) => {
+  const matchQuery: Record<string, unknown> = { isDeleted: false };
+  if (query?.isActive) {
+    matchQuery.isActive = query.isActive === "true";
+  }
+
   const result = await AttributeModel.aggregate([
     {
-      $match: {
-        isDeleted: false,
-      },
+      $match: matchQuery,
     },
     {
       $project: {
         name: 1,
+        isActive: 1,
         values: {
           $filter: {
             input: "$values",

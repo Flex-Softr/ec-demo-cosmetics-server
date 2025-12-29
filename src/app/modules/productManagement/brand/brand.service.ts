@@ -1,8 +1,8 @@
+import httpStatus from "http-status";
 import { Types } from "mongoose";
+import ApiError from "../../../errorHandlers/ApiError";
 import { TBrand } from "./brand.interface";
 import { BrandModel } from "./brand.model";
-import httpStatus from "http-status";
-import ApiError from "../../../errorHandlers/ApiError";
 
 const createBrandIntoDB = async (
   createdBy: Types.ObjectId,
@@ -27,10 +27,15 @@ const createBrandIntoDB = async (
   }
 };
 
-const getAllBrandsFromDB = async () => {
+const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
+  const matchQuery: Record<string, unknown> = { isDeleted: false };
+  if (query?.isActive) {
+    matchQuery.isActive = query.isActive === "true";
+  }
+
   const result = await BrandModel.find(
-    { isDeleted: false },
-    "name slug description "
+    matchQuery,
+    "name slug description isActive"
   ).populate("logo", "_id src alt");
   return result;
 };

@@ -10,12 +10,6 @@ const PaymentSchema = new Schema<TPayment>({
     required: true,
     ref: "PaymentMethod",
   },
-  phoneNumber: {
-    type: String,
-  },
-  transactionId: {
-    type: String,
-  },
   paymentDetails: {
     type: Map,
     of: String,

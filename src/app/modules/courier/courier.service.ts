@@ -6,8 +6,12 @@ const createCourierIntoDB = async (payload: TCourierData) => {
   return result;
 };
 
-const getAllCouriersFromDB = async () => {
-  const result = await Courier.find();
+const getAllCouriersFromDB = async (query?: Record<string, unknown>) => {
+  const matchQuery: Record<string, unknown> = {};
+  if (query?.isActive) {
+    matchQuery.isActive = query.isActive === "true";
+  }
+  const result = await Courier.find(matchQuery);
   return result;
 };
 

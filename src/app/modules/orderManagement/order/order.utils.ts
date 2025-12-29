@@ -293,17 +293,9 @@ export const createNewOrder = async (
     const requiredInputs = paymentMethod.required_inputs;
     for (const input of requiredInputs) {
       if (input.is_required) {
-        // Check in standard fields first (for backward compatibility if they map there)
-        const valueInStandardFields =
-          input.name === "Phone Number" || input.name === "phoneNumber"
-            ? payment.phoneNumber
-            : input.name === "Transaction ID" || input.name === "transactionId"
-              ? payment.transactionId
-              : undefined;
-
         const valueInDetails = payment.paymentDetails?.[input.name];
 
-        if (!valueInStandardFields && !valueInDetails) {
+        if (!valueInDetails) {
           throw new ApiError(
             httpStatus.BAD_REQUEST,
             `${input.name} is required for ${paymentMethod.name}`
@@ -312,6 +304,7 @@ export const createNewOrder = async (
       }
     }
   }
+
   payment.orderId = orderId;
   orderData.payment = (
     await OrderPayment.create([payment], { session })

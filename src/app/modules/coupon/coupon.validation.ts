@@ -30,7 +30,7 @@ const createCoupon = z.object({
     endDate: z.string({ required_error: "Coupon end date is required." }),
     isActive: z.boolean().default(true),
     isDeleted: z.boolean().default(false),
-    tags: z.array(z.string()),
+    tags: z.array(z.string().optional()).optional(),
   }),
 });
 

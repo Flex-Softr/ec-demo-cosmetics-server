@@ -1,8 +1,8 @@
 import httpStatus from "http-status";
-import { BrandServices } from "./brand.service";
 import catchAsync from "../../../utilities/catchAsync";
-import successResponse from "../../../utilities/successResponse";
 import generateSlug from "../../../utilities/generateSlug";
+import successResponse from "../../../utilities/successResponse";
+import { BrandServices } from "./brand.service";
 
 const createBrand = catchAsync(async (req, res) => {
   const createdBy = req.user.id;
@@ -18,7 +18,7 @@ const createBrand = catchAsync(async (req, res) => {
 });
 
 const getAllBrands = catchAsync(async (req, res) => {
-  const result = await BrandServices.getAllBrandsFromDB();
+  const result = await BrandServices.getAllBrandsFromDB(req.query);
   successResponse(res, {
     statusCode: httpStatus.OK,
     message: "Brands retrieved successfully",

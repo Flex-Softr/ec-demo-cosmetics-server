@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
-import { AttributeServices } from "./attribute.service";
 import catchAsync from "../../../utilities/catchAsync";
 import successResponse from "../../../utilities/successResponse";
+import { AttributeServices } from "./attribute.service";
 
 const createAttribute = catchAsync(async (req, res) => {
   const createdBy = req.user.id;
@@ -17,7 +17,7 @@ const createAttribute = catchAsync(async (req, res) => {
 });
 
 const getAllAttributes = catchAsync(async (req, res) => {
-  const result = await AttributeServices.getAllAttributesFromDB();
+  const result = await AttributeServices.getAllAttributesFromDB(req.query);
   successResponse(res, {
     statusCode: httpStatus.OK,
     message: "Attributes retrieved successfully",

@@ -1,8 +1,8 @@
 import httpStatus from "http-status";
 import catchAsync from "../../../utilities/catchAsync";
+import generateSlug from "../../../utilities/generateSlug";
 import successResponse from "../../../utilities/successResponse";
 import { CategoryServices } from "./category.service";
-import generateSlug from "../../../utilities/generateSlug";
 
 const createCategory = catchAsync(async (req, res) => {
   const createdBy = req.user.id;
@@ -37,7 +37,7 @@ const createCategory = catchAsync(async (req, res) => {
 });
 
 const getAllCategories = catchAsync(async (req, res) => {
-  const result = await CategoryServices.getAllCategoriesFromDB();
+  const result = await CategoryServices.getAllCategoriesFromDB(req.query);
   successResponse(res, {
     statusCode: httpStatus.OK,
     message: "Categories retrieved successfully",

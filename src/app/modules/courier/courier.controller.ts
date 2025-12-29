@@ -20,7 +20,7 @@ const createCourier = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllCouriers = catchAsync(async (req: Request, res: Response) => {
-  const result = await CourierServices.getAllCouriersFromDB();
+  const result = await CourierServices.getAllCouriersFromDB(req.query);
 
   successResponse(res, {
     statusCode: httpStatus.OK,

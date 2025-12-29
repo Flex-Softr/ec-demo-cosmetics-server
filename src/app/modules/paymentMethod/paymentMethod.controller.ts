@@ -7,7 +7,9 @@ import { TPaymentMethod } from "./paymentMethod.interface";
 import { PaymentMethodService } from "./paymentMethod.service";
 
 const getPaymentMethods = catchAsync(async (req: Request, res: Response) => {
-  const result = await PaymentMethodService.getAllPaymentMethodsFromDB();
+  const result = await PaymentMethodService.getAllPaymentMethodsFromDB(
+    req.query
+  );
   successResponse<TPaymentMethod[]>(res, {
     statusCode: httpStatus.OK,
     message: "Payment methods retrieved successfully.",

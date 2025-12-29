@@ -10,6 +10,7 @@ export const attribute = z.object({
         })
       )
       .min(1, { message: "Attribute values are required!" }),
+    isActive: z.boolean().optional(),
   }),
 });
 
@@ -27,6 +28,7 @@ export const updateAttribute = z.object({
         })
       )
       .optional(),
+    isActive: z.boolean().optional(),
   }),
 });
 

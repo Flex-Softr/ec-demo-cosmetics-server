@@ -1,8 +1,8 @@
-import { Schema, model } from "mongoose";
-import { TBrand } from "./brand.interface";
-import { ImageModel } from "../../image/image.model";
-import ApiError from "../../../errorHandlers/ApiError";
 import httpStatus from "http-status";
+import { Schema, model } from "mongoose";
+import ApiError from "../../../errorHandlers/ApiError";
+import { ImageModel } from "../../image/image.model";
+import { TBrand } from "./brand.interface";
 
 const brandSchema = new Schema<TBrand>(
   {
@@ -16,7 +16,9 @@ const brandSchema = new Schema<TBrand>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
   },
+
   {
     timestamps: true,
   }
