@@ -49,13 +49,24 @@ const createSubCategoryIntoDB = async (
 
 const getAllSubCategoriesFromDB = async (query?: Record<string, unknown>) => {
   const matchQuery: Record<string, unknown> = { isDeleted: false };
+
   if (query?.isActive) {
     matchQuery.isActive = query.isActive === "true";
   }
+
+  if (query?.category) {
+    matchQuery.category = query.category;
+  }
+
   const result = await SubCategoryModel.find(
     matchQuery,
-    "name slug image description isActive"
-  ).populate("category", "name slug image description");
+    "name slug image description isActive category"
+  )
+    .populate("category", "name slug image description")
+    .populate({
+      path: "image",
+      select: "_id src alt uploadedBy isDeleted createdAt updatedAt",
+    });
   return result;
 };
 
