@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 import config from "../config/config";
+import { PERMISSIONS, permissionList } from "../const/permission.const";
 import { Address } from "../modules/userManagement/address/address.model";
 import { Admin } from "../modules/userManagement/admin/admin.model";
-import { permissionEnums } from "../modules/userManagement/permission/permission.const";
 import { Permission } from "../modules/userManagement/permission/permission.model";
+import { ROLES } from "../modules/userManagement/user/user.const";
 import { User } from "../modules/userManagement/user/user.model";
 import { createAdminOrStaffId } from "../modules/userManagement/user/user.util";
 import { consoleLogger } from "./logger";
@@ -14,7 +15,7 @@ const checkAndCreatePermissions = async (session: mongoose.ClientSession) => {
   }).lean();
   const existingNames = existingPermissions.map((p) => p.name);
 
-  const permissionsToCreate = permissionEnums
+  const permissionsToCreate = permissionList
     .filter((name) => !existingNames.includes(name))
     .map((name) => ({ name }));
 
@@ -26,7 +27,7 @@ const checkAndCreatePermissions = async (session: mongoose.ClientSession) => {
   }
 
   const superAdminPermission = await Permission.findOne(
-    { name: "super admin" },
+    { name: PERMISSIONS.SUPER_ADMIN },
     null,
     { session }
   );
@@ -48,7 +49,7 @@ const createSuperAdmin = async () => {
     const superAdminPermission = await checkAndCreatePermissions(session);
 
     const existingSuperAdmin = await User.findOne(
-      { role: "superAdmin" },
+      { role: ROLES.SUPER_ADMIN },
       null,
       { session }
     );
@@ -87,7 +88,7 @@ const createSuperAdmin = async () => {
           phoneNumber: config.phoneNumber,
           email: config.email,
           password: config.password,
-          role: "superAdmin",
+          role: ROLES.SUPER_ADMIN,
           admin: admin._id,
           address: address._id,
           permissions: [superAdminPermission._id],

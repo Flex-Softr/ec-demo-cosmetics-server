@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import config from "../../../config/config";
 import { jwtHelper } from "../../../helper/jwt.helper";
 import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
+import { ROLES } from "../../userManagement/user/user.const";
 import { TUser } from "../../userManagement/user/user.interface";
 import { TRefreshTokenData } from "../refreshToken/refreshToken.interface";
 import { RefreshToken } from "../refreshToken/refreshToken.model";
@@ -46,18 +47,19 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
         uid: user?.uid as string,
       },
       config.token_data.refresh_token_secret as Secret,
-      user?.role === "customer" ? customerRfExpires : adminOrStaffRefExpires
+      user?.role === ROLES.CUSTOMER ? customerRfExpires : adminOrStaffRefExpires
     );
     const accessToken = jwtHelper.createToken(
       {
         id: user?._id?.toString() as string,
         role: user?.role as string,
-        permissions: (user?.role !== "customer"
-          ? user?.permissions?.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (item: any) => item.name
-            ) || []
-          : undefined) as unknown as string[],
+        permissions:
+          user?.role !== ROLES.CUSTOMER
+            ? user?.permissions?.map(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (item: any) => ({ _id: item._id, name: item.name })
+              ) || []
+            : [],
         uid: user?.uid as string,
         sessionId,
       },
@@ -65,7 +67,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
       config.token_data.access_token_expires as string
     );
 
-    if (user?.role !== "customer") {
+    if (user?.role !== ROLES.CUSTOMER) {
       await RefreshToken.deleteMany({ userId: user?._id });
     }
     const refreshTokenData: TRefreshTokenData = {
@@ -82,7 +84,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
       expireAt: new Date(
         +new Date() +
           parseInt(
-            user?.role === "customer"
+            user?.role === ROLES.CUSTOMER
               ? customerRfExpires
               : adminOrStaffRefExpires
           ) *

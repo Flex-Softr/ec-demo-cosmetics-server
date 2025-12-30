@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import mongoose, { Schema, model } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
-import { rolesEnum, statusEnum } from "./user.const";
+import { ROLES, statusEnum } from "./user.const";
 import { TUser, TUserModel } from "./user.interface";
 
 const UserSchema = new Schema<TUser, TUserModel>(
@@ -16,7 +16,7 @@ const UserSchema = new Schema<TUser, TUserModel>(
     },
     role: {
       type: String,
-      enum: rolesEnum,
+      enum: ROLES,
       required: true,
     },
     phoneNumber: {

@@ -13,9 +13,9 @@ import { TAdmin } from "../admin/admin.interface";
 import { Admin } from "../admin/admin.model";
 import { TCustomer } from "../customer/customer.interface";
 import { Customer } from "../customer/customer.model";
-import { TPermission } from "../permission/permission.interface";
 import { TStaff } from "../staff/staff.interface";
 import { Staff } from "../staff/staff.model";
+import { ROLES } from "./user.const";
 import { UserHelpers } from "./user.helper";
 import { TUser } from "./user.interface";
 import { User } from "./user.model";
@@ -32,7 +32,7 @@ const getAllAdminAndStaffFromDB = async (
   user: TJwtPayload
 ) => {
   const matchQuery: Record<string, unknown> = {
-    role: { $in: ["superAdmin", "admin", "staff"] },
+    role: { $in: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] },
     status: { $ne: "deleted" },
   };
 
@@ -49,9 +49,7 @@ const getAllAdminAndStaffFromDB = async (
     return { ...acc, ...createSwitchField(field) };
   }, {});
 
-  const isSuperAdmin = isPermitted(
-    (user.data.permissions as TPermission[]).map((item) => item.name)
-  );
+  const isSuperAdmin = isPermitted(user.permissions);
   const pipeline: PipelineStage[] = [
     { $match: matchQuery },
     {
@@ -90,7 +88,15 @@ const getAllAdminAndStaffFromDB = async (
     {
       $addFields: {
         ...addFieldsStage,
-        permissions: isSuperAdmin ? "$permissionsData.name" : 0,
+        permissions: isSuperAdmin
+          ? {
+              $map: {
+                input: "$permissionsData",
+                as: "perm",
+                in: { _id: "$$perm._id", name: "$$perm.name" },
+              },
+            }
+          : 0,
         address: {
           $arrayElemAt: ["$addressData", 0],
         },
@@ -168,7 +174,7 @@ const createCustomerIntoDB = async (
   });
 
   // change user role
-  userInfo.role = "customer";
+  userInfo.role = ROLES.CUSTOMER;
   let newUser = null;
   const session = await mongoose.startSession();
   try {
@@ -235,18 +241,18 @@ const createAdminOrStaffIntoDB = async (
   try {
     session.startTransaction();
     // Create Admin or staff account base on request type
-    if (userInfo.role === "admin") {
+    if (userInfo.role === ROLES.ADMIN) {
       newUser = await UserHelpers.createAdminOrStaffUser(
-        "admin",
+        ROLES.ADMIN,
         Admin,
         userInfo,
         personalInfo,
         address,
         session
       );
-    } else if (userInfo.role === "staff") {
+    } else if (userInfo.role === ROLES.STAFF) {
       newUser = await UserHelpers.createAdminOrStaffUser(
-        "staff",
+        ROLES.STAFF,
         Staff,
         userInfo,
         personalInfo,
@@ -318,11 +324,11 @@ const updateAdminOrStaffIntDB = async (
     }
 
     if (personalInfo) {
-      if (isExist.role === "admin") {
+      if (isExist.role === ROLES.ADMIN) {
         await Admin.findOneAndUpdate({ _id: isExist.admin }, personalInfo, {
           session,
         });
-      } else if (isExist.role === "staff") {
+      } else if (isExist.role === ROLES.STAFF) {
         await Staff.findOneAndUpdate({ _id: isExist.staff }, personalInfo, {
           session,
         });
@@ -417,7 +423,13 @@ const geUserProfileFromDB = async (id: Types.ObjectId) => {
       {
         $addFields: {
           ...addFieldsStage,
-          permissions: "$permissionsData.name",
+          permissions: {
+            $map: {
+              input: "$permissionsData",
+              as: "perm",
+              in: { _id: "$$perm._id", name: "$$perm.name" },
+            },
+          },
           address: {
             $arrayElemAt: ["$addressData", 0],
           },

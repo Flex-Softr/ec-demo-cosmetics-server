@@ -8,6 +8,7 @@ import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { jwtHelper } from "../../../helper/jwt.helper";
 // import { errorLogger } from "../../../utilities/logger";
+import { ROLES } from "../../userManagement/user/user.const";
 import { User } from "../../userManagement/user/user.model";
 import { TPasswordResetOtpData } from "../passwordResetOtp/passwordResetOtp.interface";
 import { PasswordResetOtp } from "../passwordResetOtp/passwordResetOtp.model";
@@ -69,6 +70,9 @@ const refreshToken = async (
       token,
       config.token_data.refresh_token_secret as Secret
     );
+    if (verifiedToken.role !== ROLES.CUSTOMER) {
+      throw new ApiError(httpStatus.FORBIDDEN, "Invalid token");
+    }
   } catch (error) {
     throw new ApiError(httpStatus.FORBIDDEN, "Invalid token");
   }
@@ -88,8 +92,8 @@ const refreshToken = async (
       permissions:
         (isExist.permissions.map(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (item: any) => item.name
-        ) as unknown as string[]) || [],
+          (item: any) => ({ _id: item._id, name: item.name })
+        ) as unknown as { _id: string; name: string }[]) || [],
       uid: isExist.uid as string,
       // sessionId: isTokenExist.sessionId,
     },
@@ -134,7 +138,7 @@ const forgetPassword = async (req: Request): Promise<void> => {
   const { phoneNumber } = req.body;
   const user = await User.isUserExist({ phoneNumber });
 
-  if (user?.role !== "customer") {
+  if (user?.role !== ROLES.CUSTOMER) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No User found");
   }
 

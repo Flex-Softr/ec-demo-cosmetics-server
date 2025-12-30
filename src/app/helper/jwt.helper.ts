@@ -2,11 +2,7 @@ import httpStatus from "http-status";
 import jwt, { Secret } from "jsonwebtoken";
 import ApiError from "../errorHandlers/ApiError";
 
-const createToken = (
-  payload: Record<string, string | string[]>,
-  secret: Secret,
-  expiresIn: string
-) => {
+const createToken = (payload: object, secret: Secret, expiresIn: string) => {
   return jwt.sign(payload, secret, { expiresIn } as jwt.SignOptions);
 };
 

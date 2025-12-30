@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ROLES } from "./user.const";
 const phoneNumberRegex = /^(?!.*[a-zA-Z])01\d{9}$/;
 const passwordValidatorRegex =
   /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%&*]).{8,}$/;
@@ -54,7 +55,9 @@ const createStaffOrAdmin = z.object({
     phoneNumber: phoneNumberValidationZodSchema(),
     email: z.string({ required_error: "Email is required." }).email(),
     password: passwordZodSchema,
-    role: z.enum(["staff", "admin"], { required_error: "Role is required" }),
+    role: z.enum([ROLES.STAFF, ROLES.ADMIN], {
+      required_error: "Role is required",
+    }),
     address: createAddressSchema(true),
     personalInfo: z.object(
       {

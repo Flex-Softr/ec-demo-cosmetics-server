@@ -1,11 +1,11 @@
 import { Schema, model } from "mongoose";
-import { permissionEnums } from "./permission.const";
+import { permissionList } from "../../../const/permission.const";
 import { TPermission } from "./permission.interface";
 
 const PermissionSchema = new Schema<TPermission>({
   name: {
     type: String,
-    enum: permissionEnums,
+    enum: permissionList,
     required: true,
     unique: true,
   },

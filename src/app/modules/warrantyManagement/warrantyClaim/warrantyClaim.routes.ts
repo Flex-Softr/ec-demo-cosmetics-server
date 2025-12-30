@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { z } from "zod";
 import config from "../../../config/config";
+import { PERMISSIONS } from "../../../const/permission.const";
 import authGuard from "../../../middlewares/authGuard";
 import validateRequest from "../../../middlewares/validateRequest";
 import { imageAndVideoUploader } from "../../../utilities/imgUploader";
+import { ROLES } from "../../userManagement/user/user.const";
 import { WarrantyClaimController } from "./warrantyClaim.controller";
 import { WarrantyClaimMiddlewares } from "./warrantyClaim.middlewares";
 import { WarrantyClaimValidation } from "./warrantyClaim.validate";
@@ -12,7 +14,7 @@ const router = Router();
 
 router.get(
   "/",
-  authGuard({ requiredRoles: ["superAdmin", "admin", "staff"] }),
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
   WarrantyClaimController.getAllWarrantyClaimReq
 );
 
@@ -34,8 +36,8 @@ router.post(
 router.patch(
   "/update-request/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage warranty claim",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_WARRANTY_CLAIM,
   }),
   validateRequest(WarrantyClaimValidation.updateWarrantyClaimReq),
   WarrantyClaimController.updateWarrantyClaimReq
@@ -44,8 +46,8 @@ router.patch(
 router.post(
   "/create-order/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage warranty claim",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_WARRANTY_CLAIM,
   }),
   validateRequest(WarrantyClaimValidation.approveAndCreateOrder),
   WarrantyClaimController.createNewWarrantyClaimOrder
@@ -54,8 +56,8 @@ router.post(
 router.patch(
   "/update-variation/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage warranty claim",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_WARRANTY_CLAIM,
   }),
   validateRequest(
     z.object({

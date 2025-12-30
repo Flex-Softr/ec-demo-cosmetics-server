@@ -1,16 +1,18 @@
 import express from "express";
-import { CategoryControllers } from "./category.controller";
-import validateRequest from "../../../middlewares/validateRequest";
-import { CategoryValidation } from "./category.validation";
+import { PERMISSIONS } from "../../../const/permission.const";
 import authGuard from "../../../middlewares/authGuard";
+import validateRequest from "../../../middlewares/validateRequest";
+import { ROLES } from "../../userManagement/user/user.const";
+import { CategoryControllers } from "./category.controller";
+import { CategoryValidation } from "./category.validation";
 
 const router = express.Router();
 
 router.post(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   validateRequest(CategoryValidation.category),
   CategoryControllers.createCategory
@@ -21,8 +23,8 @@ router.get("/", CategoryControllers.getAllCategories);
 router.patch(
   "/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   validateRequest(CategoryValidation.updateCategory),
   CategoryControllers.updateCategory
@@ -31,8 +33,8 @@ router.patch(
 router.delete(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   CategoryControllers.deleteCategory
 );

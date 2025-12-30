@@ -1,4 +1,12 @@
-import { TRoles, TStatus } from "./user.interface";
+import { TStatus } from "./user.interface";
 
-export const rolesEnum: TRoles[] = ["customer", "staff", "admin", "superAdmin"];
+export const ROLES = {
+  SUPER_ADMIN: "superAdmin",
+  ADMIN: "admin",
+  STAFF: "staff",
+  CUSTOMER: "customer",
+} as const;
+
+export const roleList = Object.values(ROLES);
+
 export const statusEnum: TStatus[] = ["active", "banned", "deleted"];

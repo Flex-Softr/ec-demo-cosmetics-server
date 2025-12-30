@@ -1,9 +1,10 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
+import { ROLES } from "./user.const";
 import { User } from "./user.model";
 
 const findLastCustomer = async (): Promise<string | undefined> => {
-  const lastCustomer = await User.findOne({ role: "customer" }, { uid: 1 })
+  const lastCustomer = await User.findOne({ role: ROLES.CUSTOMER }, { uid: 1 })
     .sort({
       createdAt: -1,
     })
@@ -22,13 +23,13 @@ export const createCustomerId = async (): Promise<string> => {
 export const createAdminOrStaffId = async (isStaff: boolean) => {
   let lastId = undefined;
   if (isStaff) {
-    const lastStaff = await User.findOne({ role: "staff" }, { uid: 1 })
+    const lastStaff = await User.findOne({ role: ROLES.STAFF }, { uid: 1 })
       .sort({ createdAt: -1 })
       .lean();
     lastId = lastStaff?._id ? lastStaff.uid.substring(3) : undefined;
   } else {
     const lastAdmin = await User.findOne(
-      { role: ["superAdmin", "admin"] },
+      { role: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
       { uid: 1 }
     )
       .sort({ createdAt: -1 })
@@ -49,19 +50,19 @@ export const createSwitchField = (fieldName: string) => ({
     $switch: {
       branches: [
         {
-          case: { $eq: ["$role", "superAdmin"] },
+          case: { $eq: ["$role", ROLES.SUPER_ADMIN] },
           then: { $arrayElemAt: [`$admin.${fieldName}`, 0] },
         },
         {
-          case: { $eq: ["$role", "admin"] },
+          case: { $eq: ["$role", ROLES.ADMIN] },
           then: { $arrayElemAt: [`$admin.${fieldName}`, 0] },
         },
         {
-          case: { $eq: ["$role", "staff"] },
+          case: { $eq: ["$role", ROLES.STAFF] },
           then: { $arrayElemAt: [`$staff.${fieldName}`, 0] },
         },
         {
-          case: { $eq: ["$role", "customer"] },
+          case: { $eq: ["$role", ROLES.CUSTOMER] },
           then: { $arrayElemAt: [`$customer.${fieldName}`, 0] },
         },
       ],

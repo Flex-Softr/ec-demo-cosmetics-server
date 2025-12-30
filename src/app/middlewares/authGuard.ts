@@ -2,6 +2,7 @@ import { CookieOptions, NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { Secret } from "jsonwebtoken";
 import config from "../config/config";
+import { PERMISSIONS } from "../const/permission.const";
 import ApiError from "../errorHandlers/ApiError";
 import { jwtHelper } from "../helper/jwt.helper";
 import { TJwtPayload } from "../modules/authManagement/auth/auth.interface";
@@ -9,13 +10,17 @@ import {
   TPermission,
   TPermissionNames,
 } from "../modules/userManagement/permission/permission.interface";
+import { ROLES } from "../modules/userManagement/user/user.const";
 import { TRoles, TUser } from "../modules/userManagement/user/user.interface";
 import { User } from "../modules/userManagement/user/user.model";
 
-function areArraysEqual(arr1: TPermission[], arr2: string[]): boolean {
+function areArraysEqual(
+  arr1: TPermission[],
+  arr2: { _id: string; name: string }[]
+): boolean {
   return (
     arr1?.length === arr2?.length &&
-    arr1.every((value) => arr2.includes(value.name))
+    arr1.every((value) => arr2.map((item) => item.name).includes(value.name))
   );
 }
 
@@ -51,7 +56,7 @@ const authGuard =
         throw new ApiError(httpStatus.FORBIDDEN, "Not valid user");
       }
 
-      if (verifiedUser.role !== "customer") {
+      if (verifiedUser.role !== ROLES.CUSTOMER) {
         const user = await User.isUserExist({ _id: verifiedUser.id });
         verifiedUser.data = user as unknown as TUser;
         if (user?.role !== verifiedUser.role) {
@@ -72,8 +77,8 @@ const authGuard =
               permissions:
                 (user?.permissions?.map(
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (item: any) => item.name
-                ) as unknown as string[]) || [],
+                  (item: any) => ({ _id: item._id, name: item.name })
+                ) as unknown as { _id: string; name: string }[]) || [],
               uid: user?.uid as string,
               // sessionId: isTokenExist.sessionId,
             },
@@ -114,7 +119,7 @@ const authGuard =
             !user?.permissions.some(
               (item) =>
                 (item as TPermission).name === requiredPermission ||
-                (item as TPermission).name === "super admin"
+                (item as TPermission).name === PERMISSIONS.SUPER_ADMIN
             )
           ) {
             throw new ApiError(httpStatus.FORBIDDEN, "Permission denied");

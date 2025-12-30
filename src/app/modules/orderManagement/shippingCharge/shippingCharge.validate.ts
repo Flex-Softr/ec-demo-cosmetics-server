@@ -20,7 +20,7 @@ const updateShippingCharge = z.object({
   }),
 });
 
-export const ShippingCHargeValidation = {
+export const ShippingChargeValidation = {
   createShippingCharge,
   updateShippingCharge,
 };

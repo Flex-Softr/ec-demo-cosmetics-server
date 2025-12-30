@@ -1,7 +1,9 @@
 import { Router } from "express";
+import { PERMISSIONS } from "../../const/permission.const";
 import authGuard from "../../middlewares/authGuard";
 import optionalAuthGuard from "../../middlewares/optionalAuthGuard";
 import validateRequest from "../../middlewares/validateRequest";
+import { ROLES } from "../userManagement/user/user.const";
 import { CouponController } from "./coupon.controller";
 import { CouponValidation } from "./coupon.validation";
 
@@ -10,8 +12,8 @@ const route = Router();
 route.post(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage coupon",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_COUPON,
   }),
   validateRequest(CouponValidation.createCoupon),
   CouponController.createCoupon
@@ -20,8 +22,8 @@ route.post(
 route.get(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage coupon",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_COUPON,
   }),
   CouponController.getAllCoupons
 );
@@ -29,8 +31,8 @@ route.get(
 route.patch(
   "/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage coupon",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_COUPON,
   }),
   validateRequest(CouponValidation.updateCoupon),
   CouponController.updateCouponCode

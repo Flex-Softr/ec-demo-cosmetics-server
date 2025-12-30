@@ -2,6 +2,7 @@ import express from "express";
 import authGuard from "../../../middlewares/authGuard";
 import limitRequest from "../../../middlewares/requestLimitHandler";
 import validateRequest from "../../../middlewares/validateRequest";
+import { ROLES } from "../../userManagement/user/user.const";
 import { AuthControllers } from "./auth.controller";
 import { AuthValidation } from "./auth.validation";
 
@@ -22,7 +23,12 @@ route.post(
   "/change-password",
   validateRequest(AuthValidation.changePassword),
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "customer", "staff"],
+    requiredRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.CUSTOMER,
+      ROLES.STAFF,
+    ],
   }),
   AuthControllers.changePassword
 );
@@ -30,13 +36,20 @@ route.post(
 route.post(
   "/logout",
   // validateRequest(refreshTokenZodSchema),
-  // authGuard({ requiredRoles: ["superAdmin", "admin","customer", "staff", ] }),
+  // authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.CUSTOMER, ROLES.STAFF ] }),
   AuthControllers.logoutUser
 );
 
 route.get(
   "/logged-in-devices",
-  authGuard({ requiredRoles: ["superAdmin", "admin", "customer", "staff"] }),
+  authGuard({
+    requiredRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.CUSTOMER,
+      ROLES.STAFF,
+    ],
+  }),
   AuthControllers.getLoggedInDevices
 );
 

@@ -1,16 +1,18 @@
 import express from "express";
+import { PERMISSIONS } from "../../../const/permission.const";
+import authGuard from "../../../middlewares/authGuard";
 import validateRequest from "../../../middlewares/validateRequest";
+import { ROLES } from "../../userManagement/user/user.const";
 import { BrandControllers } from "./brand.controller";
 import { BrandValidation } from "./brand.validation";
-import authGuard from "../../../middlewares/authGuard";
 
 const router = express.Router();
 
 router.post(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   validateRequest(BrandValidation.brand),
   BrandControllers.createBrand
@@ -21,8 +23,8 @@ router.get("/", BrandControllers.getAllBrands);
 router.patch(
   "/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   validateRequest(BrandValidation.updateBrand),
   BrandControllers.updateBrand
@@ -31,8 +33,8 @@ router.patch(
 router.delete(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   BrandControllers.deleteBrand
 );

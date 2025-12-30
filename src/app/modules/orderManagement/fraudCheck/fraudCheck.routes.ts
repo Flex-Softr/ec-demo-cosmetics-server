@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { FraudCheckController } from "./fraudCheck.controller";
 import authGuard from "../../../middlewares/authGuard";
+import { ROLES } from "../../userManagement/user/user.const";
+import { FraudCheckController } from "./fraudCheck.controller";
 
 const router = Router();
 
 router.get(
   "/fraud-customers/:mobile",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
   }),
   FraudCheckController.fraudCheck
 );

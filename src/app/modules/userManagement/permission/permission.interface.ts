@@ -1,19 +1,7 @@
 import { Document } from "mongoose";
+import { permissionList } from "../../../const/permission.const";
 
-export type TPermissionNames =
-  | "super admin"
-  | "manage product"
-  | "manage permission"
-  | "manage admin or staff"
-  | "manage coupon"
-  | "manage shipping charges"
-  | "manage orders"
-  | "manage warehouse"
-  | "manage courier"
-  | "manage warranty claim"
-  | "manage image to order"
-  | "manage customers"
-  | "manage sms";
+export type TPermissionNames = (typeof permissionList)[number];
 
 export type TPermissionData = {
   name: TPermissionNames;

@@ -1,7 +1,9 @@
 import express from "express";
+import { PERMISSIONS } from "../../../const/permission.const";
 import authGuard from "../../../middlewares/authGuard";
 import validateRequest from "../../../middlewares/validateRequest";
 import { employPhotoUploader } from "../../../utilities/imgUploader";
+import { ROLES } from "./user.const";
 import { UserControllers } from "./user.controller";
 import { UserValidation } from "./user.validation";
 
@@ -10,8 +12,8 @@ const router = express.Router();
 router.get(
   "/all-admin-staff",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage admin or staff",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_ADMIN_OR_STAFF,
   }),
   UserControllers.getAllAdminAndStaff
 );
@@ -25,8 +27,8 @@ router.post(
 router.post(
   "/create-staff-or-admin",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage admin or staff",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_ADMIN_OR_STAFF,
   }),
   employPhotoUploader.array("image", 1),
   validateRequest(UserValidation.createStaffOrAdmin),
@@ -36,8 +38,8 @@ router.post(
 router.patch(
   "/update-admin-or-staff/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage admin or staff",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_ADMIN_OR_STAFF,
   }),
   employPhotoUploader.array("image", 1),
   validateRequest(UserValidation.updateStaffOrAdmin),
@@ -46,7 +48,14 @@ router.patch(
 
 router.get(
   "/profile",
-  authGuard({ requiredRoles: ["superAdmin", "admin", "customer", "staff"] }),
+  authGuard({
+    requiredRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.CUSTOMER,
+      ROLES.STAFF,
+    ],
+  }),
   UserControllers.getUserProfile
 );
 

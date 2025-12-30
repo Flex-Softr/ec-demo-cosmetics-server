@@ -5,19 +5,20 @@ import { TAddressData } from "../../../types/address";
 import { Address } from "../address/address.model";
 import { TAdmin } from "../admin/admin.interface";
 import { TStaff } from "../staff/staff.interface";
-import { TUser } from "./user.interface";
+import { ROLES } from "./user.const";
+import { TRoles, TUser } from "./user.interface";
 import { User } from "./user.model";
 import { createAdminOrStaffId } from "./user.util";
 
 const createAdminOrStaffUser = async (
-  role: "admin" | "staff",
+  role: TRoles,
   modelName: Model<TAdmin | TStaff>,
   userInfo: TUser,
   personalInfo: TAdmin | TStaff,
   addressData: TAddressData,
   session: ClientSession
 ): Promise<TUser> => {
-  const id = await createAdminOrStaffId(role === "staff");
+  const id = await createAdminOrStaffId(role === ROLES.STAFF);
   userInfo.uid = id;
   personalInfo.uid = id;
 
@@ -35,7 +36,13 @@ const createAdminOrStaffUser = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create address");
   }
   userInfo.address = address;
-  userInfo[role] = createdModel._id;
+  if (role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN) {
+    userInfo.admin = createdModel._id;
+  } else if (role === ROLES.STAFF) {
+    userInfo.staff = createdModel._id;
+  } else if (role === ROLES.CUSTOMER) {
+    userInfo.customer = createdModel._id;
+  }
 
   const [user] = await User.create([userInfo], { session });
   if (!user) {

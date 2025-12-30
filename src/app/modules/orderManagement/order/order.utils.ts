@@ -12,6 +12,7 @@ import { Coupon } from "../../coupon/coupon.model";
 import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
+import { ROLES } from "../../userManagement/user/user.const";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { TPaymentData } from "../orderPayment/orderPayment.interface";
@@ -200,7 +201,11 @@ export const createNewOrder = async (
     if (!user.id) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized request");
     }
-    if (!["superAdmin", "admin", "staff"]?.includes(String(user?.role))) {
+    if (
+      !([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] as string[])?.includes(
+        String(user?.role)
+      )
+    ) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Permission denied");
     }
   }

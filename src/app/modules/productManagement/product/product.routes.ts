@@ -1,8 +1,10 @@
 import express from "express";
-import { ProductControllers } from "./product.controller";
-import validateRequest from "../../../middlewares/validateRequest";
-import { ProductValidation } from "./product.validation";
+import { PERMISSIONS } from "../../../const/permission.const";
 import authGuard from "../../../middlewares/authGuard";
+import validateRequest from "../../../middlewares/validateRequest";
+import { ROLES } from "../../userManagement/user/user.const";
+import { ProductControllers } from "./product.controller";
+import { ProductValidation } from "./product.validation";
 // import imgUploader from "../../../utilities/imgUploader";
 // import formDataParse from "../../../utilities/formDataParse";
 
@@ -11,8 +13,8 @@ const router = express.Router();
 router.post(
   "/",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   // imgUploader.fields([
   //   { name: "thumbnail", maxCount: 1 },
@@ -30,7 +32,7 @@ router.get("/featured", ProductControllers.getFeaturedProducts);
 router.get(
   "/admin",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     // requiredPermission: "manage product",
   }),
   ProductControllers.getAllProductsAdmin
@@ -39,8 +41,8 @@ router.get(
 router.get(
   "/:id/admin",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   ProductControllers.getAProductAdmin
 );
@@ -52,8 +54,8 @@ router.get("/", ProductControllers.getAllProductsCustomer);
 router.patch(
   "/:id",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   // imgUploader.fields([
   //   { name: "thumbnail", maxCount: 1 },
@@ -67,8 +69,8 @@ router.patch(
 router.delete(
   "/delete",
   authGuard({
-    requiredRoles: ["superAdmin", "admin", "staff"],
-    requiredPermission: "manage product",
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
   }),
   ProductControllers.deleteProduct
 );

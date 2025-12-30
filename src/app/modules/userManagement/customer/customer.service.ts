@@ -4,6 +4,7 @@ import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TJwtPayload } from "../../authManagement/auth/auth.interface";
 import { Address } from "../address/address.model";
+import { ROLES } from "../user/user.const";
 import { TStatus } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { isEmailOrNumberTaken } from "../user/user.util";
@@ -66,7 +67,7 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
   ];
 
   const matchQuery: Record<string, unknown> = {
-    role: "customer",
+    role: ROLES.CUSTOMER,
   };
 
   if (query.phoneNumber) {

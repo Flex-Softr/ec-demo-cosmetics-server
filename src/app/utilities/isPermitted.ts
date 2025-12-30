@@ -1,17 +1,15 @@
-import { TPermission } from "../modules/userManagement/permission/permission.interface";
+import { PERMISSIONS } from "../const/permission.const";
 
 const isPermitted = (
-  permissions?: string[],
-  requiredPermission?: TPermission
+  permissions?: { _id: string; name: string }[],
+  requiredPermission?: string
 ) => {
   const neededPermission = requiredPermission
     ? requiredPermission
-    : "super admin";
+    : PERMISSIONS.SUPER_ADMIN;
   if (permissions?.length) {
-    return (
-      permissions &&
-      (permissions.includes("super admin") ||
-        permissions.includes(neededPermission as string))
+    return permissions.some(
+      (p) => p.name === PERMISSIONS.SUPER_ADMIN || p.name === neededPermission
     );
   }
   return false;

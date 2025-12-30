@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import config from "../../../config/config";
 import catchAsync from "../../../utilities/catchAsync";
 import successResponse from "../../../utilities/successResponse";
+import { ROLES } from "../../userManagement/user/user.const";
 import {
   TJwtPayload,
   // TLoginResponse,
@@ -24,7 +25,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const adminOrStaffRefExpires = config.token_data
     .admin_staff_refresh_token_cookie_expires as string;
   const refreshExpires =
-    user?.role === "customer" ? customerRfExpires : adminOrStaffRefExpires;
+    user?.role === ROLES.CUSTOMER ? customerRfExpires : adminOrStaffRefExpires;
 
   const cookieOption: CookieOptions = {
     domain:
