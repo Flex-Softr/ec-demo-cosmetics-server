@@ -541,22 +541,15 @@ const orderDetailsPipeline = (): PipelineStage[] => [
     $unwind: { path: "$productThumb", preserveNullAndEmptyArrays: true },
   },
   {
-    $addFields: {
-      variation: {
-        $arrayElemAt: [
-          {
-            $filter: {
-              input: "$productInfo.variations",
-              as: "variation",
-              cond: {
-                $eq: ["$$variation._id", "$orderedProducts.variation"],
-              },
-            },
-          },
-          0,
-        ],
-      },
+    $lookup: {
+      from: "variations",
+      localField: "orderedProducts.variation",
+      foreignField: "_id",
+      as: "variation",
     },
+  },
+  {
+    $unwind: { path: "$variation", preserveNullAndEmptyArrays: true },
   },
   {
     $lookup: {
@@ -986,22 +979,15 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
     $unwind: { path: "$productThumb", preserveNullAndEmptyArrays: true },
   },
   {
-    $addFields: {
-      variation: {
-        $arrayElemAt: [
-          {
-            $filter: {
-              input: "$productInfo.variations",
-              as: "variation",
-              cond: {
-                $eq: ["$$variation._id", "$orderedProducts.variation"],
-              },
-            },
-          },
-          0,
-        ],
-      },
+    $lookup: {
+      from: "variations",
+      localField: "orderedProducts.variation",
+      foreignField: "_id",
+      as: "variation",
     },
+  },
+  {
+    $unwind: { path: "$variation", preserveNullAndEmptyArrays: true },
   },
   {
     $addFields: {
@@ -1149,7 +1135,7 @@ const sanitizeCartItemsForOrder = async (userQuery: {
         category,
         isDeleted: product?.isDeleted,
         variationDetails: Object.keys(variation || {})?.length
-          ? [variation]
+          ? { variations: [variation] }
           : undefined,
         stock: Object.keys(variation || {}).length
           ? (variation?.inventory as TInventory)
