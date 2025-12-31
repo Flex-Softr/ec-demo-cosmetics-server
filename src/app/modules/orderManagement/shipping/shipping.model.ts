@@ -14,6 +14,9 @@ export const ShippingSchema = new Schema<TShippingData>(
       type: String,
       required: true,
     },
+    email: {
+      type: String,
+    },
     fullAddress: {
       type: String,
       required: true,
@@ -45,5 +48,8 @@ export const ShippingSchema = new Schema<TShippingData>(
   },
   { timestamps: true }
 );
+
+ShippingSchema.index({ phoneNumber: 1 });
+ShippingSchema.index({ email: 1 });
 
 export const Shipping = model<TShippingData>("Shipping", ShippingSchema);
