@@ -326,6 +326,7 @@ export const createNewOrder = async (
         $set: {
           fullName: shipping.fullName,
           fullAddress: shipping.fullAddress,
+          email: shipping.email,
           // city: shipping.city,
           // state: shipping.state,
           // country: shipping.country,
