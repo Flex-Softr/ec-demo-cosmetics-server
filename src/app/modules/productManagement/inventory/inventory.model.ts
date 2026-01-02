@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
-import { TInventory } from "./inventory.interface";
 import { stockStatus } from "./inventory.const";
+import { TInventory } from "./inventory.interface";
 
 export const inventorySchema = new Schema<TInventory>(
   {
@@ -10,9 +10,9 @@ export const inventorySchema = new Schema<TInventory>(
     stockAvailable: {
       type: Number,
       required: true,
-      // default: function (this: TInventory) {
-      //   return this.stockQuantity;
-      // },
+      default: function (this: TInventory) {
+        return this.stockQuantity;
+      },
     },
     // productCode: { type: String },
     manageStock: { type: Boolean, default: false },

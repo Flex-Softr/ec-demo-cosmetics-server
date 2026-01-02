@@ -738,77 +738,79 @@ const updateProductIntoDB = async (
 
     let index = 0;
 
-    for (const variation of variations) {
-      const serial = index + 1;
-      const {
-        price: variationPrice,
-        inventory: variationInventory,
-        _id: variationId,
-        ...variationData
-      } = variation as any;
+    if (variations && variations.length > 0) {
+      for (const variation of variations) {
+        const serial = index + 1;
+        const {
+          price: variationPrice,
+          inventory: variationInventory,
+          _id: variationId,
+          ...variationData
+        } = variation as any;
 
-      let existingVariation;
+        let existingVariation;
 
-      if (variationId) {
-        existingVariation = await VariationModel.findById(variationId);
-      }
-
-      if (!existingVariation) {
-        existingVariation = await VariationModel.findOne({
-          productId: isProductExist.id,
-          attributes: variationData.attributes,
-        });
-      }
-
-      if (existingVariation) {
-        // Update existing variation
-        if (variationPrice) {
-          await PriceModel.findByIdAndUpdate(
-            existingVariation.price,
-            variationPrice,
-            { session }
-          );
+        if (variationId) {
+          existingVariation = await VariationModel.findById(variationId);
         }
-        if (variationInventory) {
-          await InventoryModel.findByIdAndUpdate(
-            existingVariation.inventory,
-            variationInventory,
-            { session }
-          );
+
+        if (!existingVariation) {
+          existingVariation = await VariationModel.findOne({
+            productId: isProductExist.id,
+            attributes: variationData.attributes,
+          });
         }
-        await VariationModel.findByIdAndUpdate(
-          existingVariation._id,
-          { $set: { serial, ...variationData } },
-          { session }
-        );
-        variationIds.push(existingVariation._id);
-      } else {
-        // Create new variation
-        const [newPrice] = await PriceModel.create([variationPrice], {
-          session,
-        });
-        const [newInventory] = await InventoryModel.create(
-          [variationInventory],
-          {
-            session,
+
+        if (existingVariation) {
+          // Update existing variation
+          if (variationPrice) {
+            await PriceModel.findByIdAndUpdate(
+              existingVariation.price,
+              variationPrice,
+              { session }
+            );
           }
-        );
-        const [createdVariation] = await VariationModel.create(
-          [
+          if (variationInventory) {
+            await InventoryModel.findByIdAndUpdate(
+              existingVariation.inventory,
+              variationInventory,
+              { session }
+            );
+          }
+          await VariationModel.findByIdAndUpdate(
+            existingVariation._id,
+            { $set: { serial, ...variationData } },
+            { session }
+          );
+          variationIds.push(existingVariation._id);
+        } else {
+          // Create new variation
+          const [newPrice] = await PriceModel.create([variationPrice], {
+            session,
+          });
+          const [newInventory] = await InventoryModel.create(
+            [variationInventory],
             {
-              productId: isProductExist.id,
-              serial,
-              price: newPrice._id,
-              inventory: newInventory._id,
-              ...variationData,
-            },
-          ],
-          { session }
-        );
-        variationIds.push(createdVariation._id);
-      }
+              session,
+            }
+          );
+          const [createdVariation] = await VariationModel.create(
+            [
+              {
+                productId: isProductExist.id,
+                serial,
+                price: newPrice._id,
+                inventory: newInventory._id,
+                ...variationData,
+              },
+            ],
+            { session }
+          );
+          variationIds.push(createdVariation._id);
+        }
 
-      index++;
+        index++;
+      }
     }
 
     // if (seoData && Object.keys(seoData).length) {
