@@ -7,6 +7,7 @@ export type TShippingData = {
   upazila?: string;
   district?: string;
   division?: string;
+  email?: string;
 } & TAddressData;
 
 export type TShipping = TShippingData & Document;
