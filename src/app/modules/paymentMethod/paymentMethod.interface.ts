@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Types } from "mongoose";
 import { TUser } from "../userManagement/user/user.interface";
 
 export type TRequiredInput = {
@@ -16,4 +16,5 @@ export type TPaymentMethod = {
   required_inputs: TRequiredInput[];
   createdBy: Types.ObjectId | TUser;
   isDeleted: boolean;
-} & Document;
+  _id: string;
+};

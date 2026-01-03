@@ -53,7 +53,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
         _id: product?._id,
         title: product?.title,
         image: {
-          src: `${config.image_server}/${image?.src}`,
+          src: `${config.image_base_url}/${image?.src}`,
           alt: image?.alt,
         },
       },

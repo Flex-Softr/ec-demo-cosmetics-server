@@ -183,6 +183,10 @@ export type TFindOrderForUpdatingOrder = {
     };
     warranty: Types.ObjectId;
     claimedCodes?: TWarrantyCodes[];
+    image?: {
+      src: string;
+      alt: string;
+    };
   }[];
   couponDetails: Types.ObjectId;
   subtotal: number;

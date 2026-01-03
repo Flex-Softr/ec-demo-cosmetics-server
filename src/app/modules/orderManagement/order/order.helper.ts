@@ -164,6 +164,20 @@ const findOrderForUpdatingOrder = async (
       },
       {
         $lookup: {
+          from: "images",
+          localField: "orderedProducts.productInfo.image.thumbnail",
+          foreignField: "_id",
+          as: "orderedProducts.productInfo.productImage",
+        },
+      },
+      {
+        $unwind: {
+          path: "$orderedProducts.productInfo.productImage",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
           from: "inventories",
           localField: "orderedProducts.productInfo.inventory",
           foreignField: "_id",
@@ -250,6 +264,16 @@ const findOrderForUpdatingOrder = async (
                   _id: "$orderedProducts._id",
                   product: "$orderedProducts.product",
                   productTitle: "$orderedProducts.productInfo.title",
+                  image: {
+                    src: {
+                      $concat: [
+                        config.image_base_url,
+                        "/",
+                        "$orderedProducts.productInfo.productImage.src",
+                      ],
+                    },
+                    alt: "$orderedProducts.productInfo.productImage.alt",
+                  },
                   attributes: "$orderedProducts.attributes",
                   unitPrice: "$orderedProducts.unitPrice",
                   quantity: "$orderedProducts.quantity",
@@ -471,7 +495,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
               image: {
                 src: {
                   $concat: [
-                    config.image_server,
+                    config.image_base_url,
                     "/",
                     "$paymentMethodImage.src",
                   ],
@@ -490,7 +514,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         slug: "$courierData.slug",
         image: {
           src: {
-            $concat: [config.image_server, "/", "$courierImage.src"],
+            $concat: [config.image_base_url, "/", "$courierImage.src"],
           },
           alt: "$courierImage.alt",
         },
@@ -582,7 +606,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
             title: "$productInfo.title",
             image: {
               src: {
-                $concat: [config.image_server, "/", "$productThumb.src"],
+                $concat: [config.image_base_url, "/", "$productThumb.src"],
               },
               alt: "$productThumb.alt",
             },
@@ -724,6 +748,17 @@ const orderStatusUpdatingPipeline = (
     },
     {
       $lookup: {
+        from: "images",
+        localField: "productInfo.image.thumbnail",
+        foreignField: "_id",
+        as: "productThumb",
+      },
+    },
+    {
+      $unwind: { path: "$productThumb", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $lookup: {
         from: "inventories",
         localField: "productInfo.inventory",
         foreignField: "_id",
@@ -801,6 +836,12 @@ const orderStatusUpdatingPipeline = (
               _id: "$orderedProducts._id",
               productId: "$productInfo._id",
               title: "$productInfo.title",
+              image: {
+                src: {
+                  $concat: [config.image_base_url, "/", "$productThumb.src"],
+                },
+                alt: "$productThumb.alt",
+              },
               unitPrice: "$orderedProducts.unitPrice",
               isWarrantyClaim: "$orderedProducts.isWarrantyClaim",
               warranty: "$orderedProducts.warranty",
@@ -939,7 +980,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
           name: "$paymentMethod.name",
           image: {
             src: {
-              $concat: [config.image_server, "/", "$paymentMethodImage.src"],
+              $concat: [config.image_base_url, "/", "$paymentMethodImage.src"],
             },
             alt: "$paymentMethodImage.alt",
           },
@@ -1001,7 +1042,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
             title: "$productInfo.title",
             image: {
               src: {
-                $concat: [config.image_server, "/", "$productThumb.src"],
+                $concat: [config.image_base_url, "/", "$productThumb.src"],
               },
               alt: "$productThumb.alt",
             },

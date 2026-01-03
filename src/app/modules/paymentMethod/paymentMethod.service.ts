@@ -1,3 +1,4 @@
+import config from "../../config/config";
 import { TJwtPayload } from "../authManagement/auth/auth.interface";
 import { TPaymentMethod } from "./paymentMethod.interface";
 import { PaymentMethod } from "./paymentMethod.model";
@@ -14,7 +15,15 @@ const getAllPaymentMethodsFromDB = async (
     createdBy: 0,
     isDeleted: 0,
   });
-  return result;
+
+  const formattedData = result.map((method) => ({
+    ...method.toObject(),
+    image: method.image
+      ? config.image_base_url + "/" + method.image
+      : method.image,
+  }));
+
+  return formattedData;
 };
 
 const createPaymentMethod = async (

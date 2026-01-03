@@ -324,7 +324,7 @@ const getBestSellingProductsFromDB = async () => {
         productId: "$_id",
         productName: "$product.title",
         productImage: {
-          $concat: [config.image_server, "/", "$productImage.src"],
+          $concat: [config.image_base_url, "/", "$productImage.src"],
         },
         stockAvailable: "$inventory.stockAvailable",
         totalSales: "$totalQuantity",

@@ -2,6 +2,7 @@ import { Request } from "express";
 import fsEx from "fs-extra";
 import httpStatus from "http-status";
 import mongoose, { PipelineStage, Types } from "mongoose";
+import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TAddressData } from "../../../types/address";
@@ -112,7 +113,13 @@ const getAllAdminAndStaffFromDB = async (
         status: 1,
         fullName: 1,
         emergencyContact: 1,
-        profilePicture: 1,
+        profilePicture: {
+          $cond: {
+            if: "$profilePicture",
+            then: { $concat: [config.image_base_url, "/", "$profilePicture"] },
+            else: "$profilePicture",
+          },
+        },
         NIDNo: 1,
         birthCertificateNo: 1,
         dateOfBirth: 1,
@@ -445,7 +452,15 @@ const geUserProfileFromDB = async (id: Types.ObjectId) => {
           status: 1,
           fullName: 1,
           emergencyContact: 1,
-          profilePicture: 1,
+          profilePicture: {
+            $cond: {
+              if: "$profilePicture",
+              then: {
+                $concat: [config.image_base_url, "/", "$profilePicture"],
+              },
+              else: "$profilePicture",
+            },
+          },
           NIDNo: 1,
           birthCertificateNo: 1,
           dateOfBirth: 1,

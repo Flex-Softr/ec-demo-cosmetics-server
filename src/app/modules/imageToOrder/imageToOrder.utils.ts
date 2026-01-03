@@ -18,7 +18,7 @@ const getRequestPipeline = (): PipelineStage[] => [
         $map: {
           input: "$images",
           as: "image",
-          in: { $concat: [config.image_server, "/", "$$image.path"] },
+          in: { $concat: [config.image_base_url, "/", "$$image.path"] },
         },
       },
       contactStatus: 1,

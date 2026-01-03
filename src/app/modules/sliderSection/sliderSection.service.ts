@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { TSliderSection } from "./sliderSection.interface";
 
 import httpStatus from "http-status";
+import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
 import { SliderSectionModel } from "./sliderSection.model";
 
@@ -64,7 +65,7 @@ const getSliderSections = async (query?: Record<string, unknown>) => {
         name: 1,
         image: {
           _id: "$image._id",
-          src: "$image.src",
+          src: { $concat: [config.image_base_url, "/", "$image.src"] },
           alt: "$image.alt",
         },
         bannerLink: 1,

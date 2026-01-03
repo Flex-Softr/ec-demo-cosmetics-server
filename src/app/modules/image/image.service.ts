@@ -1,9 +1,10 @@
+import fsEx from "fs-extra";
 import { Types } from "mongoose";
+import path from "path";
+import config from "../../config/config";
 import { QueryHelper } from "../../helper/query.helper";
 import { TImage } from "./image.interface";
 import { ImageModel } from "./image.model";
-import fsEx from "fs-extra";
-import path from "path";
 
 const createImageIntoDB = async (payload: Partial<TImage[]>) => {
   const result = await ImageModel.create(payload);
@@ -12,7 +13,10 @@ const createImageIntoDB = async (payload: Partial<TImage[]>) => {
 
 const getAnImageFromDB = async (id: string) => {
   if (id != "undefined") {
-    const result = await ImageModel.findById(id, "_id src alt");
+    const result = await ImageModel.findById(id, "_id src alt").lean();
+    if (result) {
+      result.src = config.image_base_url + "/" + result.src;
+    }
     return result;
   } else {
     return {};
@@ -20,15 +24,19 @@ const getAnImageFromDB = async (id: string) => {
 };
 
 const getAllImagesFromDB = async (query: Record<string, unknown>) => {
-  const imageQuery = new QueryHelper(
+  const imageQuery = new QueryHelper<TImage>(
     ImageModel.find({ isDeleted: false }),
     query
   )
     .sort()
     .paginate();
-  const data = await imageQuery.model;
+  const data: TImage[] = (await imageQuery.model.lean()) as unknown as TImage[];
   const meta = await imageQuery.metaData();
-  return { meta, data };
+  const formattedData = data.map((img: TImage) => ({
+    ...img,
+    src: config.image_base_url + "/" + img.src,
+  }));
+  return { meta, data: formattedData };
 };
 
 const deleteImagesFromDB = async (

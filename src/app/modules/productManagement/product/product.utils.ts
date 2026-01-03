@@ -2,6 +2,7 @@
 import { CronJob } from "cron";
 import { Request } from "express";
 import { PipelineStage } from "mongoose";
+import config from "../../../config/config";
 import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
 import ProductModel from "./product.model";
@@ -82,7 +83,14 @@ export const commonPipelineSingleProduct = (
       localField: "image.thumbnail",
       foreignField: "_id",
       as: "thumbnail",
-      pipeline: [{ $project: { src: 1, alt: 1 } }],
+      pipeline: [
+        {
+          $project: {
+            src: { $concat: [config.image_base_url, "/", "$src"] },
+            alt: 1,
+          },
+        },
+      ],
     },
   },
   {
@@ -91,7 +99,14 @@ export const commonPipelineSingleProduct = (
       localField: "image.gallery",
       foreignField: "_id",
       as: "gallery",
-      pipeline: [{ $project: { src: 1, alt: 1 } }],
+      pipeline: [
+        {
+          $project: {
+            src: { $concat: [config.image_base_url, "/", "$src"] },
+            alt: 1,
+          },
+        },
+      ],
     },
   },
   {
@@ -296,6 +311,14 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       localField: "image.thumbnail",
       foreignField: "_id",
       as: "thumbnail",
+      pipeline: [
+        {
+          $project: {
+            src: { $concat: [config.image_base_url, "/", "$src"] },
+            alt: 1,
+          },
+        },
+      ],
     },
   },
   {

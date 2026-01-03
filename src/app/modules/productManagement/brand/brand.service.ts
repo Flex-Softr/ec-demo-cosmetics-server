@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 import { Types } from "mongoose";
+import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TBrand } from "./brand.interface";
 import { BrandModel } from "./brand.model";
@@ -33,10 +34,33 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
     matchQuery.isActive = query.isActive === "true";
   }
 
-  const result = await BrandModel.find(
-    matchQuery,
-    "name slug description isActive"
-  ).populate("logo", "_id src alt");
+  const pipeline = [
+    { $match: matchQuery },
+    {
+      $lookup: {
+        from: "images",
+        localField: "logo",
+        foreignField: "_id",
+        as: "logo",
+      },
+    },
+    { $unwind: { path: "$logo", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        name: 1,
+        slug: 1,
+        description: 1,
+        isActive: 1,
+        logo: {
+          _id: "$logo._id",
+          src: { $concat: [config.image_base_url, "/", "$logo.src"] },
+          alt: "$logo.alt",
+        },
+      },
+    },
+  ];
+
+  const result = await BrandModel.aggregate(pipeline);
   return result;
 };
 

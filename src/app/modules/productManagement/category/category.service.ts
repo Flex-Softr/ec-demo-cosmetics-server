@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 import { Types } from "mongoose";
+import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TCategory } from "./category.interface";
 import { CategoryModel } from "./category.model";
@@ -64,7 +65,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         slug: 1,
         image: {
           _id: "$image._id",
-          src: "$image.src",
+          src: { $concat: [config.image_base_url, "/", "$image.src"] },
           alt: "$image.alt",
         },
         description: 1,

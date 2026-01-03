@@ -14,7 +14,7 @@ export default {
   DBUrl: env.DB_URL,
   clientSideURL: env.CLIENT_SIDE_URL,
   main_domain: env.MAIN_DOMAIN,
-  image_server: env.IMAGE_SERVER,
+  image_base_url: env.IMAGE_BASE_URL,
   bcrypt_salt_round: env.BCRYPT_SALT_ROUND,
   token_data: {
     access_token_secret: env.ACCESS_TOKEN_SECRET,

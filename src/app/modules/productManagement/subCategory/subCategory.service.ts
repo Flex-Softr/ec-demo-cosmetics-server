@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 import { Types } from "mongoose";
+import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { ImageModel } from "../../image/image.model";
 import { CategoryModel } from "../category/category.model";
@@ -55,18 +56,55 @@ const getAllSubCategoriesFromDB = async (query?: Record<string, unknown>) => {
   }
 
   if (query?.category) {
-    matchQuery.category = query.category;
+    matchQuery.category = new Types.ObjectId(query.category as string);
   }
 
-  const result = await SubCategoryModel.find(
-    matchQuery,
-    "name slug image description isActive category"
-  )
-    .populate("category", "name slug image description")
-    .populate({
-      path: "image",
-      select: "_id src alt uploadedBy isDeleted createdAt updatedAt",
-    });
+  const pipeline = [
+    { $match: matchQuery },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "category",
+        foreignField: "_id",
+        as: "category",
+      },
+    },
+    { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "images",
+        localField: "image",
+        foreignField: "_id",
+        as: "image",
+      },
+    },
+    { $unwind: { path: "$image", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        name: 1,
+        slug: 1,
+        description: 1,
+        isActive: 1,
+        category: {
+          name: "$category.name",
+          slug: "$category.slug",
+          image: "$category.image",
+          description: "$category.description",
+        },
+        image: {
+          _id: "$image._id",
+          src: { $concat: [config.image_base_url, "/", "$image.src"] },
+          alt: "$image.alt",
+          uploadedBy: "$image.uploadedBy",
+          isDeleted: "$image.isDeleted",
+          createdAt: "$image.createdAt",
+          updatedAt: "$image.updatedAt",
+        },
+      },
+    },
+  ];
+
+  const result = await SubCategoryModel.aggregate(pipeline);
   return result;
 };
 
@@ -115,21 +153,48 @@ const getSubCategoriesByCategoryFromDB = async (
   query?: Record<string, unknown>
 ) => {
   const matchQuery: Record<string, unknown> = {
-    category: categoryId,
+    category: new Types.ObjectId(categoryId),
     isDeleted: false,
   };
   if (query?.isActive) {
     matchQuery.isActive = query.isActive === "true";
   }
 
-  const result = await SubCategoryModel.find(
-    matchQuery,
-    "name slug image description isActive category"
-  ).populate({
-    path: "image",
-    select: "_id src alt uploadedBy isDeleted createdAt updatedAt",
-  });
+  const pipeline = [
+    { $match: matchQuery },
+    {
+      $lookup: {
+        from: "images",
+        localField: "image",
+        foreignField: "_id",
+        as: "image",
+      },
+    },
+    { $unwind: { path: "$image", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        name: 1,
+        slug: 1,
+        description: 1,
+        isActive: 1,
+        category: 1, // Keep category ID as per original find/populate intuition or project as needed. Original populated category but with select keys? No, original didn't populate category in this function.
+        // Wait, original: .find(..., "... category").populate({path: "image"...})
+        // It selected "category" field (the ID) but didn't populate it.
+        // So we just keep it.
+        image: {
+          _id: "$image._id",
+          src: { $concat: [config.image_base_url, "/", "$image.src"] },
+          alt: "$image.alt",
+          uploadedBy: "$image.uploadedBy",
+          isDeleted: "$image.isDeleted",
+          createdAt: "$image.createdAt",
+          updatedAt: "$image.updatedAt",
+        },
+      },
+    },
+  ];
 
+  const result = await SubCategoryModel.aggregate(pipeline);
   return result;
 };
 
