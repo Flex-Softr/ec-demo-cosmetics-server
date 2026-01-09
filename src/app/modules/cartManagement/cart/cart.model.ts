@@ -1,7 +1,7 @@
 import mongoose, { Schema, model } from "mongoose";
-import { TCartItem } from "./cartItem.interface";
+import { TCart } from "./cart.interface";
 
-const CartItemSchema = new Schema<TCartItem>(
+const CartSchema = new Schema<TCart>(
   {
     userId: {
       type: mongoose.Schema.ObjectId,
@@ -27,4 +27,4 @@ const CartItemSchema = new Schema<TCartItem>(
   }
 );
 
-export const CartItem = model<TCartItem>("CartItem", CartItemSchema);
+export const Cart = model<TCart>("Cart", CartSchema);

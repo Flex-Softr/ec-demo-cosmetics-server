@@ -10,7 +10,7 @@ export type TSelectedAttributesOnCart = {
   value: string;
 };
 
-export type TCartItemData = {
+export type TCartData = {
   userId?: Types.ObjectId;
   sessionId?: string;
   product: Types.ObjectId | TProduct;
@@ -20,4 +20,4 @@ export type TCartItemData = {
   expireAt?: Date;
 };
 
-export type TCartItem = TCartItemData & Document;
+export type TCart = TCartData & Document;

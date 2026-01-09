@@ -3,7 +3,7 @@ import { Secret } from "jsonwebtoken";
 import mongoose from "mongoose";
 import config from "../../../config/config";
 import { jwtHelper } from "../../../helper/jwt.helper";
-import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
+import { Cart } from "../../cartManagement/cart/cart.model";
 import { ROLES } from "../../userManagement/user/user.const";
 import { TUser } from "../../userManagement/user/user.interface";
 import { TRefreshTokenData } from "../refreshToken/refreshToken.interface";
@@ -23,17 +23,17 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const previousCartItems = await CartItem.find(
+    const previousCarts = await Cart.find(
       {
         sessionId: previousSessionId,
       },
       { _id: 1 }
     );
-    if (previousCartItems.length) {
-      await CartItem.updateMany(
+    if (previousCarts.length) {
+      await Cart.updateMany(
         {
           _id: {
-            $in: previousCartItems.map(({ _id }) => _id),
+            $in: previousCarts.map(({ _id }) => _id),
           },
         },
         { $set: { userId: user?._id, sessionId } }

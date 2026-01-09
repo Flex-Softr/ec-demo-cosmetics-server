@@ -28,7 +28,6 @@ const subCategorySchema = new Schema<TSubCategory>(
     isDeleted: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
   },
-
   {
     timestamps: true,
   }

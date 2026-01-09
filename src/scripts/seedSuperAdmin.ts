@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
-import config from "../config/config";
-import { PERMISSIONS, permissionList } from "../const/permission.const";
-import { Address } from "../modules/userManagement/address/address.model";
-import { Admin } from "../modules/userManagement/admin/admin.model";
-import { Permission } from "../modules/userManagement/permission/permission.model";
-import { ROLES } from "../modules/userManagement/user/user.const";
-import { User } from "../modules/userManagement/user/user.model";
-import { createAdminOrStaffId } from "../modules/userManagement/user/user.util";
-import { consoleLogger } from "./logger";
+import config from "../app/config/config";
+import { PERMISSIONS, permissionList } from "../app/const/permission.const";
+import { Address } from "../app/modules/userManagement/address/address.model";
+import { Admin } from "../app/modules/userManagement/admin/admin.model";
+import { TPermission } from "../app/modules/userManagement/permission/permission.interface";
+import { Permission } from "../app/modules/userManagement/permission/permission.model";
+import { ROLES } from "../app/modules/userManagement/user/user.const";
+import { User } from "../app/modules/userManagement/user/user.model";
+import { createAdminOrStaffId } from "../app/modules/userManagement/user/user.util";
+import { consoleLogger } from "../app/utilities/logger";
 
 const checkAndCreatePermissions = async (session: mongoose.ClientSession) => {
   const existingPermissions = await Permission.find({}, null, {
@@ -19,18 +20,21 @@ const checkAndCreatePermissions = async (session: mongoose.ClientSession) => {
     .filter((name) => !existingNames.includes(name))
     .map((name) => ({ name }));
 
+  let createdPermissions: TPermission[] = [];
   if (permissionsToCreate.length > 0) {
-    await Permission.insertMany(permissionsToCreate, { session });
+    createdPermissions = await Permission.insertMany(permissionsToCreate, {
+      session,
+    });
     consoleLogger.info(
       `✅ Created missing permissions: ${permissionsToCreate.map((p) => p.name).join(", ")}`
     );
   }
 
-  const superAdminPermission = await Permission.findOne(
-    { name: PERMISSIONS.SUPER_ADMIN },
-    null,
-    { session }
+  const allPermissions = [...existingPermissions, ...createdPermissions];
+  const superAdminPermission = allPermissions.find(
+    (p) => p.name === PERMISSIONS.SUPER_ADMIN
   );
+
   if (!superAdminPermission) {
     throw new Error(
       "❌ Super admin permission not found after creating permissions!"
@@ -41,6 +45,14 @@ const checkAndCreatePermissions = async (session: mongoose.ClientSession) => {
 };
 
 const createSuperAdmin = async () => {
+  await Permission.init();
+  await User.init();
+  await Admin.init();
+  await Address.init();
+
+  await Admin.init();
+  await Address.init();
+
   const session = await mongoose.startSession();
 
   try {
@@ -48,6 +60,7 @@ const createSuperAdmin = async () => {
 
     const superAdminPermission = await checkAndCreatePermissions(session);
 
+    // Double check inside transaction for race conditions (unlikely in seed script but good practice)
     const existingSuperAdmin = await User.findOne(
       { role: ROLES.SUPER_ADMIN },
       null,
@@ -55,31 +68,33 @@ const createSuperAdmin = async () => {
     );
     if (existingSuperAdmin) {
       consoleLogger.info("✅ Super admin already exists.");
+      await session.commitTransaction(); // Commit changes (like permissions) even if user exists
       return;
     }
 
     const userId = await createAdminOrStaffId(false);
     if (!userId) throw new Error("❌ Failed to create super admin user ID!");
 
-    const [admin] = await Admin.create(
-      [
-        {
-          uid: userId,
-          fullName: config.fullName,
-        },
-      ],
-      { session }
-    );
-
-    const [address] = await Address.create(
-      [
-        {
-          uid: userId,
-          fullAddress: config.fullAddress,
-        },
-      ],
-      { session }
-    );
+    const [[admin], [address]] = await Promise.all([
+      Admin.create(
+        [
+          {
+            uid: userId,
+            fullName: config.fullName,
+          },
+        ],
+        { session }
+      ),
+      Address.create(
+        [
+          {
+            uid: userId,
+            fullAddress: config.fullAddress,
+          },
+        ],
+        { session }
+      ),
+    ]);
 
     await User.create(
       [
@@ -99,6 +114,7 @@ const createSuperAdmin = async () => {
     );
 
     consoleLogger.info("✅ Super admin created successfully.");
+    await session.commitTransaction(); // Commit only if success
   } catch (error) {
     await session.abortTransaction();
     consoleLogger.error(
@@ -107,7 +123,6 @@ const createSuperAdmin = async () => {
     );
     throw error;
   } finally {
-    await session.commitTransaction();
     await session.endSession();
   }
 };

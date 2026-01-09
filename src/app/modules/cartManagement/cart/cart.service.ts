@@ -11,9 +11,9 @@ import {
   TVariation,
 } from "../../productManagement/product/product.interface";
 import ProductModel from "../../productManagement/product/product.model";
-import { TCartItem, TCartItemData } from "../cartItem/cartItem.interface";
-import { CartItem } from "../cartItem/cartItem.model";
+import { TCart, TCartData } from "./cart.interface";
 import { CartHelper } from "./cart.helper";
+import { Cart } from "./cart.model";
 
 const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
   const query = optionalAuthUserQuery(user);
@@ -21,7 +21,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
     query.userId = new Types.ObjectId(query.userId);
   }
 
-  const result = await CartItem.find(query, {}).populate([
+  const result = await Cart.find(query, {}).populate([
     {
       path: "product",
       select: "_id title price image.thumbnail",
@@ -77,7 +77,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
 
 const addToCartIntoDB = async (
   user: TOptionalAuthGuardPayload,
-  payload: TCartItemData
+  payload: TCartData
 ): Promise<void> => {
   const product = await ProductModel.findOne(
     { _id: payload.product },
@@ -106,22 +106,21 @@ const addToCartIntoDB = async (
     payload.variation = undefined;
   }
 
-  const cartItemData: TCartItemData = {
+  const cartData: TCartData = {
     userId: user.id,
     sessionId: user.sessionId,
     ...payload,
   };
 
   const query = optionalAuthUserQuery(user);
-  const existingCartItem = await CartItem.findOne({
+  const existingCart = await Cart.findOne({
     ...query,
     product: payload.product,
     variation: payload.variation,
   });
 
-  if (existingCartItem) {
-    const newQuantity =
-      existingCartItem.quantity + Number(payload.quantity || 1);
+  if (existingCart) {
+    const newQuantity = existingCart.quantity + Number(payload.quantity || 1);
     await CartHelper.checkInventory({
       quantity: newQuantity,
       item: {
@@ -130,36 +129,36 @@ const addToCartIntoDB = async (
       },
     });
 
-    existingCartItem.quantity = newQuantity;
-    await existingCartItem.save();
+    existingCart.quantity = newQuantity;
+    await existingCart.save();
   } else {
-    await CartItem.create(cartItemData);
+    await Cart.create(cartData);
   }
 };
 
 const updateQuantityIntoDB = async (
   user: TOptionalAuthGuardPayload,
-  payload: Partial<TCartItem>
+  payload: Partial<TCart>
 ) => {
   let query: Record<string, unknown> = optionalAuthUserQuery(user);
 
   query = { ...query, _id: payload._id };
-  const cartItem = await CartItem.findOne(query);
+  const cart = await Cart.findOne(query);
 
-  if (!cartItem) {
+  if (!cart) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No cart item found");
   }
 
   await CartHelper.checkInventory({
     quantity: Number(payload.quantity || 1),
     item: {
-      product: cartItem?.product as Types.ObjectId,
-      variation: cartItem?.variation as Types.ObjectId,
+      product: cart?.product as Types.ObjectId,
+      variation: cart?.variation as Types.ObjectId,
     },
   });
 
-  cartItem.quantity = Number(payload.quantity) || 1;
-  await cartItem.save();
+  cart.quantity = Number(payload.quantity) || 1;
+  await cart.save();
 };
 
 const deleteFromCartFromDB = async (
@@ -167,7 +166,7 @@ const deleteFromCartFromDB = async (
   payload: { itemId: mongoose.Types.ObjectId }
 ) => {
   const query = optionalAuthUserQuery(user);
-  await CartItem.deleteOne({
+  await Cart.deleteOne({
     ...query,
     _id: payload.itemId,
   });

@@ -7,7 +7,7 @@ import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
 import BdAddress from "../../../utilities/bdAddress/bdAddress";
 import lowStockWarningEmail from "../../../utilities/lowStockWarningEmail";
 import steedFastApi from "../../../utilities/steedfastApi";
-import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
+import { Cart } from "../../cartManagement/cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
 import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
@@ -227,7 +227,7 @@ export const createNewOrder = async (
     );
   } else {
     fromWebsite = true;
-    const cart = await OrderHelper.sanitizeCartItemsForOrder(userQuery);
+    const cart = await OrderHelper.sanitizeCartsForOrder(userQuery);
     orderedProductInfo = cart as unknown as TSanitizedOrProduct[];
   }
   if (config.env === "production") {
@@ -421,7 +421,7 @@ export const createNewOrder = async (
 
   // clear cart and cart items
   if (fromWebsite) {
-    await CartItem.deleteMany(userQuery).session(session);
+    await Cart.deleteMany(userQuery).session(session);
   }
 
   await OrderHelper.sendOrderSMSNotification(

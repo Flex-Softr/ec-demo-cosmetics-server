@@ -5,7 +5,7 @@ import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import { errorLogger } from "../../../utilities/logger";
 import sendSms from "../../../utilities/sendSms";
-import { CartItem } from "../../cartManagement/cartItem/cartItem.model";
+import { Cart } from "../../cartManagement/cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
 import { TCategory } from "../../productManagement/category/category.interface";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
@@ -1116,11 +1116,11 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
   },
 ];
 
-const sanitizeCartItemsForOrder = async (userQuery: {
+const sanitizeCartsForOrder = async (userQuery: {
   userId?: Types.ObjectId;
   sessionId?: string;
 }) => {
-  const result = await CartItem.find(userQuery, {}).populate([
+  const result = await Cart.find(userQuery, {}).populate([
     {
       path: "product",
       select: "_id title price isDeleted category.name inventory",
@@ -1524,7 +1524,7 @@ export const OrderHelper = {
   orderDetailsPipeline,
   orderStatusUpdatingPipeline,
   orderDetailsCustomerPipeline,
-  sanitizeCartItemsForOrder,
+  sanitizeCartsForOrder,
   validateAndSanitizeOrderedProducts,
   orderCostAfterCoupon,
   sendOrderSMSNotification,

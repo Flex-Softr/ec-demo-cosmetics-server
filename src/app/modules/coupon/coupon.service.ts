@@ -433,7 +433,7 @@ const calculateCouponDiscount = async (
     orderedProductInfo =
       await OrderHelper.sanitizeOrderedProducts(orderedProducts);
   } else {
-    const cart = await OrderHelper.sanitizeCartItemsForOrder(userQuery);
+    const cart = await OrderHelper.sanitizeCartsForOrder(userQuery);
     orderedProductInfo = cart;
   }
   const { cost } =

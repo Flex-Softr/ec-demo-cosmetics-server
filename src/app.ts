@@ -6,14 +6,16 @@ import userAgent from "express-useragent";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
+import "./app/crons";
 import requestIp from "request-ip";
 import config from "./app/config/config";
-import "./app/crons";
 import { ecSIDHandler } from "./app/middlewares/ecSID";
 import enableCrossOriginResourcePolicy from "./app/middlewares/enableCrossOriginResourcePolicy";
+import limitRequest from "./app/middlewares/requestLimitHandler";
 import globalErrorhandler from "./app/middlewares/globalErrorHandler";
 import { notFoundRoute } from "./app/middlewares/notFoundRoute";
 import router from "./app/routes";
+
 const app: Application = express();
 
 const corsOptions: CorsOptions = {
@@ -42,6 +44,8 @@ app.use(compression());
 app.use(cookieParser());
 app.use(userAgent.express());
 app.use(requestIp.mw());
+app.use(limitRequest(15, 100));
+
 if (config.env === "development") {
   app.use(morgan("dev"));
 }

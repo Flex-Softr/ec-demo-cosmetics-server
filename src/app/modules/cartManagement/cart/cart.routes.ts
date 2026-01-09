@@ -9,7 +9,7 @@ router.get("/", optionalAuthGuard, CartController.getCartInfo);
 
 router.post(
   "/add-to-cart",
-  validateRequest(CartValidation.addToCart),
+  validateRequest(CartValidation.Cart),
   optionalAuthGuard,
   CartController.addToCart
 );
@@ -23,7 +23,7 @@ router.patch(
 
 router.delete(
   "/delete-from-cart",
-  validateRequest(CartValidation.deleteCartItem),
+  validateRequest(CartValidation.deleteCart),
   optionalAuthGuard,
   CartController.deleteFromCart
 );
