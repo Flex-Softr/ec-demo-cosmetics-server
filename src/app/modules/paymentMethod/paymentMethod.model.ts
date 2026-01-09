@@ -31,8 +31,9 @@ const PaymentMethodSchema = new Schema<TPaymentMethod>(
       type: Boolean,
       default: true,
     },
-    image: {
-      type: String,
+    logo: {
+      type: Schema.Types.ObjectId,
+      ref: "Image",
     },
     required_inputs: [requiredInputSchema],
     isDeleted: {

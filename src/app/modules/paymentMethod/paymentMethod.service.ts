@@ -11,19 +11,36 @@ const getAllPaymentMethodsFromDB = async (
     matchQuery.isActive = query.isActive === "true";
   }
 
-  const result = await PaymentMethod.find(matchQuery, {
-    createdBy: 0,
-    isDeleted: 0,
-  });
+  const pipeline = [
+    { $match: matchQuery },
+    {
+      $lookup: {
+        from: "images",
+        localField: "logo",
+        foreignField: "_id",
+        as: "logo",
+      },
+    },
+    { $unwind: { path: "$logo", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        instructions: 1,
+        isActive: 1,
+        required_inputs: 1,
+        logo: {
+          _id: "$logo._id",
+          src: { $concat: [config.image_base_url, "/", "$logo.src"] },
+          alt: "$logo.alt",
+        },
+      },
+    },
+  ];
 
-  const formattedData = result.map((method) => ({
-    ...method.toObject(),
-    image: method.image
-      ? config.image_base_url + "/" + method.image
-      : method.image,
-  }));
+  const result = await PaymentMethod.aggregate(pipeline);
 
-  return formattedData;
+  return result;
 };
 
 const createPaymentMethod = async (

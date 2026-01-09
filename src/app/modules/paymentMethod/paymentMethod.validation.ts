@@ -12,7 +12,7 @@ const createPaymentMethodValidationSchema = z.object({
     name: z.string({ required_error: "Name is required" }),
     instructions: z.string().optional(),
     isActive: z.boolean().optional(),
-    image: z.string().optional(),
+    logo: z.string().optional(),
     required_inputs: z.array(requiredInputValidationSchema).default([]),
   }),
 });
@@ -22,7 +22,7 @@ const updatePaymentMethodValidationSchema = z.object({
     name: z.string().optional(),
     instructions: z.string().optional(),
     isActive: z.boolean().optional(),
-    image: z.string().optional(),
+    logo: z.string().optional(),
     required_inputs: z.array(requiredInputValidationSchema).optional(),
   }),
 });

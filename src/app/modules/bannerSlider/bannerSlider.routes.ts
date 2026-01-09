@@ -2,31 +2,31 @@ import express from "express";
 import authGuard from "../../middlewares/authGuard";
 import validateRequest from "../../middlewares/validateRequest";
 import { ROLES } from "../userManagement/user/user.const";
-import { SliderSectionController } from "./sliderSection.controller";
-import { SliderSectionValidation } from "./sliderSection.validation";
+import { BannerSliderController } from "./bannerSlider.controller";
+import { BannerSliderValidation } from "./bannerSlider.validation";
 
 const router = express.Router();
 
 router.post(
   "/",
   authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
-  validateRequest(SliderSectionValidation.sliderSection),
-  SliderSectionController.createSliderSection
+  validateRequest(BannerSliderValidation.bannerSlider),
+  BannerSliderController.createBannerSlider
 );
 
-router.get("/", SliderSectionController.getSliderSections);
+router.get("/", BannerSliderController.getBannerSliders);
 
 router.patch(
   "/:id",
   authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
-  validateRequest(SliderSectionValidation.updateSliderSection),
-  SliderSectionController.updateSliderSection
+  validateRequest(BannerSliderValidation.updateBannerSlider),
+  BannerSliderController.updateBannerSlider
 );
 
 router.delete(
   "/",
   authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
-  SliderSectionController.deleteSliderSection
+  BannerSliderController.deleteBannerSlider
 );
 
-export const SliderBannerRoutes = router;
+export const BannerSliderRoutes = router;

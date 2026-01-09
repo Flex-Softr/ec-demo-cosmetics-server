@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-const sliderSection = z.object({
+const bannerSlider = z.object({
   body: z.object({
-    name: z.string().min(1, { message: "Slider name is required!" }),
+    name: z.string().optional(),
     image: z.string().min(1, { message: "Image is required!" }),
     bannerLink: z
       .string()
@@ -17,10 +17,11 @@ const sliderSection = z.object({
         }
       ),
     isActive: z.boolean().default(true),
+    sortOrder: z.number().optional(),
   }),
 });
 
-const updateSliderSection = z.object({
+const updateBannerSlider = z.object({
   body: z.object({
     name: z.string().optional(),
     image: z.string().optional(),
@@ -37,10 +38,11 @@ const updateSliderSection = z.object({
         }
       ),
     isActive: z.boolean().optional(),
+    sortOrder: z.number().optional(),
   }),
 });
 
-export const SliderSectionValidation = {
-  sliderSection,
-  updateSliderSection,
+export const BannerSliderValidation = {
+  bannerSlider,
+  updateBannerSlider,
 };

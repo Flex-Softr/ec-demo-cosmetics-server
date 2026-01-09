@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import { AuthRouters } from "../modules/authManagement/auth/auth.routes";
+import { BannerSliderRoutes } from "../modules/bannerSlider/bannerSlider.routes";
 import { CartRoutes } from "../modules/cartManagement/cart/cart.routes";
 import { CouponRoutes } from "../modules/coupon/coupon.routes";
 import { CourierRoutes } from "../modules/courier/courier.routes";
@@ -20,7 +21,6 @@ import { SubCategoryRoutes } from "../modules/productManagement/subCategory/subC
 import { TagRoutes } from "../modules/productManagement/tag/tag.route";
 import { VariationRoutes } from "../modules/productManagement/variation/variation.route";
 import { ReportsRoutes } from "../modules/reports/reports.routes";
-import { SliderBannerRoutes } from "../modules/sliderSection/sliderSection.routes";
 import { OrderSMSNotificationRotes } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.routes";
 import { SmsRoutes } from "../modules/smsManagement/sms/sms.routes";
 import { SMSReportRoutes } from "../modules/smsManagement/smsReport/smsReport.routes";
@@ -142,7 +142,7 @@ const moduleRoutes: TModuleTypes[] = [
   },
   {
     path: "/slider-banner",
-    route: SliderBannerRoutes,
+    route: BannerSliderRoutes,
   },
   {
     path: "/divisions",

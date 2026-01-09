@@ -12,7 +12,7 @@ export type TPaymentMethod = {
   name: string;
   instructions?: string;
   isActive: boolean;
-  image?: string; // URL to icon/logo
+  logo?: Types.ObjectId;
   required_inputs: TRequiredInput[];
   createdBy: Types.ObjectId | TUser;
   isDeleted: boolean;
