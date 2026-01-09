@@ -13,6 +13,7 @@ const createPaymentMethodValidationSchema = z.object({
     instructions: z.string().optional(),
     isActive: z.boolean().optional(),
     logo: z.string().optional(),
+    sortOrder: z.number().optional(),
     required_inputs: z.array(requiredInputValidationSchema).default([]),
   }),
 });
@@ -23,6 +24,7 @@ const updatePaymentMethodValidationSchema = z.object({
     instructions: z.string().optional(),
     isActive: z.boolean().optional(),
     logo: z.string().optional(),
+    sortOrder: z.number().optional(),
     required_inputs: z.array(requiredInputValidationSchema).optional(),
   }),
 });

@@ -35,6 +35,10 @@ const PaymentMethodSchema = new Schema<TPaymentMethod>(
       type: Schema.Types.ObjectId,
       ref: "Image",
     },
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
     required_inputs: [requiredInputSchema],
     isDeleted: {
       type: Boolean,

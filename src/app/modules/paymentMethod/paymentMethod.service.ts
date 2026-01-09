@@ -1,3 +1,4 @@
+import { PipelineStage } from "mongoose";
 import config from "../../config/config";
 import { TJwtPayload } from "../authManagement/auth/auth.interface";
 import { TPaymentMethod } from "./paymentMethod.interface";
@@ -11,7 +12,7 @@ const getAllPaymentMethodsFromDB = async (
     matchQuery.isActive = query.isActive === "true";
   }
 
-  const pipeline = [
+  const pipeline: PipelineStage[] = [
     { $match: matchQuery },
     {
       $lookup: {
@@ -34,8 +35,10 @@ const getAllPaymentMethodsFromDB = async (
           src: { $concat: [config.image_base_url, "/", "$logo.src"] },
           alt: "$logo.alt",
         },
+        sortOrder: 1,
       },
     },
+    { $sort: { sortOrder: 1 } },
   ];
 
   const result = await PaymentMethod.aggregate(pipeline);

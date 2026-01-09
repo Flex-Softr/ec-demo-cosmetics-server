@@ -13,6 +13,7 @@ export type TPaymentMethod = {
   instructions?: string;
   isActive: boolean;
   logo?: Types.ObjectId;
+  sortOrder?: number;
   required_inputs: TRequiredInput[];
   createdBy: Types.ObjectId | TUser;
   isDeleted: boolean;
