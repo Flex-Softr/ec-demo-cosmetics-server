@@ -8,6 +8,7 @@ import sendSms from "../../../utilities/sendSms";
 import { Cart } from "../../cartManagement/cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
 import { TCategory } from "../../productManagement/category/category.interface";
+import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { TPrice } from "../../productManagement/price/price.interface";
 import { TProduct } from "../../productManagement/product/product.interface";
@@ -1231,7 +1232,7 @@ const validateAndSanitizeOrderedProducts = (
     if (
       (item?.product?.stock?.manageStock &&
         Number(item?.product?.stock?.stockAvailable || 0) < item?.quantity) ||
-      item?.product?.stock?.stockStatus === "Out of stock"
+      item?.product?.stock?.stockStatus === STOCK_STATUS.OUT_OF_STOCK
     ) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { STOCK_STATUS } from "../inventory/inventory.const";
 import { productStatus } from "./product.const";
 
 const createProductAttribute = z.object({
@@ -46,7 +47,10 @@ const imageSchema = z.object({
 
 const inventorySchema = z.object({
   sku: z.string().min(1, "SKU is required"),
-  stockStatus: z.string().optional(),
+  stockStatus: z.enum([...Object.values(STOCK_STATUS)] as [
+    string,
+    ...string[],
+  ]),
   stockQuantity: z.number().optional(),
   stockAvailable: z.number().optional(),
   preStockQuantity: z.number().optional(),

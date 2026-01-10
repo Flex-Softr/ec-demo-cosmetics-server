@@ -1,7 +1,11 @@
 import httpStatus from "http-status";
 import { Types } from "mongoose";
 import ApiError from "../../../errorHandlers/ApiError";
-import { TInventory } from "../../productManagement/inventory/inventory.interface";
+import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";
+import {
+  TInventory,
+  TStockStatus,
+} from "../../productManagement/inventory/inventory.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { TVariation } from "../../productManagement/variation/variation.interface";
 
@@ -18,6 +22,7 @@ const checkInventory = async (payload: {
   }
   let availableStock = 0;
   let manageStock = false;
+  let stockStatus: TStockStatus | undefined = undefined;
   if (item?.variation) {
     const productData = await ProductModel.findOne(
       {
@@ -46,6 +51,7 @@ const checkInventory = async (payload: {
     availableStock =
       (specificVariation?.inventory as TInventory)?.stockAvailable || 0;
     manageStock = (specificVariation?.inventory as TInventory)?.manageStock;
+    stockStatus = (specificVariation?.inventory as TInventory)?.stockStatus;
   } else {
     const productData = await ProductModel.findById(product, {
       inventory: 1,
@@ -57,6 +63,11 @@ const checkInventory = async (payload: {
 
     availableStock = inventory?.stockAvailable || 0;
     manageStock = inventory?.manageStock || false;
+    stockStatus = inventory?.stockStatus;
+  }
+
+  if (stockStatus === STOCK_STATUS.OUT_OF_STOCK) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Product is out of stock");
   }
 
   // If the stock management is on

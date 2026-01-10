@@ -11,8 +11,8 @@ import {
   TVariation,
 } from "../../productManagement/product/product.interface";
 import ProductModel from "../../productManagement/product/product.model";
-import { TCart, TCartData } from "./cart.interface";
 import { CartHelper } from "./cart.helper";
+import { TCart, TCartData } from "./cart.interface";
 import { Cart } from "./cart.model";
 
 const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
@@ -24,7 +24,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
   const result = await Cart.find(query, {}).populate([
     {
       path: "product",
-      select: "_id title price image.thumbnail",
+      select: "_id title slug price image.thumbnail",
       populate: [
         {
           path: "price",
@@ -56,6 +56,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
           src: `${config.image_base_url}/${image?.src}`,
           alt: image?.alt,
         },
+        slug: product?.slug,
       },
       price: {
         regularPrice: (variation?.price as TPrice)?.regularPrice

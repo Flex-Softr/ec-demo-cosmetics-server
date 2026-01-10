@@ -1,6 +1,7 @@
 import { Document, Types } from "mongoose";
+import { STOCK_STATUS } from "./inventory.const";
 
-export type TStockStatus = "In stock" | "Out of stock" | "On backorder";
+export type TStockStatus = (typeof STOCK_STATUS)[keyof typeof STOCK_STATUS];
 
 export type TInventory = {
   product: Types.ObjectId;
@@ -11,10 +12,7 @@ export type TInventory = {
   productCode?: string;
   manageStock: boolean;
   lowStockWarning: number;
-  // showStockQuantity: boolean;
-  // showStockWithText: boolean;
   hideStock: boolean;
-  // soldIndividually: boolean;
   createdBy: Types.ObjectId;
   isDeleted: boolean;
 } & Document;

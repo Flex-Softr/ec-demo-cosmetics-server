@@ -11,6 +11,8 @@ import { Cart } from "../../cartManagement/cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
 import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
+import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";
+import { TStockStatus } from "../../productManagement/inventory/inventory.interface";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
 import { ROLES } from "../../userManagement/user/user.const";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
@@ -83,6 +85,19 @@ export const updateStockOrderCancelDelete = async (
     if (item?.variation) {
       if (item?.variationDetails) {
         if (item?.variationDetails?.inventory?.manageStock) {
+          const currentStock =
+            item?.variationDetails?.inventory?.stockAvailable;
+          const lowStockWarning =
+            item?.variationDetails?.inventory?.lowStockWarning;
+          const newStock = currentStock + updateType;
+
+          let status: TStockStatus = STOCK_STATUS.IN_STOCK;
+          if (newStock <= 0) {
+            status = STOCK_STATUS.OUT_OF_STOCK;
+          } else if (newStock <= lowStockWarning) {
+            status = STOCK_STATUS.LOW_STOCK;
+          }
+
           await InventoryModel.updateOne(
             {
               _id: item?.variationDetails?.inventory?._id,
@@ -90,6 +105,9 @@ export const updateStockOrderCancelDelete = async (
             {
               $inc: {
                 stockAvailable: updateType,
+              },
+              $set: {
+                stockStatus: status,
               },
             }
           ).session(session);
@@ -99,9 +117,23 @@ export const updateStockOrderCancelDelete = async (
       }
     } else {
       if (item?.defaultInventory?.manageStock) {
+        const currentStock = item?.defaultInventory?.stockAvailable;
+        const lowStockWarning = item?.defaultInventory?.lowStockWarning;
+        const newStock = currentStock + updateType;
+
+        let status: TStockStatus = STOCK_STATUS.IN_STOCK;
+        if (newStock <= 0) {
+          status = STOCK_STATUS.OUT_OF_STOCK;
+        } else if (newStock <= lowStockWarning) {
+          status = STOCK_STATUS.LOW_STOCK;
+        }
+
         await InventoryModel.updateOne(
           { _id: item?.defaultInventory?._id },
-          { $inc: { stockAvailable: updateType } }
+          {
+            $inc: { stockAvailable: updateType },
+            $set: { stockStatus: status },
+          }
         ).session(session);
       }
     }
@@ -261,6 +293,14 @@ export const createNewOrder = async (
     if (item?.product?.stock?.manageStock) {
       const currentStock =
         Number(item?.product?.stock?.stockAvailable || 0) - item.quantity;
+
+      let status: TStockStatus = STOCK_STATUS.IN_STOCK;
+      if (currentStock <= 0) {
+        status = STOCK_STATUS.OUT_OF_STOCK;
+      } else if (currentStock <= (item?.product?.stock?.lowStockWarning || 0)) {
+        status = STOCK_STATUS.LOW_STOCK;
+      }
+
       if (currentStock < item?.product?.stock?.lowStockWarning) {
         await lowStockWarningEmail({
           productName: item?.product?.title,
@@ -271,12 +311,18 @@ export const createNewOrder = async (
       if (item.variation) {
         await InventoryModel.updateOne(
           { _id: item?.product?.stock?._id },
-          { $inc: { stockAvailable: -item.quantity } }
+          {
+            $inc: { stockAvailable: -item.quantity },
+            $set: { stockStatus: status },
+          }
         ).session(session);
       } else {
         await InventoryModel.updateOne(
           { _id: item?.product?.defaultInventory },
-          { $inc: { stockAvailable: -item.quantity } }
+          {
+            $inc: { stockAvailable: -item.quantity },
+            $set: { stockStatus: status },
+          }
         ).session(session);
       }
     }
