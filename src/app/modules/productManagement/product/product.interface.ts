@@ -66,9 +66,10 @@ export type TProduct = {
   seoData?: TSeoData;
   publishedStatus: TPublishedStatus;
   createdBy: Types.ObjectId;
-  updatedBy: Types.ObjectId;
-  deletedBy: Types.ObjectId;
+  updatedBy?: Types.ObjectId;
+  deletedBy?: Types.ObjectId;
   isDeleted: boolean;
+  productCollection?: Types.ObjectId;
   offer?: {
     flash: boolean;
     today: boolean;
@@ -148,6 +149,7 @@ export type TProductPayload = {
     terms: string;
   };
   publishedStatus: TPublishedStatus;
+  productCollection?: string;
 };
 
 export type IAdminProduct = {

@@ -138,6 +138,7 @@ const product = z.object({
         path: ["variations"],
       }
     ),
+  productCollection: z.string().optional(),
 });
 
 const updateProduct = z.object({
@@ -184,6 +185,7 @@ const updateProduct = z.object({
       })
       .optional(),
     publishedStatus: publishedStatusSchema.optional(),
+    productCollection: z.string().optional(),
   }),
 });
 

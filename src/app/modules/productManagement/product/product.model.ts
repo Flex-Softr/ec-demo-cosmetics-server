@@ -142,6 +142,7 @@ export const productSchema = new Schema<TProduct>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
+    productCollection: { type: Schema.Types.ObjectId, ref: "Collection" },
   },
   {
     timestamps: true,
@@ -149,8 +150,9 @@ export const productSchema = new Schema<TProduct>(
 );
 
 productSchema.pre("save", async function (next) {
-  const { thumbnail, gallery } = this.image;
-  const { name, subCategory } = this.category;
+  const product = this as unknown as TProduct;
+  const { thumbnail, gallery } = product.image;
+  const { name, subCategory } = product.category;
 
   const isThumbnailExist = await ImageModel.findById(thumbnail);
   if (!isThumbnailExist) {
@@ -206,8 +208,8 @@ productSchema.pre("save", async function (next) {
     }
   }
 
-  if (this.brand) {
-    const isBrandExist = await BrandModel.findById(this.brand);
+  if (product.brand) {
+    const isBrandExist = await BrandModel.findById(product.brand);
     if (!isBrandExist) {
       throw new ApiError(httpStatus.NOT_FOUND, "The brand was not found!");
     }
@@ -216,8 +218,8 @@ productSchema.pre("save", async function (next) {
     }
   }
 
-  if (this.attributes) {
-    for (const { name, values } of this.attributes) {
+  if (product.attributes) {
+    for (const { name, values } of product.attributes) {
       const isAttributeExist = await AttributeModel.findById(name);
       if (!isAttributeExist) {
         throw new ApiError(

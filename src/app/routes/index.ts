@@ -15,6 +15,7 @@ import { paymentMethodRoutes } from "../modules/paymentMethod/paymentMethod.rout
 import { AttributeRoutes } from "../modules/productManagement/attribute/attribute.routes";
 import { BrandRoutes } from "../modules/productManagement/brand/brand.routes";
 import { CategoryRoutes } from "../modules/productManagement/category/category.routes";
+import { CollectionRoutes } from "../modules/productManagement/collection/collection.routes";
 import { ProductRoutes } from "../modules/productManagement/product/product.routes";
 import { ReviewRoutes } from "../modules/productManagement/review/review.route";
 import { SubCategoryRoutes } from "../modules/productManagement/subCategory/subCategory.routes";
@@ -63,6 +64,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/products",
     route: ProductRoutes,
+  },
+  {
+    path: "/collections",
+    route: CollectionRoutes,
   },
   {
     path: "/variations",

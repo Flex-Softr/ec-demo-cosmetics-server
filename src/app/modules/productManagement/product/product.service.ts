@@ -210,6 +210,14 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
     }
   }
 
+  // Collection filter
+  if (typeof query.collection === "string") {
+    const collectionArray = query.collection?.split(",") || [];
+    if (collectionArray.length > 0) {
+      filterQuery["productCollection.slug"] = { $in: collectionArray };
+    }
+  }
+
   // Apply $or for category or subcategory
   if (filterConditions.length > 0) {
     filterQuery["$or"] = filterConditions; // Match either category or subcategory
@@ -255,16 +263,16 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
                 name: "$category.name",
                 slug: "$category.slug",
               },
-              // brand: {
-              //   $map: {
-              //     input: "$brand",
-              //     as: "b",
-              //     in: {
-              //       _id: "$$b._id",
-              //       name: "$$b.name",
-              //     },
-              //   },
-              // },
+              productCollection: {
+                _id: "$productCollection._id",
+                title: "$productCollection.title",
+                slug: "$productCollection.slug",
+              },
+              brand: {
+                _id: "$brand._id",
+                name: "$brand.name",
+                slug: "$brand.slug",
+              },
             },
           },
         ],
@@ -309,6 +317,7 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
 
 const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
   const filterQuery: Record<string, unknown> = {};
+  const andConditions: Record<string, unknown>[] = [];
 
   if (
     (query.status && query.status === productStatus.published) ||
@@ -316,26 +325,36 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
     query.status === productStatus.private
   ) {
     const statusRegex = new RegExp(`\\b${query.status}\\b`, "i");
-    filterQuery["publishedStatus"] = statusRegex;
+    andConditions.push({ publishedStatus: statusRegex });
   }
 
   // Category or Subcategory ID filter
   if (query.category) {
     const categoryId = new mongoose.Types.ObjectId(query.category as string); // Convert the category query to ObjectId
-    filterQuery["$or"] = [
-      { "category._id": categoryId },
-      { "subcategory._id": categoryId },
-    ];
+    andConditions.push({
+      $or: [{ "category._id": categoryId }, { "subcategory._id": categoryId }],
+    });
   }
-  // if (query.subCategory) {
-  //   filterQuery["subcategory._id"] = new mongoose.Types.ObjectId(
-  //     query.subCategory as string
-  //   );
-  // }
+
+  if (query.collection) {
+    const collectionId = new mongoose.Types.ObjectId(
+      query.collection as string
+    );
+    andConditions.push({ "productCollection._id": collectionId });
+  }
 
   if (query.stock) {
     const stockRegex = new RegExp(`\\b${query.stock}\\b`, "i");
-    filterQuery["inventory.stockStatus"] = stockRegex;
+    andConditions.push({
+      $or: [
+        { "inventory.stockStatus": stockRegex },
+        { "variations.inventory.stockStatus": stockRegex },
+      ],
+    });
+  }
+
+  if (andConditions.length > 0) {
+    filterQuery.$and = andConditions;
   }
 
   const pipeline = [
@@ -366,6 +385,10 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
               category: {
                 _id: "$category._id",
                 name: "$category.name",
+              },
+              productCollection: {
+                _id: "$productCollection._id",
+                title: "$productCollection.title",
               },
               // subCategory: {
               //   $map: {

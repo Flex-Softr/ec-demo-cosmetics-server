@@ -206,6 +206,15 @@ export const commonPipelineSingleProduct = (
     },
   },
   {
+    $lookup: {
+      from: "collections",
+      localField: "productCollection",
+      foreignField: "_id",
+      as: "productCollection",
+      pipeline: [{ $project: { title: 1, slug: 1 } }],
+    },
+  },
+  {
     $unwind: "$thumbnail",
   },
   {
@@ -222,6 +231,9 @@ export const commonPipelineSingleProduct = (
   },
   {
     $unwind: { path: "$brand", preserveNullAndEmptyArrays: true },
+  },
+  {
+    $unwind: { path: "$productCollection", preserveNullAndEmptyArrays: true },
   },
   {
     $project: {
@@ -285,6 +297,7 @@ export const commonPipelineSingleProduct = (
         },
       },
       brand: "$brand",
+      productCollection: "$productCollection",
       warranty: 1,
       warrantyInfo: 1,
       featured: 1,
@@ -400,6 +413,17 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       foreignField: "_id",
       as: "brand",
     },
+  },
+  {
+    $lookup: {
+      from: "collections",
+      localField: "productCollection",
+      foreignField: "_id",
+      as: "productCollection",
+    },
+  },
+  {
+    $unwind: { path: "$productCollection", preserveNullAndEmptyArrays: true },
   },
   // {
   //   $lookup: {
