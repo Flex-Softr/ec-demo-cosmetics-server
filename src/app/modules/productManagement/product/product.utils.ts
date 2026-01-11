@@ -6,6 +6,7 @@ import config from "../../../config/config";
 import { STOCK_STATUS } from "../inventory/inventory.const";
 import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
+import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 import ProductModel from "./product.model";
 
 const modifiedPriceData = (req: Request) => {
@@ -53,7 +54,7 @@ export const deleteDraftProducts = new CronJob(
     const currentDate = new Date();
     // Find products where status is 'Draft' and created more than 30 days ago
     const draftProducts = await ProductModel.find({
-      "publishedStatus.status": "Draft",
+      publishedStatus: PRODUCT_STATUS.DRAFT,
       createdAt: {
         $lte: new Date(currentDate.setDate(currentDate.getDate() - 30)),
       },
@@ -86,28 +87,28 @@ export const commonProductProjection = {
   // Pricing Logic with conditional handling for variable products
   regularPrice: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: "$$REMOVE",
       else: "$price.regularPrice",
     },
   },
   salePrice: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: "$$REMOVE",
       else: "$price.salePrice",
     },
   },
   discountPercent: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: "$$REMOVE",
       else: "$price.discountPercent",
     },
   },
   priceSave: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: "$$REMOVE",
       else: "$price.priceSave",
     },
@@ -116,56 +117,56 @@ export const commonProductProjection = {
   // Variable Product Specific Fields
   minRegularPrice: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $min: "$variations.price.regularPrice" },
       else: "$$REMOVE",
     },
   },
   minSalePrice: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $min: "$variations.price.salePrice" },
       else: "$$REMOVE",
     },
   },
   maxRegularPrice: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $max: "$variations.price.regularPrice" },
       else: "$$REMOVE",
     },
   },
   maxSalePrice: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $max: "$variations.price.salePrice" },
       else: "$$REMOVE",
     },
   },
   minDiscountPercent: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $min: "$variations.price.discountPercent" },
       else: "$$REMOVE",
     },
   },
   maxDiscountPercent: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $max: "$variations.price.discountPercent" },
       else: "$$REMOVE",
     },
   },
   minPriceSave: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $min: "$variations.price.priceSave" },
       else: "$$REMOVE",
     },
   },
   maxPriceSave: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: { $max: "$variations.price.priceSave" },
       else: "$$REMOVE",
     },
@@ -174,7 +175,7 @@ export const commonProductProjection = {
   // Stock Status Logic
   stockStatus: {
     $cond: {
-      if: { $eq: ["$type", "variable"] },
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
       then: {
         $cond: {
           if: {

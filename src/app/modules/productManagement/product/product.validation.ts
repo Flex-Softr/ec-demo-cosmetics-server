@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { STOCK_STATUS } from "../inventory/inventory.const";
-import { productStatus } from "./product.const";
+import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 
 const createProductAttribute = z.object({
   name: z.string().trim().min(1, { message: "Attribute name is required!" }),
@@ -22,7 +22,7 @@ const warrantyInfo = z.object({
   terms: z.string().optional(),
 });
 
-const publishedStatusSchema = z.enum([...Object.values(productStatus)] as [
+const publishedStatusSchema = z.enum([...Object.values(PRODUCT_STATUS)] as [
   string,
   ...string[],
 ]);
@@ -79,7 +79,7 @@ const product = z.object({
     .object({
       title: z.string().trim().min(1, { message: "Title is required!" }),
       slug: z.string().trim().optional(),
-      type: z.enum(["simple", "variable"], {
+      type: z.enum([PRODUCT_TYPE.SIMPLE, PRODUCT_TYPE.VARIABLE], {
         required_error: "Product type is required",
       }),
       description: z.string().trim().optional(),
@@ -126,7 +126,7 @@ const product = z.object({
     .refine(
       (data) => {
         if (
-          data.type === "variable" &&
+          data.type === PRODUCT_TYPE.VARIABLE &&
           (!data.variations || data.variations.length === 0)
         ) {
           return false;
@@ -144,7 +144,7 @@ const product = z.object({
 const updateProduct = z.object({
   body: z.object({
     title: z.string().trim().optional(),
-    type: z.enum(["simple", "variable"]).optional(),
+    type: z.enum([PRODUCT_TYPE.SIMPLE, PRODUCT_TYPE.VARIABLE]).optional(),
     description: z.string().trim().optional(),
     shortDescription: z.string().trim().optional(),
     additionalInfo: z.string().trim().optional(),

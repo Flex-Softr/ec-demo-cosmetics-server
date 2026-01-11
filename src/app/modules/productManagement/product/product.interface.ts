@@ -1,10 +1,12 @@
 import { Document, Types } from "mongoose";
+import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 // import { TAttribute } from "../attribute/attribute.interface";
 import { TInventory } from "../inventory/inventory.interface";
 import { TPrice } from "../price/price.interface";
 import { TVariation } from "../variation/variation.interface";
 
-export type TPublishedStatus = "published" | "draft" | "private";
+export type TPublishedStatus =
+  (typeof PRODUCT_STATUS)[keyof typeof PRODUCT_STATUS];
 
 export type TProductImage = {
   thumbnail: Types.ObjectId;
@@ -44,7 +46,7 @@ export type TProduct = {
   id: string;
   title: string;
   // permalink?: string;
-  type: "simple" | "variable";
+  type: TProductType;
   slug: string;
   description: string;
   shortDescription?: string;
@@ -77,7 +79,7 @@ export type TProduct = {
   };
 } & Document;
 
-export type TProductType = "simple" | "variable";
+export type TProductType = (typeof PRODUCT_TYPE)[keyof typeof PRODUCT_TYPE];
 
 export type TProductPayload = {
   title: string;

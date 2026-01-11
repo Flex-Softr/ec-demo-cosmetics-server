@@ -13,7 +13,7 @@ import {
 } from "../../../helper/query.helper";
 import { Order } from "../../orderManagement/order/order.model";
 import VariationModel from "../variation/variation.model";
-import { productStatus } from "./product.const";
+import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 import { TProduct, TProductPayload } from "./product.interface";
 import ProductModel from "./product.model";
 import {
@@ -49,7 +49,7 @@ const createProductIntoDB = async (
     // 3. Resolve Variations
     let variationIds: Types.ObjectId[] = [];
     if (
-      payload.type === "variable" &&
+      payload.type === PRODUCT_TYPE.VARIABLE &&
       payload.variations &&
       payload.variations.length > 0
     ) {
@@ -128,7 +128,7 @@ const getAProductCustomerFromDB = async (slug: string) => {
       $match: {
         slug: slug,
         isDeleted: false,
-        publishedStatus: productStatus.published,
+        publishedStatus: PRODUCT_STATUS.PUBLISHED,
       },
     },
     ...commonPipelineSingleProduct([
@@ -228,7 +228,7 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
     {
       $match: {
         isDeleted: false,
-        publishedStatus: productStatus.published,
+        publishedStatus: PRODUCT_STATUS.PUBLISHED,
       },
     },
     ...commonPipelineMultipleProduct,
@@ -285,9 +285,9 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
   const andConditions: Record<string, unknown>[] = [];
 
   if (
-    (query.status && query.status === productStatus.published) ||
-    query.status === productStatus.draft ||
-    query.status === productStatus.private
+    (query.status && query.status === PRODUCT_STATUS.PUBLISHED) ||
+    query.status === PRODUCT_STATUS.DRAFT ||
+    query.status === PRODUCT_STATUS.PRIVATE
   ) {
     const statusRegex = new RegExp(`\\b${query.status}\\b`, "i");
     andConditions.push({ publishedStatus: statusRegex });
@@ -389,9 +389,9 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
   // get counts
   const statusMap = {
     all: 0,
-    published: 0,
-    draft: 0,
-    private: 0,
+    [PRODUCT_STATUS.PUBLISHED]: 0,
+    [PRODUCT_STATUS.DRAFT]: 0,
+    [PRODUCT_STATUS.PRIVATE]: 0,
   };
 
   const statusPipeline = [
@@ -399,7 +399,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
       $match: {
         isDeleted: false,
         publishedStatus: {
-          $in: Object.values(productStatus),
+          $in: Object.values(PRODUCT_STATUS),
         },
       },
     },
@@ -453,7 +453,7 @@ const getFeaturedProductsFromDB = async (query: Record<string, unknown>) => {
       $match: {
         isDeleted: false,
         featured: true,
-        publishedStatus: productStatus.published,
+        publishedStatus: PRODUCT_STATUS.PUBLISHED,
       },
     },
     ...commonPipelineMultipleProduct,
@@ -644,8 +644,8 @@ const updateProductIntoDB = async (
       throw new ApiError(httpStatus.BAD_REQUEST, "The Product is deleted!");
     }
     if (
-      isProductExist.publishedStatus == productStatus.published &&
-      publishedStatus == productStatus.draft
+      isProductExist.publishedStatus == PRODUCT_STATUS.PUBLISHED &&
+      publishedStatus == PRODUCT_STATUS.DRAFT
     ) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,

@@ -1,7 +1,12 @@
-export const productStatus = {
-  published: "published",
-  draft: "draft",
-  private: "private",
+export const PRODUCT_STATUS = {
+  PUBLISHED: "published",
+  DRAFT: "draft",
+  PRIVATE: "private",
+} as const;
+
+export const PRODUCT_TYPE = {
+  SIMPLE: "simple",
+  VARIABLE: "variable",
 } as const;
 
 export const PRODUCT_FIELD_CONFIG = {

@@ -4,7 +4,7 @@ import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
 import generateSlug from "../../../utilities/generateSlug";
-import { productStatus } from "../product/product.const";
+import { PRODUCT_STATUS } from "../product/product.const";
 import ProductModel from "../product/product.model";
 import {
   commonPipelineMultipleProduct,
@@ -126,7 +126,7 @@ const getSingleCollectionFromDB = async (slug: string) => {
   const productQuery = {
     productCollection: collection._id,
     isDeleted: false,
-    publishedStatus: productStatus.published,
+    publishedStatus: PRODUCT_STATUS.PUBLISHED,
   };
 
   const productPipeline: PipelineStage[] = [

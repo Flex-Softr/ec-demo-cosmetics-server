@@ -16,7 +16,7 @@ import { AttributeModel } from "../attribute/attribute.model";
 import { BrandModel } from "../brand/brand.model";
 import { CategoryModel } from "../category/category.model";
 import { SubCategoryModel } from "../subCategory/subCategory.model";
-import { productStatus } from "./product.const";
+import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 
 const productImageSchema = new Schema<TProductImage>(
   {
@@ -79,7 +79,11 @@ export const productSchema = new Schema<TProduct>(
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true, unique: true },
     // permalink: { type: String, unique: true, sparse: true },
-    type: { type: String, enum: ["simple", "variable"], default: "simple" },
+    type: {
+      type: String,
+      enum: [PRODUCT_TYPE.SIMPLE, PRODUCT_TYPE.VARIABLE],
+      default: PRODUCT_TYPE.SIMPLE,
+    },
     slug: { type: String, required: true, unique: true },
     description: { type: String },
     shortDescription: { type: String },
@@ -91,7 +95,7 @@ export const productSchema = new Schema<TProduct>(
     price: {
       type: Schema.Types.ObjectId,
       required: function () {
-        return this.type === "simple";
+        return this.type === PRODUCT_TYPE.SIMPLE;
       },
       ref: "Price",
     },
@@ -102,7 +106,7 @@ export const productSchema = new Schema<TProduct>(
     inventory: {
       type: Schema.Types.ObjectId,
       required: function () {
-        return this.type === "simple";
+        return this.type === PRODUCT_TYPE.SIMPLE;
       },
       ref: "Inventory",
     },
@@ -119,7 +123,7 @@ export const productSchema = new Schema<TProduct>(
     tag: [tagSchema],
     publishedStatus: {
       type: String,
-      enum: Object.values(productStatus),
+      enum: Object.values(PRODUCT_STATUS),
       required: true,
     },
     seoData: seoDataSchema,
