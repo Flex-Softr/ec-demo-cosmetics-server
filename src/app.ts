@@ -11,7 +11,7 @@ import requestIp from "request-ip";
 import config from "./app/config/config";
 import { ecSIDHandler } from "./app/middlewares/ecSID";
 import enableCrossOriginResourcePolicy from "./app/middlewares/enableCrossOriginResourcePolicy";
-import limitRequest from "./app/middlewares/requestLimitHandler";
+// import limitRequest from "./app/middlewares/requestLimitHandler";
 import globalErrorhandler from "./app/middlewares/globalErrorHandler";
 import { notFoundRoute } from "./app/middlewares/notFoundRoute";
 import router from "./app/routes";
@@ -44,7 +44,6 @@ app.use(compression());
 app.use(cookieParser());
 app.use(userAgent.express());
 app.use(requestIp.mw());
-app.use(limitRequest(15, 100));
 
 if (config.env === "development") {
   app.use(morgan("dev"));
@@ -91,6 +90,9 @@ app.use(
   enableCrossOriginResourcePolicy,
   express.static(warrantyclaimVideosImages)
 );
+
+//Global rate limiter
+// app.use("/api/v1", limitRequest(15, 100));
 
 // api endpoints
 app.use("/api/v1", router);

@@ -3,6 +3,7 @@ import { CronJob } from "cron";
 import { Request } from "express";
 import { PipelineStage } from "mongoose";
 import config from "../../../config/config";
+import { STOCK_STATUS } from "../inventory/inventory.const";
 import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
 import ProductModel from "./product.model";
@@ -73,6 +74,150 @@ export const deleteDraftProducts = new CronJob(
   true, // Start the job immediately
   "Asia/Dhaka" // Change this to your desired timezone
 );
+
+export const commonProductProjection = {
+  _id: 1,
+  title: 1,
+  slug: 1,
+  type: 1,
+  // variations: 1,
+  // shortDescription: 1,
+
+  // Pricing Logic with conditional handling for variable products
+  regularPrice: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: "$$REMOVE",
+      else: "$price.regularPrice",
+    },
+  },
+  salePrice: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: "$$REMOVE",
+      else: "$price.salePrice",
+    },
+  },
+  discountPercent: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: "$$REMOVE",
+      else: "$price.discountPercent",
+    },
+  },
+  priceSave: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: "$$REMOVE",
+      else: "$price.priceSave",
+    },
+  },
+
+  // Variable Product Specific Fields
+  minRegularPrice: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $min: "$variations.price.regularPrice" },
+      else: "$$REMOVE",
+    },
+  },
+  minSalePrice: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $min: "$variations.price.salePrice" },
+      else: "$$REMOVE",
+    },
+  },
+  maxRegularPrice: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $max: "$variations.price.regularPrice" },
+      else: "$$REMOVE",
+    },
+  },
+  maxSalePrice: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $max: "$variations.price.salePrice" },
+      else: "$$REMOVE",
+    },
+  },
+  minDiscountPercent: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $min: "$variations.price.discountPercent" },
+      else: "$$REMOVE",
+    },
+  },
+  maxDiscountPercent: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $max: "$variations.price.discountPercent" },
+      else: "$$REMOVE",
+    },
+  },
+  minPriceSave: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $min: "$variations.price.priceSave" },
+      else: "$$REMOVE",
+    },
+  },
+  maxPriceSave: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: { $max: "$variations.price.priceSave" },
+      else: "$$REMOVE",
+    },
+  },
+
+  // Stock Status Logic
+  stockStatus: {
+    $cond: {
+      if: { $eq: ["$type", "variable"] },
+      then: {
+        $cond: {
+          if: {
+            $gt: [
+              {
+                $size: {
+                  $filter: {
+                    input: "$variations.inventory.stockStatus",
+                    as: "status",
+                    cond: {
+                      $in: [
+                        "$$status",
+                        [STOCK_STATUS.IN_STOCK, STOCK_STATUS.LOW_STOCK],
+                      ],
+                    },
+                  },
+                },
+              },
+              0,
+            ],
+          },
+          then: STOCK_STATUS.IN_STOCK,
+          else: STOCK_STATUS.OUT_OF_STOCK,
+        },
+      },
+      else: "$inventory.stockStatus", // Simple product logic
+    },
+  },
+  // sku: "$inventory.sku",
+  // stockAvailable: "$inventory.stockAvailable",
+  // totalReview: { $size: "$review" },
+  // averageRating: { $avg: "$review.rating" },
+  thumbnail: {
+    _id: "$thumbnail._id",
+    src: "$thumbnail.src",
+    alt: "$thumbnail.alt",
+  },
+  // category: {
+  //   _id: "$category._id",
+  //   name: "$category.name",
+  //   slug: "$category.slug",
+  // },
+};
 
 export const commonPipelineSingleProduct = (
   pipeline: PipelineStage[] | undefined = []
@@ -301,7 +446,6 @@ export const commonPipelineSingleProduct = (
       warranty: 1,
       warrantyInfo: 1,
       featured: 1,
-      publishedStatus: 1,
     },
   },
 ];
@@ -412,7 +556,11 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       localField: "brand",
       foreignField: "_id",
       as: "brand",
+      pipeline: [{ $project: { name: 1, slug: 1 } }],
     },
+  },
+  {
+    $unwind: { path: "$brand", preserveNullAndEmptyArrays: true },
   },
   {
     $lookup: {

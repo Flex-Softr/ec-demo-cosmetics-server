@@ -20,6 +20,8 @@ router.post(
 
 router.get("/", SubCategoryControllers.getAllSubCategories);
 
+router.get("/:id", SubCategoryControllers.getAllSubCategoriesCategory);
+
 router.patch(
   "/:id",
   authGuard({
@@ -38,6 +40,5 @@ router.delete(
   }),
   SubCategoryControllers.deleteSubCategory
 );
-router.get("/:id", SubCategoryControllers.getAllSubCategoriesCategory);
 
 export const SubCategoryRoutes = router;

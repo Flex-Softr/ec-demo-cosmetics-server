@@ -19,6 +19,7 @@ import ProductModel from "./product.model";
 import {
   commonPipelineMultipleProduct,
   commonPipelineSingleProduct,
+  commonProductProjection,
 } from "./product.utils";
 
 const createProductIntoDB = async (
@@ -237,43 +238,7 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
         // Define sub-pipeline 2: For other operations
         data: [
           {
-            $project: {
-              _id: 1,
-              title: 1,
-              slug: 1,
-              type: 1,
-              variations: 1,
-              // shortDescription: 1,
-              regularPrice: "$price.regularPrice",
-              salePrice: "$price.salePrice",
-              discountPercent: "$price.discountPercent",
-              priceSave: "$price.priceSave",
-              stockStatus: "$inventory.stockStatus",
-              sku: "$inventory.sku",
-              // stockAvailable: "$inventory.stockAvailable",
-              // totalReview: { $size: "$review" },
-              // averageRating: { $avg: "$review.rating" },
-              thumbnail: {
-                _id: "$thumbnail._id",
-                src: "$thumbnail.src",
-                alt: "$thumbnail.alt",
-              },
-              category: {
-                _id: "$category._id",
-                name: "$category.name",
-                slug: "$category.slug",
-              },
-              productCollection: {
-                _id: "$productCollection._id",
-                title: "$productCollection.title",
-                slug: "$productCollection.slug",
-              },
-              brand: {
-                _id: "$brand._id",
-                name: "$brand.name",
-                slug: "$brand.slug",
-              },
-            },
+            $project: commonProductProjection,
           },
         ],
         // Define sub-pipeline 1: For getting total count
@@ -493,32 +458,7 @@ const getFeaturedProductsFromDB = async (query: Record<string, unknown>) => {
     },
     ...commonPipelineMultipleProduct,
     {
-      $project: {
-        _id: 1,
-        title: 1,
-        slug: 1,
-        type: 1,
-        variations: 1,
-        // shortDescription: 1,
-        regularPrice: "$price.regularPrice",
-        salePrice: "$price.salePrice",
-        discountPercent: "$price.discountPercent",
-        priceSave: "$price.priceSave",
-        stockStatus: "$inventory.stockStatus",
-        // stockAvailable: "$inventory.stockAvailable",
-        // totalReview: { $size: "$review" },
-        // averageRating: { $avg: "$review.rating" },
-        thumbnail: {
-          _id: "$thumbnail._id",
-          src: "$thumbnail.src",
-          alt: "$thumbnail.alt",
-        },
-        category: {
-          _id: "$category._id",
-          name: "$category.name",
-          slug: "$category.slug",
-        },
-      },
+      $project: commonProductProjection,
     },
   ];
 
@@ -650,32 +590,14 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
     // },
     // Project specific fields
     {
-      $project: {
-        _id: "$_id",
+      $addFields: {
         title: "$product.title",
         slug: "$product.slug",
         type: "$product.type",
-        variations: "$variations",
-        // shortDescription: "$product.shortDescription",
-        regularPrice: "$price.regularPrice",
-        salePrice: "$price.salePrice",
-        discountPercent: "$price.discountPercent",
-        priceSave: "$price.priceSave",
-        stockStatus: "$inventory.stockStatus",
-        // stockAvailable: "$inventory.stockAvailable",
-        // totalReview: { $size: "$review" },
-        // averageRating: { $avg: "$review.rating" },
-        thumbnail: {
-          _id: "$thumbnail._id",
-          src: "$thumbnail.src",
-          alt: "$thumbnail.alt",
-        },
-        category: {
-          _id: "$category._id",
-          name: "$category.name",
-          slug: "$category.slug",
-        },
       },
+    },
+    {
+      $project: commonProductProjection,
     },
   ];
 

@@ -46,6 +46,33 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
     },
     { $unwind: { path: "$logo", preserveNullAndEmptyArrays: true } },
     {
+      $lookup: {
+        from: "products",
+        let: { brandId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$brand", "$$brandId"] },
+                  { $eq: ["$isDeleted", false] },
+                ],
+              },
+            },
+          },
+          { $count: "count" },
+        ],
+        as: "productCount",
+      },
+    },
+    {
+      $addFields: {
+        productCount: {
+          $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
+        },
+      },
+    },
+    {
       $project: {
         name: 1,
         slug: 1,
@@ -56,6 +83,7 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
           src: { $concat: [config.image_base_url, "/", "$logo.src"] },
           alt: "$logo.alt",
         },
+        productCount: 1,
       },
     },
   ];

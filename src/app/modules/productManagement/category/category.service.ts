@@ -48,13 +48,75 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
     { $unwind: { path: "$image", preserveNullAndEmptyArrays: true } },
     {
       $lookup: {
+        from: "products",
+        let: { categoryId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$category.name", "$$categoryId"] },
+                  { $eq: ["$isDeleted", false] },
+                ],
+              },
+            },
+          },
+          { $count: "count" },
+        ],
+        as: "productCount",
+      },
+    },
+    {
+      $addFields: {
+        productCount: {
+          $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
+        },
+      },
+    },
+    {
+      $lookup: {
         from: "subcategories",
         localField: "_id",
         foreignField: "category",
         as: "subCategory",
         pipeline: [
           { $match: { isDeleted: false } },
-          { $project: { _id: 1, name: 1, slug: 1, description: 1 } },
+          {
+            $lookup: {
+              from: "products",
+              let: { subCategoryId: "$_id" },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ["$category.subCategory", "$$subCategoryId"] },
+                        { $eq: ["$isDeleted", false] },
+                      ],
+                    },
+                  },
+                },
+                { $count: "count" },
+              ],
+              as: "productCount",
+            },
+          },
+          {
+            $addFields: {
+              productCount: {
+                $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              slug: 1,
+              description: 1,
+              productCount: 1,
+            },
+          },
         ],
       },
     },
@@ -71,6 +133,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         description: 1,
         isActive: 1,
         subcategories: "$subCategory",
+        productCount: 1,
       },
     },
   ];

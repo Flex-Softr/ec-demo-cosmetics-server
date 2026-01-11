@@ -80,6 +80,33 @@ const getAllSubCategoriesFromDB = async (query?: Record<string, unknown>) => {
     },
     { $unwind: { path: "$image", preserveNullAndEmptyArrays: true } },
     {
+      $lookup: {
+        from: "products",
+        let: { subCategoryId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$category.subCategory", "$$subCategoryId"] },
+                  { $eq: ["$isDeleted", false] },
+                ],
+              },
+            },
+          },
+          { $count: "count" },
+        ],
+        as: "productCount",
+      },
+    },
+    {
+      $addFields: {
+        productCount: {
+          $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
+        },
+      },
+    },
+    {
       $project: {
         name: 1,
         slug: 1,
@@ -100,6 +127,7 @@ const getAllSubCategoriesFromDB = async (query?: Record<string, unknown>) => {
           createdAt: "$image.createdAt",
           updatedAt: "$image.updatedAt",
         },
+        productCount: 1,
       },
     },
   ];
@@ -172,6 +200,33 @@ const getSubCategoriesByCategoryFromDB = async (
     },
     { $unwind: { path: "$image", preserveNullAndEmptyArrays: true } },
     {
+      $lookup: {
+        from: "products",
+        let: { subCategoryId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$category.subCategory", "$$subCategoryId"] },
+                  { $eq: ["$isDeleted", false] },
+                ],
+              },
+            },
+          },
+          { $count: "count" },
+        ],
+        as: "productCount",
+      },
+    },
+    {
+      $addFields: {
+        productCount: {
+          $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
+        },
+      },
+    },
+    {
       $project: {
         name: 1,
         slug: 1,
@@ -190,6 +245,7 @@ const getSubCategoriesByCategoryFromDB = async (
           createdAt: "$image.createdAt",
           updatedAt: "$image.updatedAt",
         },
+        productCount: 1,
       },
     },
   ];

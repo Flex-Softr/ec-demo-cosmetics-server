@@ -6,7 +6,10 @@ import { AggregateQueryHelper } from "../../../helper/query.helper";
 import generateSlug from "../../../utilities/generateSlug";
 import { productStatus } from "../product/product.const";
 import ProductModel from "../product/product.model";
-import { commonPipelineMultipleProduct } from "../product/product.utils";
+import {
+  commonPipelineMultipleProduct,
+  commonProductProjection,
+} from "../product/product.utils";
 import { TCollection } from "./collection.interface";
 import { CollectionModel } from "./collection.model";
 
@@ -47,6 +50,33 @@ const getAllCollectionsFromDB = async (query: Record<string, unknown>) => {
             },
           },
         ],
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        let: { collectionId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$productCollection", "$$collectionId"] },
+                  { $eq: ["$isDeleted", false] },
+                ],
+              },
+            },
+          },
+          { $count: "count" },
+        ],
+        as: "productCount",
+      },
+    },
+    {
+      $addFields: {
+        productCount: {
+          $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
+        },
       },
     },
     { $unwind: { path: "$image", preserveNullAndEmptyArrays: true } },
@@ -103,23 +133,7 @@ const getSingleCollectionFromDB = async (slug: string) => {
     { $match: productQuery },
     ...commonPipelineMultipleProduct,
     {
-      $project: {
-        title: 1,
-        slug: 1,
-        type: 1,
-        variations: 1,
-        regularPrice: "$price.regularPrice",
-        salePrice: "$price.salePrice",
-        sku: "$inventory.sku",
-        stockStatus: "$inventory.stockStatus",
-        stockAvailable: "$inventory.stockAvailable",
-        thumbnail: {
-          _id: "$thumbnail._id",
-          src: "$thumbnail.src",
-          alt: "$thumbnail.alt",
-        },
-        publishedStatus: 1,
-      },
+      $project: commonProductProjection,
     },
   ];
 
