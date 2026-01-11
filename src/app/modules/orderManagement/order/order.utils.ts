@@ -1,6 +1,6 @@
 import httpStatus from "http-status";
 import mongoose, { ClientSession, Types } from "mongoose";
-import config from "../../../config/config";
+// import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
@@ -262,18 +262,18 @@ export const createNewOrder = async (
     const cart = await OrderHelper.sanitizeCartsForOrder(userQuery);
     orderedProductInfo = cart as unknown as TSanitizedOrProduct[];
   }
-  if (config.env === "production") {
-    if (salesPage || fromWebsite) {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const orderCount = await Order.countDocuments({
-        ...userQuery,
-        createdAt: { $gte: oneHourAgo },
-      });
-      if (orderCount) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Reached order limit");
-      }
-    }
-  }
+  // if (config.env === "production") {
+  //   if (salesPage || fromWebsite) {
+  //     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  //     const orderCount = await Order.countDocuments({
+  //       ...userQuery,
+  //       createdAt: { $gte: oneHourAgo },
+  //     });
+  //     if (orderCount) {
+  //       throw new ApiError(httpStatus.BAD_REQUEST, "Reached order limit");
+  //     }
+  //   }
+  // }
 
   if (fromWebsite || salesPage) {
     courierNotes = undefined;
