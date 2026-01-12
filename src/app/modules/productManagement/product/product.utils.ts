@@ -160,14 +160,14 @@ export const commonProductProjection = {
   minPriceSave: {
     $cond: {
       if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
-      then: { $min: "$variations.price.priceSave" },
+      then: { $ifNull: [{ $min: "$variations.price.priceSave" }, 0] },
       else: "$$REMOVE",
     },
   },
   maxPriceSave: {
     $cond: {
       if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
-      then: { $max: "$variations.price.priceSave" },
+      then: { $ifNull: [{ $max: "$variations.price.priceSave" }, 0] },
       else: "$$REMOVE",
     },
   },
@@ -390,8 +390,8 @@ export const commonPipelineSingleProduct = (
       type: 1,
       description: 1,
       shortDescription: 1,
-      additionalInfo: 1,
-      usageGuidelines: 1,
+      // additionalInfo: 1,
+      // usageGuidelines: 1,
       thumbnail: "$thumbnail",
       gallery: "$gallery",
       price: "$price",
@@ -444,6 +444,7 @@ export const commonPipelineSingleProduct = (
       },
       brand: "$brand",
       productCollection: "$productCollection",
+      relatedProducts: 1,
       warranty: 1,
       warrantyInfo: 1,
       featured: 1,

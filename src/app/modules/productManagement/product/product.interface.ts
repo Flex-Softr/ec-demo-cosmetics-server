@@ -72,6 +72,7 @@ export type TProduct = {
   deletedBy?: Types.ObjectId;
   isDeleted: boolean;
   productCollection?: Types.ObjectId;
+  relatedProducts?: Types.ObjectId[];
   offer?: {
     flash: boolean;
     today: boolean;
@@ -152,6 +153,7 @@ export type TProductPayload = {
   };
   publishedStatus: TPublishedStatus;
   productCollection?: string;
+  relatedProducts?: string[];
 };
 
 export type IAdminProduct = {

@@ -612,6 +612,36 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
   return { meta, data };
 };
 
+const getRelatedProductsFromDB = async (slug: string) => {
+  const product = await ProductModel.findOne({ slug, isDeleted: false });
+
+  if (!product) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Product not found!");
+  }
+
+  if (!product.relatedProducts || product.relatedProducts.length === 0) {
+    return [];
+  }
+
+  const pipeline = [
+    {
+      $match: {
+        _id: { $in: product.relatedProducts },
+        isDeleted: false,
+        publishedStatus: PRODUCT_STATUS.PUBLISHED,
+      },
+    },
+    ...commonPipelineMultipleProduct,
+    {
+      $project: commonProductProjection,
+    },
+  ];
+
+  const result = await ProductModel.aggregate(pipeline as PipelineStage[]);
+
+  return result;
+};
+
 const updateProductIntoDB = async (
   updatedBy: Types.ObjectId,
   id: string,
@@ -857,6 +887,7 @@ export const ProductServices = {
   getAllProductsAdminFromDB,
   getFeaturedProductsFromDB,
   getBestSellingProductsFromDB,
+  getRelatedProductsFromDB,
   updateProductIntoDB,
   deleteProductFromDB,
 };

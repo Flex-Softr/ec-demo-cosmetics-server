@@ -29,6 +29,8 @@ router.get("/best-selling", ProductControllers.getBestSellingProducts);
 
 router.get("/featured", ProductControllers.getFeaturedProducts);
 
+router.get("/related-products/:slug", ProductControllers.getRelatedProducts);
+
 router.get(
   "/admin",
   authGuard({

@@ -116,21 +116,23 @@ export const productSchema = new Schema<TProduct>(
     variations: [{ type: Schema.Types.ObjectId, ref: "Variation" }],
     brand: { type: Schema.Types.ObjectId, ref: "Brand" },
     category: categorySchema,
-    warranty: { type: Boolean, required: true },
+    productCollection: { type: Schema.Types.ObjectId, ref: "Collection" },
+    relatedProducts: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    warranty: { type: Boolean, default: false },
     warrantyInfo: {
       type: warrantyInfoSchema,
     },
-    tag: [tagSchema],
-    publishedStatus: {
-      type: String,
-      enum: Object.values(PRODUCT_STATUS),
-      required: true,
-    },
-    seoData: seoDataSchema,
     offer: {
       flash: { type: Boolean, default: false },
       today: { type: Boolean, default: false },
       featured: { type: Boolean, default: false },
+    },
+    tag: [tagSchema],
+    seoData: seoDataSchema,
+    publishedStatus: {
+      type: String,
+      enum: Object.values(PRODUCT_STATUS),
+      required: true,
     },
     createdBy: {
       type: Schema.Types.ObjectId,
@@ -146,7 +148,6 @@ export const productSchema = new Schema<TProduct>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
-    productCollection: { type: Schema.Types.ObjectId, ref: "Collection" },
   },
   {
     timestamps: true,

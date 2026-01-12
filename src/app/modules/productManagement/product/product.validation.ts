@@ -139,6 +139,7 @@ const product = z.object({
       }
     ),
   productCollection: z.string().optional(),
+  relatedProducts: z.array(z.string()).optional(),
 });
 
 const updateProduct = z.object({
@@ -186,6 +187,7 @@ const updateProduct = z.object({
       .optional(),
     publishedStatus: publishedStatusSchema.optional(),
     productCollection: z.string().optional(),
+    relatedProducts: z.array(z.string()).optional(),
   }),
 });
 

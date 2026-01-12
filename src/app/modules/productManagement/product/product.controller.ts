@@ -69,7 +69,7 @@ const getAProductCustomer = catchAsync(async (req, res) => {
   if (slug == "null") {
     successResponse(res, {
       statusCode: httpStatus.OK,
-      message: "Product retrieved successfully",
+      message: "Product details retrieved successfully",
       data: [],
     });
     return;
@@ -77,7 +77,7 @@ const getAProductCustomer = catchAsync(async (req, res) => {
   const result = await ProductServices.getAProductCustomerFromDB(slug);
   successResponse(res, {
     statusCode: httpStatus.OK,
-    message: "Product retrieved successfully",
+    message: "Product details retrieved successfully",
     data: result,
   });
 });
@@ -87,7 +87,7 @@ const getAProductAdmin = catchAsync(async (req, res) => {
   const result = await ProductServices.getAProductAdminFromDB(id);
   successResponse(res, {
     statusCode: httpStatus.OK,
-    message: "Product retrieved successfully",
+    message: "Product details retrieved successfully",
     data: result,
   });
 });
@@ -139,6 +139,24 @@ const getBestSellingProducts = catchAsync(async (req, res) => {
     message: "Best selling products retrieved successfully!",
     meta: meta,
     data: data,
+  });
+});
+
+const getRelatedProducts = catchAsync(async (req, res) => {
+  const slug = req.params.slug;
+  if (!slug) {
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Related products retrieved successfully!",
+      data: [],
+    });
+    return;
+  }
+  const result = await ProductServices.getRelatedProductsFromDB(slug);
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Related products retrieved successfully!",
+    data: result,
   });
 });
 
@@ -227,6 +245,7 @@ export const ProductControllers = {
   getAllProductsAdmin,
   getFeaturedProducts,
   getBestSellingProducts,
+  getRelatedProducts,
   updateProduct,
   deleteProduct,
 };
