@@ -72,6 +72,7 @@ const variationSchema = z.object({
     })
     .optional(),
   image: z.string().optional(),
+  isActive: z.boolean().optional(),
 });
 
 const product = z.object({
@@ -123,21 +124,34 @@ const product = z.object({
         .optional(),
       publishedStatus: publishedStatusSchema,
     })
-    .refine(
-      (data) => {
-        if (
-          data.type === PRODUCT_TYPE.VARIABLE &&
-          (!data.variations || data.variations.length === 0)
-        ) {
-          return false;
-        }
-        return true;
-      },
-      {
-        message: "Variations are required for variable products",
-        path: ["variations"],
+    .superRefine((data, ctx) => {
+      if (
+        data.type === PRODUCT_TYPE.VARIABLE &&
+        (!data.variations || data.variations.length === 0)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Variations are required for variable products",
+          path: ["variations"],
+        });
       }
-    ),
+      if (data.type === PRODUCT_TYPE.SIMPLE) {
+        if (data.variations && data.variations.length > 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Variations should be empty for simple products",
+            path: ["variations"],
+          });
+        }
+        if (data.attributes && data.attributes.length > 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Attributes should be empty for simple products",
+            path: ["attributes"],
+          });
+        }
+      }
+    }),
   productCollection: z.string().optional(),
   relatedProducts: z.array(z.string()).optional(),
 });

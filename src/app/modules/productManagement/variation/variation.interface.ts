@@ -11,5 +11,6 @@ export type TVariation = {
   };
   price: Types.ObjectId | TPrice;
   inventory: Types.ObjectId | TInventory;
+  isActive?: boolean;
   isDeleted?: boolean;
 };

@@ -25,6 +25,7 @@ const productVariationsSchema = new Schema<TVariation>(
       required: true,
       ref: "Inventory",
     },
+    isActive: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }

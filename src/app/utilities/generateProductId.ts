@@ -13,7 +13,7 @@ export const generateProductId = async () => {
   const lastProductId = await findLastProductId();
   let currentId = (0).toString();
   if (lastProductId) {
-    currentId = lastProductId.substring(2);
+    currentId = lastProductId;
   }
   let incrementId = (Number(currentId) + 1).toString().padStart(4, "0");
   incrementId = `P-${incrementId}`;

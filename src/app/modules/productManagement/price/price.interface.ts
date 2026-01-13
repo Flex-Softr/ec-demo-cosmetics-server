@@ -5,9 +5,5 @@ export type TPrice = {
   salePrice?: number;
   discountPercent?: number;
   priceSave?: number;
-  date?: {
-    start: string;
-    end: string;
-  };
   updatedBy?: Types.ObjectId;
 };

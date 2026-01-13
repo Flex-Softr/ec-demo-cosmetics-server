@@ -119,7 +119,7 @@ export type TProductPayload = {
     name: string;
     values: string[];
   }[];
-  variations?: Record<string, unknown>[];
+  variations?: TVariation[];
   category: {
     name: string;
     subCategory?: string;

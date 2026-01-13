@@ -47,6 +47,23 @@ const modifiedPriceData = (req: Request) => {
 
 export default modifiedPriceData;
 
+export const formatPriceUpdatePayload = (price: Record<string, any>) => {
+  const updatePrice: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(price)) {
+    updatePrice[key] = value;
+  }
+  return updatePrice;
+};
+
+export const calculateStockAvailable = (
+  newStockQuantity: number,
+  oldStockQuantity: number,
+  oldStockAvailable: number
+): number => {
+  const diff = Number(newStockQuantity) - Number(oldStockQuantity);
+  return (oldStockAvailable || 0) + diff;
+};
+
 // Cron job to run every day at midnight
 export const deleteDraftProducts = new CronJob(
   "0 0 * * *", // Every day at midnight

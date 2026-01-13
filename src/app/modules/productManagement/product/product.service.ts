@@ -14,12 +14,14 @@ import {
 import { Order } from "../../orderManagement/order/order.model";
 import VariationModel from "../variation/variation.model";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
-import { TProduct, TProductPayload } from "./product.interface";
+import { TProductPayload } from "./product.interface";
 import ProductModel from "./product.model";
 import {
+  calculateStockAvailable,
   commonPipelineMultipleProduct,
   commonPipelineSingleProduct,
   commonProductProjection,
+  formatPriceUpdatePayload,
 } from "./product.utils";
 
 const createProductIntoDB = async (
@@ -30,70 +32,96 @@ const createProductIntoDB = async (
   try {
     session.startTransaction();
 
-    // 1. Create Price
+    // 1. Initialize variables
     let price;
-    if (payload.price) {
-      [price] = await PriceModel.create([payload.price], { session });
-    }
-
-    // 2. Create Inventory
     let inventory;
-    if (payload.inventory) {
-      [inventory] = await InventoryModel.create([payload.inventory], {
-        session,
-      });
-    }
+    let variationIds: Types.ObjectId[] = [];
 
     const generatedProductId = await generateProductId();
 
-    // 3. Resolve Variations
-    let variationIds: Types.ObjectId[] = [];
-    if (
-      payload.type === PRODUCT_TYPE.VARIABLE &&
-      payload.variations &&
-      payload.variations.length > 0
-    ) {
-      const variationsData = [];
-      for (let i = 0; i < payload.variations.length; i++) {
-        const v = payload.variations[i];
-        const [vPrice] = await PriceModel.create([v.price], { session });
-        const [vInventory] = await InventoryModel.create([v.inventory], {
+    // 2. Logic based on Product Type
+    if (payload.type === PRODUCT_TYPE.SIMPLE) {
+      // --- Simple Product Logic ---
+
+      // Create Price
+      if (payload.price) {
+        [price] = await PriceModel.create([payload.price], { session });
+      }
+
+      // Create Inventory
+      if (payload.inventory) {
+        [inventory] = await InventoryModel.create([payload.inventory], {
           session,
         });
+      }
 
-        variationsData.push({
+      // Ensure no variations or attributes for simple products
+      payload.variations = [];
+      payload.attributes = [];
+    } else if (payload.type === PRODUCT_TYPE.VARIABLE) {
+      // --- Variable Product Logic ---
+
+      // Variations must exist
+      if (payload.variations && payload.variations.length > 0) {
+        // Collect all price and inventory payloads
+        const pricePayloads = payload.variations.map((v) => v.price);
+        const inventoryPayloads = payload.variations.map((v) => v.inventory);
+
+        // Batch create prices and inventories
+        const createdPrices = await PriceModel.insertMany(pricePayloads, {
+          session,
+        });
+        const createdInventories = await InventoryModel.insertMany(
+          inventoryPayloads,
+          { session }
+        );
+
+        // Map back to variations
+        const variationsData = payload.variations.map((v, i) => ({
           serial: i + 1,
           productId: generatedProductId,
           attributes: v.attributes,
-          price: vPrice._id,
-          inventory: vInventory._id,
-          offer: v.offer,
-          image: v.image,
-        });
+          price: createdPrices[i]._id,
+          inventory: createdInventories[i]._id,
+          isActive: v.isActive,
+        }));
+
+        const insertedVariations = await VariationModel.insertMany(
+          variationsData,
+          { session }
+        );
+        variationIds = insertedVariations.map((v) => v._id);
       }
-      const insertedVariations = await VariationModel.insertMany(
-        variationsData,
-        { session }
-      );
-      variationIds = insertedVariations.map((v) => v._id);
+
+      // Root price and inventory remain undefined for variable products
     }
 
     // 4. Construct Final Product Object
     // Note: Attributes, Category, Brand, Image are passed directly.
-    // The ProductModel 'pre-save' hook will validate their existence.
-    const productData = {
+    // 4. Construct Final Product Object
+    // Note: Attributes, Category, Brand, Image are passed directly.
+    let productData: any = {
       ...payload,
       id: generatedProductId,
       createdBy,
-      price: price?._id,
-      inventory: inventory?._id,
-      variations: variationIds,
-      // Map inputs to match schema expectations if needed,
-      // but based on payload and schema, they align (ObjectIds for refs).
-      // If payload structure diffs from schema, map here.
-      // e.g. payload.image -> schema.image (matches)
-      // payload.category.name -> schema.category.name (matches)
     };
+
+    if (payload.type === PRODUCT_TYPE.SIMPLE) {
+      productData = {
+        ...productData,
+        price: price?._id,
+        inventory: inventory?._id,
+        variations: [],
+      };
+    } else {
+      productData = {
+        ...productData,
+        variations: variationIds,
+        // Ensure properties not relevant to variable products are removed
+        price: undefined,
+        inventory: undefined,
+      };
+    }
 
     const isProductDeleted = await ProductModel.findOne({
       slug: payload.slug,
@@ -134,8 +162,7 @@ const getAProductCustomerFromDB = async (slug: string) => {
     ...commonPipelineSingleProduct([
       {
         $match: {
-          // isDeleted: false,
-          "inventory.stockStatus": { $ne: "Out of stock" },
+          isActive: { $ne: false },
         },
       },
     ]),
@@ -645,7 +672,7 @@ const getRelatedProductsFromDB = async (slug: string) => {
 const updateProductIntoDB = async (
   updatedBy: Types.ObjectId,
   id: string,
-  payload: TProduct
+  payload: Partial<TProductPayload>
 ) => {
   const session = await mongoose.startSession();
   try {
@@ -683,108 +710,202 @@ const updateProductIntoDB = async (
       );
     }
 
-    if (price && Object.keys(price).length) {
-      const updatePrice: Record<string, unknown> = {};
-      for (const [key, value] of Object.entries(price)) {
-        if (key === "date") {
-          for (const [dateKey, dateValue] of Object.entries(value)) {
-            updatePrice[`date.${dateKey}`] = dateValue;
-          }
-        } else {
-          updatePrice[key] = value;
-        }
-      }
-      await PriceModel.findByIdAndUpdate(
-        isProductExist.price,
-        { $set: { ...updatePrice, updatedBy } },
-        { session }
-      );
-    }
+    // Determine the target type for this update
+    // If type is in payload use it, otherwise use existing type
+    const productType = payload.type || isProductExist.type;
 
-    if (inventory && Object.keys(inventory).length) {
-      await InventoryModel.findByIdAndUpdate(
-        isProductExist.inventory,
-        { $set: { ...inventory, updatedBy } },
-        { session }
-      );
+    // --- Simple Product Logic ---
+    if (productType === PRODUCT_TYPE.SIMPLE) {
+      if (price && Object.keys(price).length) {
+        const updatePrice = formatPriceUpdatePayload(price);
+        await PriceModel.findByIdAndUpdate(
+          isProductExist.price,
+          { $set: { ...updatePrice, updatedBy } },
+          { session }
+        );
+      }
+
+      if (inventory && Object.keys(inventory).length) {
+        if (inventory.stockQuantity !== undefined) {
+          const existingInventory = await InventoryModel.findById(
+            isProductExist.inventory
+          );
+          if (
+            existingInventory &&
+            existingInventory.stockQuantity !== undefined
+          ) {
+            inventory.stockAvailable = calculateStockAvailable(
+              inventory.stockQuantity,
+              existingInventory.stockQuantity,
+              existingInventory.stockAvailable || 0
+            );
+          }
+        }
+
+        await InventoryModel.findByIdAndUpdate(
+          isProductExist.inventory,
+          { $set: { ...inventory, updatedBy } },
+          { session }
+        );
+      }
     }
 
     const variationIds: Types.ObjectId[] = [];
 
-    let index = 0;
+    // --- Variable Product Logic ---
+    if (productType === PRODUCT_TYPE.VARIABLE) {
+      let index = 0;
 
-    if (variations && variations.length > 0) {
-      for (const variation of variations) {
-        const serial = index + 1;
-        const {
-          price: variationPrice,
-          inventory: variationInventory,
-          _id: variationId,
-          ...variationData
-        } = variation as any;
+      if (variations && variations.length > 0) {
+        const priceBulkOps: any[] = [];
+        const inventoryBulkOps: any[] = [];
+        const variationBulkOps: any[] = [];
+        const newVariationsData: any[] = [];
 
-        let existingVariation;
+        // Fetch existing variations map for O(1) lookup
+        const existingVariationModels = await VariationModel.find({
+          productId: isProductExist.id,
+        }).lean();
 
-        if (variationId) {
-          existingVariation = await VariationModel.findById(variationId);
-        }
+        const existingVariationMap = new Map(
+          existingVariationModels.map((v) => [v._id.toString(), v])
+        );
 
-        if (!existingVariation) {
-          existingVariation = await VariationModel.findOne({
-            productId: isProductExist.id,
-            attributes: variationData.attributes,
-          });
-        }
+        // Fetch all related inventory documents for variations to avoid N+1 queries
+        const variationInventoryIds = existingVariationModels.map(
+          (v) => v.inventory
+        );
+        const existingInventories = await InventoryModel.find({
+          _id: { $in: variationInventoryIds },
+        }).lean();
 
-        if (existingVariation) {
-          // Update existing variation
-          if (variationPrice) {
-            await PriceModel.findByIdAndUpdate(
-              existingVariation.price,
-              variationPrice,
-              { session }
-            );
+        const inventoryMap = new Map(
+          existingInventories.map((inv) => [inv._id.toString(), inv])
+        );
+
+        // Also map by attributes to help find match if ID is missing (legacy support)
+        // Note: Object matching key order matters, simplistically using stringify here
+        // but ideally should be robust. Given structure, ID match is preferred.
+
+        for (const variation of variations) {
+          const serial = index + 1;
+          const {
+            price: variationPrice,
+            inventory: variationInventory,
+            _id: variationId,
+            ...variationData
+          } = variation as any;
+
+          let existingVariation: any = null;
+
+          if (variationId && existingVariationMap.has(variationId)) {
+            existingVariation = existingVariationMap.get(variationId);
+          } else if (variationId) {
+            // Fallback if not in map but ID provided (rare race condition or fetch gap)
+            existingVariation = await VariationModel.findById(variationId);
           }
-          if (variationInventory) {
-            await InventoryModel.findByIdAndUpdate(
-              existingVariation.inventory,
-              variationInventory,
-              { session }
-            );
+
+          if (!existingVariation) {
+            // Fallback to attribute match if no ID
+            existingVariation = await VariationModel.findOne({
+              productId: isProductExist.id,
+              attributes: variationData.attributes,
+            });
           }
-          await VariationModel.findByIdAndUpdate(
-            existingVariation._id,
-            { $set: { serial, ...variationData } },
-            { session }
-          );
-          variationIds.push(existingVariation._id);
-        } else {
-          // Create new variation
-          const [newPrice] = await PriceModel.create([variationPrice], {
-            session,
-          });
-          const [newInventory] = await InventoryModel.create(
-            [variationInventory],
-            {
-              session,
+
+          if (existingVariation) {
+            // Update existing variation
+            if (variationPrice) {
+              const updatePrice = formatPriceUpdatePayload(variationPrice);
+              priceBulkOps.push({
+                updateOne: {
+                  filter: { _id: existingVariation.price },
+                  update: updatePrice,
+                },
+              });
             }
-          );
-          const [createdVariation] = await VariationModel.create(
-            [
-              {
-                productId: isProductExist.id,
-                serial,
-                price: newPrice._id,
-                inventory: newInventory._id,
-                ...variationData,
+            if (variationInventory) {
+              // Calculate stock logic for variations
+              if (variationInventory.stockQuantity !== undefined) {
+                const currentInv = inventoryMap.get(
+                  existingVariation.inventory.toString()
+                );
+                if (currentInv && currentInv.stockQuantity !== undefined) {
+                  variationInventory.stockAvailable = calculateStockAvailable(
+                    variationInventory.stockQuantity,
+                    currentInv.stockQuantity,
+                    currentInv.stockAvailable || 0
+                  );
+                }
+              }
+
+              inventoryBulkOps.push({
+                updateOne: {
+                  filter: { _id: existingVariation.inventory },
+                  update: variationInventory,
+                },
+              });
+            }
+
+            variationBulkOps.push({
+              updateOne: {
+                filter: { _id: existingVariation._id },
+                update: { $set: { serial, ...variationData } },
               },
-            ],
-            { session }
-          );
-          variationIds.push(createdVariation._id);
+            });
+            variationIds.push(existingVariation._id);
+          } else {
+            // Create new variation data structure to hold temporarily
+            // We need separate Price and Inventory documents first
+            // Since insertMany returns docs with IDs, we can't easily bulkWrite the dependent Variation *before* we have IDs.
+            // BUT, we can generate IDs manually or just use single creates for NEW items (usually few)
+            // or use insertMany for the batch of new items.
+
+            // Let's collect new items to batch create them
+            newVariationsData.push({
+              serial,
+              pricePayload: variationPrice,
+              inventoryPayload: variationInventory,
+              variationPayload: variationData,
+            });
+          }
+
+          index++;
         }
 
-        index++;
+        // Execute Bulk Updates
+        if (priceBulkOps.length)
+          await PriceModel.bulkWrite(priceBulkOps, { session });
+        if (inventoryBulkOps.length)
+          await InventoryModel.bulkWrite(inventoryBulkOps, { session });
+        if (variationBulkOps.length)
+          await VariationModel.bulkWrite(variationBulkOps, { session });
+
+        // Handle New Variations Batch Creation
+        if (newVariationsData.length > 0) {
+          const newPrices = await PriceModel.insertMany(
+            newVariationsData.map((v) => v.pricePayload),
+            { session }
+          );
+          const newInventories = await InventoryModel.insertMany(
+            newVariationsData.map((v) => v.inventoryPayload),
+            { session }
+          );
+
+          const finalNewVariations = newVariationsData.map((v, idx) => ({
+            productId: isProductExist.id,
+            serial: v.serial,
+            price: newPrices[idx]._id,
+            inventory: newInventories[idx]._id,
+            ...v.variationPayload,
+          }));
+
+          const createdVariations = await VariationModel.insertMany(
+            finalNewVariations,
+            { session }
+          );
+          createdVariations.forEach((v) => variationIds.push(v._id));
+        }
       }
     }
 
@@ -814,17 +935,14 @@ const updateProductIntoDB = async (
         updateWarrantyInfo[`warrantyInfo.${key}`] = value;
       }
     }
-    // const updatePublishedStatus: Record<string, unknown> = {};
-    // if (publishedStatus && Object.keys(publishedStatus).length) {
-    //   for (const [key, value] of Object.entries(publishedStatus)) {
-    //     updatePublishedStatus[`publishedStatus.${key}`] = value;
-    //   }
-    // }
 
     let updateAttribute, updateBrand, updateTag;
-    if (attributes?.length) {
+
+    // Only update attributes if type is variable
+    if (productType === PRODUCT_TYPE.VARIABLE && attributes?.length) {
       updateAttribute = attributes;
     }
+
     if (brand) {
       updateBrand = brand;
     }
