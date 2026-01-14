@@ -427,6 +427,11 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
     andConditions.push({ "productCollection._id": collectionId });
   }
 
+  if (query.brand) {
+    const brandId = new mongoose.Types.ObjectId(query.brand as string);
+    andConditions.push({ "brand._id": brandId });
+  }
+
   if (query.stock) {
     const stockRegex = new RegExp(`\\b${query.stock}\\b`, "i");
     andConditions.push({
