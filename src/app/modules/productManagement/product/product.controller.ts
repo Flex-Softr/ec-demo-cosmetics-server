@@ -97,6 +97,15 @@ const getBestSellingProducts = catchAsync(async (req, res) => {
   });
 });
 
+const getProductPriceRange = catchAsync(async (req, res) => {
+  const result = await ProductServices.getProductPriceRangeFromDB(req.query);
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Product price range retrieved successfully!",
+    data: result,
+  });
+});
+
 const getRelatedProducts = catchAsync(async (req, res) => {
   const slug = req.params.slug;
   if (!slug) {
@@ -156,6 +165,7 @@ export const ProductControllers = {
   getAllProductsAdmin,
   getFeaturedProducts,
   getBestSellingProducts,
+  getProductPriceRange,
   getRelatedProducts,
   updateProduct,
   deleteProduct,

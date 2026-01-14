@@ -62,7 +62,10 @@ const globalErrorhandler: ErrorRequestHandler = (
     message = modifiedError.message;
     statusCode = modifiedError.statusCode;
     errorMessages = modifiedError.errorMessages;
-  } else if (err.name === "MongoServerError" && err.code === 11000) {
+  } else if (
+    (err.name === "MongoServerError" || err.name === "MongoBulkWriteError") &&
+    err.code === 11000
+  ) {
     const modifiedError: TIErrorResponse = handleMongooseDuplicateError(err);
     message = modifiedError.message;
     statusCode = modifiedError.statusCode;

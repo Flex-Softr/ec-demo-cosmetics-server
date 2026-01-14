@@ -31,6 +31,8 @@ router.get("/featured", ProductControllers.getFeaturedProducts);
 
 router.get("/related-products/:slug", ProductControllers.getRelatedProducts);
 
+router.get("/price-range", ProductControllers.getProductPriceRange);
+
 router.get(
   "/admin",
   authGuard({

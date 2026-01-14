@@ -122,11 +122,11 @@ export const productSchema = new Schema<TProduct>(
     warrantyInfo: {
       type: warrantyInfoSchema,
     },
-    offer: {
-      flash: { type: Boolean, default: false },
-      today: { type: Boolean, default: false },
-      featured: { type: Boolean, default: false },
-    },
+    // offer: {
+    //   flash: { type: Boolean, default: false },
+    //   today: { type: Boolean, default: false },
+    //   featured: { type: Boolean, default: false },
+    // },
     tag: [tagSchema],
     seoData: seoDataSchema,
     publishedStatus: {

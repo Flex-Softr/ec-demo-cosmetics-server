@@ -130,7 +130,6 @@ export const commonProductProjection = {
       else: "$price.priceSave",
     },
   },
-
   // Variable Product Specific Fields
   minRegularPrice: {
     $cond: {

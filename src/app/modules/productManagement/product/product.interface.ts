@@ -45,39 +45,37 @@ export type TTag = {
 export type TProduct = {
   id: string;
   title: string;
-  // permalink?: string;
   type: TProductType;
   slug: string;
   description: string;
   shortDescription?: string;
   additionalInfo?: string;
   usageGuidelines?: string;
-  // downloadable?: boolean;
   featured?: boolean;
   review?: boolean;
   price?: Types.ObjectId | TPrice;
-  image: TProductImage; //| TProductImage
+  image: TProductImage;
   inventory?: Types.ObjectId | TInventory;
   attributes: TProductAttribute[];
   variations: Types.ObjectId[] | TVariation[];
   brand: Types.ObjectId;
   category: TCategorySchema;
+  productCollection?: Types.ObjectId;
+  relatedProducts?: Types.ObjectId[];
   warranty: boolean;
   warrantyInfo: TWarrantyInfo;
   tag?: TTag[];
+  offer?: {
+    flash: boolean;
+    today: boolean;
+    featured: boolean;
+  };
   seoData?: TSeoData;
   publishedStatus: TPublishedStatus;
   createdBy: Types.ObjectId;
   updatedBy?: Types.ObjectId;
   deletedBy?: Types.ObjectId;
   isDeleted: boolean;
-  productCollection?: Types.ObjectId;
-  relatedProducts?: Types.ObjectId[];
-  offer?: {
-    flash: boolean;
-    today: boolean;
-    featured: boolean;
-  };
 } & Document;
 
 export type TProductType = (typeof PRODUCT_TYPE)[keyof typeof PRODUCT_TYPE];
