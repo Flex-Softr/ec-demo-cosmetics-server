@@ -39,8 +39,6 @@ const updateCourierIntoDB = async (
   id: string,
   payload: Partial<TShippingMethod>
 ) => {
-  const { thumb_id, ...rest } = payload;
-
   const courier = await Courier.findById(id);
 
   if (!courier) {
@@ -69,46 +67,25 @@ const updateCourierIntoDB = async (
     }
   }
 
-  // Merge credentials: keep old ones, update values
-  const mergedCredentials = existingCredentials.map((field) => {
+  const mergedCredentials = courier?.credentials?.map((field) => {
     const input = inputCredentials.find((c) => c.key === field.key);
-
-    if (!input) return field; // no update for this key
+    if (!input) return field;
 
     let finalValue = input.value;
 
-    // Hash value if needed
     if (field.need_to_hash && input.value) {
       finalValue = encrypt(input.value);
     }
 
-    return {
-      ...field,
-      value: finalValue,
-    };
+    field.value = finalValue; // mutate subdoc directly
+    return field;
   });
 
-  // Prepare final update object
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateData: any = {
-    ...rest,
-    credentials: mergedCredentials,
-  };
+  courier.credentials = mergedCredentials;
+  Object.assign(courier, payload);
 
-  if (thumb_id) {
-    updateData.thumb = thumb_id;
-  }
-  // If thumb_id is explicitly null (removing image)
-  if (thumb_id === null) {
-    updateData.thumb = null;
-  }
-
-  const result = await Courier.findByIdAndUpdate(id, updateData, {
-    new: true,
-    runValidators: true,
-  });
-
-  return result;
+  await courier.save();
+  return courier;
 };
 
 const getCourierByIdFromDB = async (id: string) => {
