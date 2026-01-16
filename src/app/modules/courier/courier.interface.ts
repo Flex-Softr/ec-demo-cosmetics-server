@@ -1,18 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { TImage } from "../image/image.interface";
 
-export type TCourierCredentials = [string, string];
-
-export type TCourierData = {
-  name: string;
-  slug: string;
-  image: mongoose.Types.ObjectId | TImage;
-  // website?: string;
-  apiBaseUrl?: string;
-  apiKey?: string;
-  secretKey?: string;
-  credentials?: string[];
-  isActive: boolean;
+export type TShippingMethodCredential = {
+  key: string;
+  value: string;
+  need_to_hash?: boolean;
+  is_optional?: boolean;
 };
 
-export type TCourier = TCourierData & Document;
+export type TShippingMethod = {
+  name: string;
+  slug: string;
+  description?: string;
+  thumb?: mongoose.Types.ObjectId | TImage;
+  credentials?: TShippingMethodCredential[];
+
+  isActive: boolean;
+} & Document;
+
+export type TCourier = TShippingMethod; // Alias for backward compatibility or transition

@@ -63,6 +63,7 @@
     "helmet": "^7.1.0",
     "http-status": "^1.7.3",
     "jsonwebtoken": "^9.0.2",
+    "libphonenumber-js": "^1.12.34",
     "moment-timezone": "^0.5.45",
     "mongoose": "^8.1.0",
     "morgan": "^1.10.0",
