@@ -13,30 +13,27 @@ const CourierSchema = new Schema<TCourier>(
       required: true,
       unique: true,
     },
-    image: {
+    description: {
+      type: String,
+    },
+    thumb: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: "Image",
     },
-    // website: {
-    //   type: String,
-    // },
-    apiBaseUrl: {
-      type: String,
-    },
-    apiKey: {
-      type: String,
-    },
-    secretKey: {
-      type: String,
-    },
     credentials: {
-      type: [String],
+      type: [
+        {
+          key: { type: String },
+          value: { type: String },
+          need_to_hash: { type: Boolean },
+          is_optional: { type: Boolean },
+        },
+      ],
       default: [],
     },
     isActive: {
       type: Boolean,
-      required: true,
+      default: false,
     },
   },
   { timestamps: true }

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import config from "../app/config/config";
 import { PERMISSIONS, permissionList } from "../app/const/permission.const";
+import { Courier } from "../app/modules/courier/courier.model";
 import { Address } from "../app/modules/userManagement/address/address.model";
 import { Admin } from "../app/modules/userManagement/admin/admin.model";
 import { TPermission } from "../app/modules/userManagement/permission/permission.interface";
@@ -114,6 +115,7 @@ const createSuperAdmin = async () => {
     );
 
     consoleLogger.info("✅ Super admin created successfully.");
+
     await session.commitTransaction(); // Commit only if success
   } catch (error) {
     await session.abortTransaction();
@@ -137,10 +139,31 @@ const connectDB = async (): Promise<void> => {
   }
 };
 
+const seedCouriers = async () => {
+  try {
+    for (const provider of shippingMethodProviders) {
+      const existingCourier = await Courier.findOne({ slug: provider.slug });
+      if (!existingCourier) {
+        await Courier.create({
+          ...provider,
+          isActive: false,
+        });
+        consoleLogger.info(`✅ Courier ${provider.name} created successfully.`);
+      } else {
+        consoleLogger.info(`ℹ️ Courier ${provider.name} already exists.`);
+      }
+    }
+  } catch (error) {
+    consoleLogger.error("❌ Error seeding couriers:", error);
+    throw error;
+  }
+};
+
 const seedSuperAdmin = async (): Promise<void> => {
   try {
     await connectDB();
     await createSuperAdmin();
+    await seedCouriers();
     process.exit(0);
   } catch (error) {
     consoleLogger.error("❌ Error during super admin seeding:", error);
@@ -153,5 +176,33 @@ if (require.main === module) {
   // Only run if executed directly
   seedSuperAdmin();
 }
+
+const shippingMethodProviders = [
+  {
+    name: "Steadfast",
+    slug: "steadfast",
+    credentials: [
+      { key: "Api-Key", value: "" },
+      { key: "Secret-Key", value: "" },
+    ],
+  },
+  {
+    name: "Redx",
+    slug: "redx",
+    credentials: [{ key: "API-ACCESS-TOKEN", value: "" }],
+  },
+  {
+    name: "Pathao",
+    slug: "pathao",
+    credentials: [
+      { key: "client_id", value: "" },
+      { key: "client_secret", value: "" },
+      { key: "username", value: "" },
+      { key: "password", value: "", need_to_hash: true },
+      { key: "access_token", value: "", is_optional: true },
+      { key: "access_token_expires_in", value: "", is_optional: true },
+    ],
+  },
+];
 
 export default seedSuperAdmin;

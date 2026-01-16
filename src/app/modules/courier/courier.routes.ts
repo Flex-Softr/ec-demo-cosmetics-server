@@ -8,17 +8,6 @@ import { CourierValidation } from "./courier.validation";
 
 const router = Router();
 
-// Create new courier
-router.post(
-  "/",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.MANAGE_COURIER,
-  }),
-  validateRequest(CourierValidation.createCourier),
-  CourierController.createCourier
-);
-
 // Get all couriers
 router.get(
   "/",
@@ -48,16 +37,6 @@ router.patch(
   }),
   validateRequest(CourierValidation.updateCourier),
   CourierController.updateCourier
-);
-
-// Delete courier
-router.delete(
-  "/:id",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.MANAGE_COURIER,
-  }),
-  CourierController.deleteCourier
 );
 
 export const CourierRoutes = router;
