@@ -1,5 +1,7 @@
+import { TShippingMethodCredential } from "../modules/courier/courier.interface";
+
 const steedFastApi = async (config: {
-  credentials: string[];
+  credentials: TShippingMethodCredential[];
   endpoints: string;
   payload?: Record<string, string>[];
   method: "GET" | "POST";

@@ -512,7 +512,7 @@ export const createOrderOnSteedFast = async (
   );
 
   const { data } = await steedFastApi({
-    credentials: courier.credentials || [],
+    credentials: courier?.credentials || [],
     endpoints: "/create_order/bulk-order",
     method: "POST",
     payload: payload as unknown as Record<string, string>[],
