@@ -605,6 +605,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
             _id: "$orderedProducts._id",
             productId: "$productInfo._id",
             title: "$productInfo.title",
+            slug: "$productInfo.slug",
             image: {
               src: {
                 $concat: [config.image_base_url, "/", "$productThumb.src"],
@@ -1041,6 +1042,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
             _id: "$orderedProducts._id",
             productId: "$productInfo._id",
             title: "$productInfo.title",
+            slug: "$productInfo.slug",
             image: {
               src: {
                 $concat: [config.image_base_url, "/", "$productThumb.src"],
