@@ -179,4 +179,23 @@ router.get(
   OrderController.getMobileNumbersForSendingSMS
 );
 
+router.post(
+  "/admin/schedule-pickup",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
+  }),
+  validateRequest(OrderValidation.schedulePickup),
+  OrderController.schedulePickupFromOrder
+);
+
+router.get(
+  "/get-courier-for-order",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
+  }),
+  OrderController.getCourierForOrder
+);
+
 export const OrderRoutes = router;

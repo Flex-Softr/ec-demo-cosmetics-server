@@ -292,6 +292,32 @@ const getMobileNumbersForSendingSMS = catchAsync(
   }
 );
 
+const schedulePickupFromOrder = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = req.user as TJwtPayload;
+    const result = await OrderServices.schedulePickupFromOrderIntoDB(
+      req.body,
+      user
+    );
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Pickup scheduled successfully",
+      data: result,
+    });
+  }
+);
+
+const getCourierForOrder = catchAsync(async (req: Request, res: Response) => {
+  const result = await OrderServices.getCourierForOrder();
+
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Courier retrieved successfully",
+    data: result,
+  });
+});
+
 export const OrderController = {
   createOrder,
   getOrderInfoByOrderIdCustomer,
@@ -313,4 +339,6 @@ export const OrderController = {
   getOrdersByDeliveryStatus,
   returnAndPartialManagement,
   getMobileNumbersForSendingSMS,
+  schedulePickupFromOrder,
+  getCourierForOrder,
 };

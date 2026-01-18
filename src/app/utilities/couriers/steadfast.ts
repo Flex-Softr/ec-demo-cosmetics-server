@@ -1,5 +1,4 @@
 import httpStatus from "http-status";
-import { parsePhoneNumber } from "libphonenumber-js/min";
 import ApiError from "../../errorHandlers/ApiError";
 import { TShippingMethod } from "../../modules/courier/courier.interface";
 import {
@@ -62,14 +61,11 @@ const steadfast = async (
   shippingMethod: TShippingMethod,
   payload: TSchedulePickRequestBody
 ): Promise<TSchedulePickResponse> => {
-  const phone = parsePhoneNumber(payload.phone);
   const body: TSteadfastRequestBody = {
     invoice: payload.invoice_id,
     recipient_name: payload.full_name,
     recipient_address: payload.full_address,
-    recipient_phone: phone
-      ? `0${phone.nationalNumber}`.slice(-11)
-      : payload.phone,
+    recipient_phone: payload.phone,
     cod_amount: Number(payload.cod_amount),
     note: payload.note,
   };
