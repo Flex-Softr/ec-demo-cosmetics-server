@@ -1,6 +1,5 @@
 import axios, { AxiosError } from "axios";
 import httpStatus from "http-status";
-import { parsePhoneNumber } from "libphonenumber-js/min";
 
 import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
@@ -198,13 +197,9 @@ export const schedulePickOnPathao = async (
       "Parcel weight must be a valid number."
     );
 
-  const phone = parsePhoneNumber(payload.phone);
-
   const data: TPathaoRequestBody = {
     recipient_name: payload.full_name,
-    recipient_phone: phone
-      ? `0${phone.nationalNumber}`.slice(-11)
-      : payload.phone,
+    recipient_phone: payload.phone,
     recipient_address: payload.full_address,
     amount_to_collect: Number(payload.cod_amount || 0),
     delivery_type: 48,

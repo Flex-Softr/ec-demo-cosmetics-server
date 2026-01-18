@@ -70,9 +70,10 @@ const refreshToken = async (
       token,
       config.token_data.refresh_token_secret as Secret
     );
-    if (verifiedToken.role !== ROLES.CUSTOMER) {
-      throw new ApiError(httpStatus.FORBIDDEN, "Invalid token");
-    }
+
+    // if (verifiedToken.role !== ROLES.CUSTOMER) {
+    //   throw new ApiError(httpStatus.FORBIDDEN, "Invalid token");
+    // }
   } catch (error) {
     throw new ApiError(httpStatus.FORBIDDEN, "Invalid token");
   }

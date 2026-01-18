@@ -32,6 +32,10 @@ import {
 } from "./order.interface";
 import { Order } from "./order.model";
 // import steedFastApi from "../../../utilities/steedfastApi";
+import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
+import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
+import triggerRefundEvent from "../../../utilities/triggerRefundEvent";
+import { TShippingMethod } from "../../courier/courier.interface";
 import { TVariation } from "../../productManagement/variation/variation.interface";
 import VariationModel from "../../productManagement/variation/variation.model";
 import {
@@ -866,6 +870,7 @@ const updateOrderStatusIntoDB = async (
     );
 
     const orders = (await Order.aggregate(pipeline)) as Partial<TOrder[]>;
+
     const statusUpdateQuery: {
       updateOne: {
         filter: {
@@ -950,6 +955,22 @@ const updateOrderStatusIntoDB = async (
           !["canceled", "deleted"].includes(orderPreviousStatus || "") &&
           ["canceled", "deleted"].includes(payload.status)
         ) {
+          triggerRefundEvent({
+            ph: (order as unknown as { shippingData: TShipping })?.shippingData
+              ?.phoneNumber,
+            em: (order as unknown as { shippingData: TShipping })?.shippingData
+              ?.email,
+            value: Number(order?.total ?? 0),
+            contents: order?.orderedProducts?.map((product) => ({
+              id: (
+                product as unknown as { productId: string }
+              )?.productId?.toString(),
+              name: (product as unknown as { title: string })?.title,
+              quantity: product?.quantity,
+              price: product?.unitPrice,
+            })),
+            orderId: order?.orderId,
+          });
           await updateStockOrderCancelDelete(orderedProducts, session);
         }
       }
@@ -1060,6 +1081,30 @@ const updateProcessingStatusIntoDB = async (
       );
 
       if (status === "canceled") {
+        triggerRefundEvent({
+          ph: (order as unknown as { shippingData: TShipping })?.shippingData
+            ?.phoneNumber,
+          em: (order as unknown as { shippingData: TShipping })?.shippingData
+            ?.email,
+          value: Number(order?.total ?? 0),
+          contents: (
+            order?.orderedProducts as {
+              productId: string;
+              title: string;
+              quantity: number;
+              unitPrice: number;
+            }[]
+          )?.map((product) => ({
+            id: (
+              product as unknown as { productId: string }
+            )?.productId?.toString(),
+            name: (product as unknown as { title: string })?.title,
+            quantity: product?.quantity,
+            price: product?.unitPrice,
+          })),
+          orderId: order?.orderId,
+        });
+
         await Promise.all([
           updateStockOrderCancelDelete(order.productDetails, session),
           deleteWarrantyFromOrder(order.productDetails, order._id, session),
@@ -1190,6 +1235,30 @@ const bookCourierAndUpdateStatusIntoDB = async (
       );
 
       for (const order of orders) {
+        triggerRefundEvent({
+          ph: (order as unknown as { shippingData: TShipping })?.shippingData
+            ?.phoneNumber,
+          em: (order as unknown as { shippingData: TShipping })?.shippingData
+            ?.email,
+          value: Number(order?.total ?? 0),
+          contents: (
+            order?.orderedProducts as {
+              productId: string;
+              title: string;
+              quantity: number;
+              unitPrice: number;
+            }[]
+          ).map((product) => ({
+            id: (
+              product as unknown as { productId: string }
+            )?.productId?.toString(),
+            name: (product as unknown as { title: string })?.title,
+            quantity: product?.quantity,
+            price: product?.unitPrice,
+          })),
+          orderId: order?.orderId,
+        });
+
         await updateStockOrderCancelDelete(
           order?.productDetails || [],
           session
@@ -2199,6 +2268,120 @@ const getMobileNumbersForSendingSMSFromDB = async (
   return result;
 };
 
+/* -----------------------------------------
+          Schedule pickup from order
+----------------------------------------- */
+const schedulePickupFromOrderIntoDB = async (
+  payload: Record<string, unknown>,
+  user: TJwtPayload
+) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const order = await Order.findById(payload.order_id)
+      .populate("shipping")
+      .session(session);
+
+    if (!order) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Order not found.");
+    }
+
+    if (order.status !== "processing done") {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Only processing done orders can be book for schedule."
+      );
+    }
+
+    const shippingMethod = await Courier.findById(
+      payload.shipping_method_id
+    ).session(session);
+
+    if (!shippingMethod) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Shipping method not found.");
+    }
+
+    if (!shippingMethod.isActive) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Shipping method is not active."
+      );
+    }
+
+    const shippingData = order.shipping as unknown as TShipping;
+
+    const pickupInfo: TSchedulePickRequestBody = {
+      invoice_id: order.orderId,
+      cod_amount: (order.total - (order.advance || 0)).toString(),
+      full_name: shippingData?.fullName ?? "N/A",
+      full_address: shippingData?.fullAddress ?? "N/A",
+      phone: shippingData?.phoneNumber ?? "N/A",
+      note: order.courierNotes || undefined,
+      delivery_area: payload.delivery_area as string,
+      delivery_area_id: payload.delivery_area_id as number,
+      parcel_weight: payload.parcel_weight as string,
+      value: payload.value as string,
+      item_quantity: payload.item_quantity as number,
+      store_id: payload.store_id as number,
+    };
+
+    const result = await schedulePickup(
+      shippingMethod as unknown as TShippingMethod,
+      pickupInfo
+    );
+
+    if (result.success) {
+      await Order.updateOne(
+        { _id: order._id },
+        {
+          status: "On courier",
+          courierDetails: {
+            courierProvider: shippingMethod._id,
+            trackingId: result.tracking_code,
+          },
+        },
+        { session }
+      );
+
+      await OrderStatusHistory.updateOne(
+        { _id: order.statusHistory },
+        {
+          $push: {
+            history: {
+              status: "On courier",
+              updatedBy: user.id,
+            },
+          },
+        },
+        { session }
+      );
+
+      await session.commitTransaction();
+      return result;
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to schedule pickup.");
+    }
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+};
+
+const getCourierForOrder = async () => {
+  const result = await Courier.find({
+    isActive: true,
+  }).select({
+    name: 1,
+    slug: 1,
+    _id: 1,
+  });
+
+  return result;
+};
+
 export const OrderServices = {
   createOrderIntoDB,
   updateOrderStatusIntoDB,
@@ -2220,4 +2403,6 @@ export const OrderServices = {
   getOrdersByDeliveryStatusFromDB,
   returnAndPartialManagementIntoDB,
   getMobileNumbersForSendingSMSFromDB,
+  schedulePickupFromOrderIntoDB,
+  getCourierForOrder,
 };

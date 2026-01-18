@@ -1,5 +1,4 @@
 import httpStatus from "http-status";
-import { parsePhoneNumber } from "libphonenumber-js/min";
 
 import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
@@ -105,13 +104,11 @@ export const schedulePickOnRedx = async (
       "Failed to book courier.",
       "Value is required."
     );
-  const phone = parsePhoneNumber(payload.phone);
+
   const body: TRedXRequestBody = {
     customer_name: payload.full_name,
     customer_address: payload.full_address,
-    customer_phone: phone
-      ? `0${phone.nationalNumber}`.slice(-11)
-      : payload.phone,
+    customer_phone: payload.phone,
     cash_collection_amount: payload.cod_amount,
     delivery_area: payload.delivery_area ?? "N/A",
     delivery_area_id: payload.delivery_area_id ?? 0,

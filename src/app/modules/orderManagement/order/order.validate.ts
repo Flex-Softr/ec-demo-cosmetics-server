@@ -159,6 +159,21 @@ const updateQuantity = z.object({
   }),
 });
 
+const schedulePickup = z.object({
+  body: z.object({
+    order_id: z.string({ required_error: "Order id is required" }),
+    shipping_method_id: z.string({
+      required_error: "Shipping method id is required",
+    }),
+    delivery_area: z.string().optional(),
+    delivery_area_id: z.number().optional(),
+    parcel_weight: z.string().optional(),
+    value: z.string().optional(),
+    item_quantity: z.number().optional(),
+    store_id: z.number().optional(),
+  }),
+});
+
 export const OrderValidation = {
   createOrderValidation,
   getOrdersAdmin,
@@ -168,4 +183,5 @@ export const OrderValidation = {
   updateOrderDetailsByAdmin,
   deleteOrders,
   updateQuantity,
+  schedulePickup,
 };
