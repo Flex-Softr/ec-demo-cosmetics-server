@@ -19,6 +19,15 @@ const createOrderSMSNotification = z.object({
         }),
         customTemplate: z.string().optional(),
         isActive: z.boolean().optional().default(true),
+        activeMedium: z
+          .array(
+            z.enum([
+              ...OrderSMSNotificationConst.OrderSMSNotificationMedium,
+            ] as [string, ...string[]])
+          )
+          .optional()
+          .default([]),
+        emailSubject: z.string().optional().default("Order Notification"),
       })
       .array(),
   }),

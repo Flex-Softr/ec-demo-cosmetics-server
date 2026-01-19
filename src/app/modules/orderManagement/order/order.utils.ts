@@ -475,6 +475,7 @@ export const createNewOrder = async (
       fullName: shipping.fullName,
       orderId,
       phoneNumber: shipping.phoneNumber,
+      email: shipping.email,
       total: totalCost.toString(),
     },
     "order_created"

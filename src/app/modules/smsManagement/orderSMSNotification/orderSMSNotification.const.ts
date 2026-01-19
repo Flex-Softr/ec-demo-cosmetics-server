@@ -8,4 +8,13 @@ const orderSMSNotificationType: TOrderSMSNotificationType[] = [
   "shifted",
 ];
 
-export const OrderSMSNotificationConst = { orderSMSNotificationType };
+export const OrderSMSNotificationMedium = [
+  "phone",
+  "email",
+  "whatsapp",
+] as const;
+
+export const OrderSMSNotificationConst = {
+  orderSMSNotificationType,
+  OrderSMSNotificationMedium,
+};

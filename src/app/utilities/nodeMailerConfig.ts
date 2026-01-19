@@ -45,6 +45,7 @@ const sendMail = async ({ to, subject, text, html }: TMailConfig) => {
       text,
       html,
     });
+
     return res;
   } catch (error) {
     throw new Error(error as string);
