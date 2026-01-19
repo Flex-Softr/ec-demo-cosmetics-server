@@ -1,5 +1,7 @@
 import { Document } from "mongoose";
 
+export type TOrderSMSNotificationMediumType = "phone" | "email" | "whatsapp";
+
 export type TOrderSMSNotificationType =
   | "order_created"
   | "order_confirmed"
@@ -12,6 +14,8 @@ export type TOrderSMSNotificationData = {
   defaultTemplate: string;
   customTemplate?: string;
   isActive: boolean;
+  activeMedium: TOrderSMSNotificationMediumType[];
+  emailSubject?: string;
 };
 
 export type TOrderSMSNotification = TOrderSMSNotificationData & Document;

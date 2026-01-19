@@ -983,10 +983,10 @@ const updateOrderStatusIntoDB = async (
       const SMSReviverInformations: TSMSReceiverInfo[] = orders.map((order) => {
         const shipping = (order as unknown as { shippingData: TShipping })
           ?.shippingData;
-
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
+          email: shipping.email || "",
           orderId: order?.orderId || "",
           total: order?.total.toString() || "0",
         };
@@ -1298,6 +1298,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
+          email: shipping.email || "",
           orderId: currentOrder.orderId || "",
           trackingId: order.trackingId || "",
           total: currentOrder.total.toString() || "0",
@@ -1313,6 +1314,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
+          email: shipping.email || "",
           orderId: order?.orderId || "",
           total: order?.total.toString() || "0",
         };
@@ -2355,6 +2357,17 @@ const schedulePickupFromOrderIntoDB = async (
           },
         },
         { session }
+      );
+
+      await OrderHelper.sendOrderSMSNotification(
+        {
+          fullName: shippingData.fullName || "",
+          phoneNumber: shippingData.phoneNumber || "",
+          email: shippingData.email || "",
+          orderId: order?.orderId || "",
+          total: order?.total.toString() || "0",
+        },
+        "courier_assigned"
       );
 
       await session.commitTransaction();
