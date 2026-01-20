@@ -32,6 +32,7 @@ import {
 } from "./order.interface";
 import { Order } from "./order.model";
 // import steedFastApi from "../../../utilities/steedfastApi";
+import config from "../../../config/config";
 import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
 import triggerRefundEvent from "../../../utilities/triggerRefundEvent";
@@ -1779,17 +1780,29 @@ const updateOrderDetailsByAdminIntoDB = async (
     updatedDoc.warrantyAmount = newWarrantyAmount;
     // Update shipping chare
     if (payload?.shippingCharge) {
-      const shippingMethod = await ShippingCharge.findById(
+      const shippingCost = await ShippingCharge.findById(
         payload.shippingCharge
       );
-      if (!shippingMethod) {
+      if (!shippingCost) {
         throw new ApiError(
           httpStatus.BAD_REQUEST,
           "Failed to find shipping charge"
         );
       }
-      updatedDoc.shippingCharge = shippingMethod?._id;
-      increments += Number(shippingMethod?.amount || 0);
+      const totalNumberOfItems = (
+        updatedDoc?.orderedProducts as TOrderedProduct[]
+      )?.reduce((acc, item) => {
+        return acc + item?.quantity;
+      }, 0);
+
+      const shippingCostExceptFirstItem =
+        (totalNumberOfItems - 1) * config.per_item_shipping_cost;
+
+      const shippingCostTotal =
+        Number(shippingCost?.amount) + shippingCostExceptFirstItem;
+
+      updatedDoc.shippingCharge = shippingCost?._id;
+      increments += Number(shippingCostTotal);
     } else {
       increments += Number(
         (findOrder.shippingCharge as TShippingCharge).amount
