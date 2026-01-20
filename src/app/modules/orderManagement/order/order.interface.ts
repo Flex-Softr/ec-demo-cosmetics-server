@@ -206,6 +206,7 @@ export type TFindOrderForUpdatingOrder = {
 export type TSMSReceiverInfo = {
   phoneNumber: string;
   fullName: string;
+  email?: string;
   orderId: string;
   trackingId?: string;
   trackingUrl?: string;

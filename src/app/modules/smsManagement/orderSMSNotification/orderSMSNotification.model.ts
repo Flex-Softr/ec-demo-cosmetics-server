@@ -23,6 +23,16 @@ const OrderSMSNotificationSchema = new Schema<TOrderSMSNotification>(
       required: true,
       default: true,
     },
+    activeMedium: {
+      type: [String],
+      enum: OrderSMSNotificationConst.OrderSMSNotificationMedium,
+      required: true,
+      default: [],
+    },
+    emailSubject: {
+      type: String,
+      default: "Order Notification",
+    },
   },
   { timestamps: true, versionKey: false }
 );

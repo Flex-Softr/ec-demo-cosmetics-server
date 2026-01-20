@@ -4,6 +4,7 @@ import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import { errorLogger } from "../../../utilities/logger";
+import sendMail from "../../../utilities/nodeMailerConfig";
 import sendSms from "../../../utilities/sendSms";
 import { Cart } from "../../cartManagement/cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
@@ -1281,6 +1282,10 @@ const orderCostAfterCoupon = async (
     user: TOptionalAuthGuardPayload;
   }
 ) => {
+  const totalNumberOfItems = orderedProductInfo?.reduce((acc, item) => {
+    return acc + item?.quantity;
+  }, 0);
+
   // Find shipping change
   const shippingCharges = await ShippingCharge.findOne({
     _id: shippingCharge,
@@ -1468,15 +1473,20 @@ const orderCostAfterCoupon = async (
   /********************************
    * Coupon calculation ends here
    *********************************/
+  const shippingCostExceptFirstItem =
+    (totalNumberOfItems - 1) * config.per_item_shipping_cost;
+
+  const shippingCostTotal =
+    Number(shippingCharges?.amount) + shippingCostExceptFirstItem;
 
   const totalCostAfterCoupon =
-    productCosts + Number(shippingCharges?.amount) - couponDiscount;
+    productCosts + shippingCostTotal - couponDiscount;
 
   return {
     couponDiscount,
     totalCostAfterCoupon,
     shippingId: shippingCharges._id,
-    shippingChange: shippingCharges.amount,
+    shippingChange: shippingCostTotal,
     couponId: coupon?._id,
   };
 };
@@ -1493,6 +1503,8 @@ const sendOrderSMSNotification = async (
       slug: type,
     })) as TOrderSMSNotification;
   }
+
+  if (!SMSNotificationData?.activeMedium?.length) return false;
 
   if (!SMSNotificationData) return false;
   if (SMSNotificationData?.isActive === false) return false;
@@ -1513,7 +1525,21 @@ const sendOrderSMSNotification = async (
   }
 
   try {
-    await sendSms([receiverInfo.phoneNumber], SMSBody, "T");
+    if (SMSNotificationData?.activeMedium?.includes("phone")) {
+      await sendSms([receiverInfo.phoneNumber], SMSBody, "T");
+    }
+
+    if (SMSNotificationData?.activeMedium?.includes("email")) {
+      if (!receiverInfo.email) {
+        return false;
+      }
+
+      await sendMail({
+        to: [receiverInfo.email],
+        subject: SMSNotificationData?.emailSubject || "Order Notification",
+        html: SMSBody,
+      });
+    }
   } catch (error) {
     errorLogger.error("failed to send SMS", error);
     return false;

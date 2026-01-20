@@ -32,6 +32,7 @@ import {
 } from "./order.interface";
 import { Order } from "./order.model";
 // import steedFastApi from "../../../utilities/steedfastApi";
+import config from "../../../config/config";
 import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
 import triggerRefundEvent from "../../../utilities/triggerRefundEvent";
@@ -983,10 +984,10 @@ const updateOrderStatusIntoDB = async (
       const SMSReviverInformations: TSMSReceiverInfo[] = orders.map((order) => {
         const shipping = (order as unknown as { shippingData: TShipping })
           ?.shippingData;
-
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
+          email: shipping.email || "",
           orderId: order?.orderId || "",
           total: order?.total.toString() || "0",
         };
@@ -1298,6 +1299,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
+          email: shipping.email || "",
           orderId: currentOrder.orderId || "",
           trackingId: order.trackingId || "",
           total: currentOrder.total.toString() || "0",
@@ -1313,6 +1315,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
         return {
           fullName: shipping.fullName || "",
           phoneNumber: shipping.phoneNumber || "",
+          email: shipping.email || "",
           orderId: order?.orderId || "",
           total: order?.total.toString() || "0",
         };
@@ -1777,17 +1780,29 @@ const updateOrderDetailsByAdminIntoDB = async (
     updatedDoc.warrantyAmount = newWarrantyAmount;
     // Update shipping chare
     if (payload?.shippingCharge) {
-      const shippingMethod = await ShippingCharge.findById(
+      const shippingCost = await ShippingCharge.findById(
         payload.shippingCharge
       );
-      if (!shippingMethod) {
+      if (!shippingCost) {
         throw new ApiError(
           httpStatus.BAD_REQUEST,
           "Failed to find shipping charge"
         );
       }
-      updatedDoc.shippingCharge = shippingMethod?._id;
-      increments += Number(shippingMethod?.amount || 0);
+      const totalNumberOfItems = (
+        updatedDoc?.orderedProducts as TOrderedProduct[]
+      )?.reduce((acc, item) => {
+        return acc + item?.quantity;
+      }, 0);
+
+      const shippingCostExceptFirstItem =
+        (totalNumberOfItems - 1) * config.per_item_shipping_cost;
+
+      const shippingCostTotal =
+        Number(shippingCost?.amount) + shippingCostExceptFirstItem;
+
+      updatedDoc.shippingCharge = shippingCost?._id;
+      increments += Number(shippingCostTotal);
     } else {
       increments += Number(
         (findOrder.shippingCharge as TShippingCharge).amount
@@ -2355,6 +2370,17 @@ const schedulePickupFromOrderIntoDB = async (
           },
         },
         { session }
+      );
+
+      await OrderHelper.sendOrderSMSNotification(
+        {
+          fullName: shippingData.fullName || "",
+          phoneNumber: shippingData.phoneNumber || "",
+          email: shippingData.email || "",
+          orderId: order?.orderId || "",
+          total: order?.total.toString() || "0",
+        },
+        "courier_assigned"
       );
 
       await session.commitTransaction();
