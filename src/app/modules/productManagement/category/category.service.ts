@@ -1,7 +1,8 @@
 import httpStatus from "http-status";
-import { Types } from "mongoose";
+import { PipelineStage, Types } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
+import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TCategory } from "./category.interface";
 import { CategoryModel } from "./category.model";
 
@@ -35,7 +36,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
     matchQuery.isActive = query.isActive === "true";
   }
 
-  const pipeline = [
+  const pipeline: PipelineStage[] = [
     { $match: matchQuery },
     {
       $lookup: {
@@ -81,6 +82,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         as: "subCategory",
         pipeline: [
           { $match: { isDeleted: false } },
+          { $sort: { createdAt: -1 } },
           {
             $lookup: {
               from: "products",
@@ -134,10 +136,18 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         isActive: 1,
         subcategories: "$subCategory",
         productCount: 1,
+        createdAt: 1,
       },
     },
   ];
-  const result = await CategoryModel.aggregate(pipeline);
+  const categoryQuery = new AggregateQueryHelper(
+    CategoryModel.aggregate(pipeline),
+    query || {}
+  )
+    .sort()
+    .paginate();
+
+  const result = await categoryQuery.model;
   return result;
 };
 

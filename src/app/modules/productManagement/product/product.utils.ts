@@ -98,6 +98,7 @@ export const commonProductProjection = {
   title: 1,
   slug: 1,
   type: 1,
+  createdAt: 1,
   // variations: 1,
   // shortDescription: 1,
 
@@ -460,6 +461,8 @@ export const commonPipelineSingleProduct = (
       },
       brand: "$brand",
       productCollection: "$productCollection",
+      createdAt: 1,
+      updatedAt: 1,
       relatedProducts: 1,
       warranty: 1,
       warrantyInfo: 1,

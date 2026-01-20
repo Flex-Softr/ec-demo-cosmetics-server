@@ -40,10 +40,12 @@ export class QueryHelper<T> {
     return this;
   }
   paginate(): this {
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const skip = (page - 1) * limit;
-    this.model = this.model.skip(skip).limit(limit);
+    if (this.query?.page) {
+      const page = Number(this.query?.page) || 1;
+      const limit = Number(this.query?.limit) || 10;
+      const skip = (page - 1) * limit;
+      this.model = this.model.skip(skip).limit(limit);
+    }
     return this;
   }
   select(): this {
@@ -61,10 +63,13 @@ export class QueryHelper<T> {
   }> {
     const filter = this.model.getFilter();
     const total = await this.model.model.countDocuments(filter);
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const totalPage = Math.ceil(total / limit);
-    return { page, limit, total, totalPage };
+    if (this.query?.page) {
+      const page = Number(this.query?.page) || 1;
+      const limit = Number(this.query?.limit) || 10;
+      const totalPage = Math.ceil(total / limit);
+      return { page, limit, total, totalPage };
+    }
+    return { page: 1, limit: total, total, totalPage: 1 };
   }
 }
 
@@ -93,26 +98,39 @@ export class AggregateQueryHelper<T> {
     const sort = this.query?.sort;
     if (sort) {
       this.model = this.model.sort((sort as string).split(",").join(" "));
+    } else {
+      this.model = this.model.sort({ createdAt: -1 });
     }
     return this;
   }
   paginate(): this {
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const skip = (page - 1) * limit;
-    this.model = this.model.skip(skip).limit(limit);
+    if (this.query?.page) {
+      const page = Number(this.query?.page) || 1;
+      const limit = Number(this.query?.limit) || 10;
+      const skip = (page - 1) * limit;
+      this.model = this.model.skip(skip).limit(limit);
+    }
     return this;
   }
   metaData(total: number) {
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const totalPage = Math.ceil(total / limit);
-    return { page, limit, total, totalPage };
+    if (this.query?.page) {
+      const page = Number(this.query?.page) || 1;
+      const limit = Number(this.query?.limit) || 10;
+      const totalPage = Math.ceil(total / limit);
+      return { page, limit, total, totalPage };
+    }
+    return { page: 1, limit: total, total, totalPage: 1 };
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ExtendedPipelineStage = any;
+
+const convertSortStringToObject = (sortStr: string) => {
+  const sortOrder = sortStr.startsWith("-") ? -1 : 1;
+  const field = sortStr.startsWith("-") ? sortStr.substring(1) : sortStr;
+  return { [field]: sortOrder };
+};
 
 export class AggregateQueryHelperFacet<T> {
   model: Model<T>;
@@ -140,8 +158,8 @@ export class AggregateQueryHelperFacet<T> {
         (stage) => stage.$facet !== undefined
       );
       if (facetStageIndex !== -1) {
-        // Push the $match stage into the existing $facet stage
-        this.pipeline[facetStageIndex].$facet!.data.unshift({
+        // Insert the $match stage BEFORE the $facet stage
+        this.pipeline.splice(facetStageIndex, 0, {
           $match: { $or: searchConditions },
         });
       }
@@ -150,57 +168,61 @@ export class AggregateQueryHelperFacet<T> {
   }
   sort(): this {
     const sort = this.query?.sort;
+    const facetStageIndex = this.pipeline.findIndex(
+      (stage) => stage.$facet !== undefined
+    );
     if (sort) {
-      const facetStageIndex = this.pipeline.findIndex(
-        (stage) => stage.$facet !== undefined
-      );
-
-      /**
-       * Convert a string sort specification to a MongoDB sort object.
-       * @param sortStr - The sort string, e.g., "-createdAt".
-       * @returns The MongoDB sort object, e.g., { createdAt: -1 }.
-       */
-      const convertSortStringToObject = (sortStr: string) => {
-        const sortOrder = sortStr.startsWith("-") ? -1 : 1;
-        const field = sortStr.startsWith("-") ? sortStr.substring(1) : sortStr;
-        return { [field]: sortOrder };
-      };
       if (facetStageIndex !== -1) {
         // Push the $match stage into the existing $facet stage
         this.pipeline[facetStageIndex].$facet!.data.push({
           $sort: convertSortStringToObject(sort as string),
         });
       }
+    } else {
+      if (facetStageIndex !== -1) {
+        this.pipeline[facetStageIndex].$facet!.data.push({
+          $sort: { createdAt: -1 },
+        });
+      } else {
+        this.pipeline.push({ $sort: { createdAt: -1 } });
+      }
     }
     return this;
   }
   paginate(): this {
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const skip = (page - 1) * limit;
-    const facetStageIndex = this.pipeline.findIndex(
-      (stage) => stage.$facet !== undefined
-    );
-    if (facetStageIndex !== -1) {
-      // Push the $match stage into the existing $facet stage
-      this.pipeline[facetStageIndex].$facet!.data.push(
-        {
-          $skip: skip,
-        },
-        {
-          $limit: limit,
-        }
+    if (this.query?.page) {
+      const page = Number(this.query?.page) || 1;
+      const limit = Number(this.query?.limit) || 10;
+      const skip = (page - 1) * limit;
+      const facetStageIndex = this.pipeline.findIndex(
+        (stage) => stage.$facet !== undefined
       );
+      if (facetStageIndex !== -1) {
+        // Push the $match stage into the existing $facet stage
+        this.pipeline[facetStageIndex].$facet!.data.push(
+          {
+            $skip: skip,
+          },
+          {
+            $limit: limit,
+          }
+        );
+      }
     }
     return this;
   }
   async metaData() {
     const result = await this.model.aggregate(this.pipeline);
     const { data = [], total = 0 } = result[0] || {};
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const totalPage = Math.ceil(total / limit);
-    const meta = { page, limit, total, totalPage };
+    let meta;
+    if (this.query?.page) {
+      const page = Number(this.query?.page) || 1;
+      const limit = Number(this.query?.limit) || 10;
+      const totalPage = Math.ceil(total / limit);
+      meta = { page, limit, total, totalPage };
+    } else {
+      meta = { page: 1, limit: total, total, totalPage: 1 };
+    }
     return { meta, data };
   }
 }

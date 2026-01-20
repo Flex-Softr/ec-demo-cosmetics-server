@@ -384,8 +384,8 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
   )
     .search([
       "title",
-      "inventory.salePrice",
       "inventory.sku",
+      "variations.inventory.sku",
       "description",
       "category.name",
       "subcategory.name",
@@ -490,6 +490,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
               //   },
               // },
               publishedStatus: 1,
+              createdAt: 1,
             },
           },
         ],
@@ -558,6 +559,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
       "title",
       "inventory.salePrice",
       "inventory.sku",
+      "variations.inventory.sku",
       "description",
       "category.name",
       "subcategory.name",
@@ -589,7 +591,9 @@ const getFeaturedProductsFromDB = async (query: Record<string, unknown>) => {
   const productQuery = new AggregateQueryHelper(
     ProductModel.aggregate(pipeline as any),
     query
-  ).paginate();
+  )
+    .sort()
+    .paginate();
 
   const data = await productQuery.model;
   const total = (await ProductModel.aggregate(pipeline as any)).length;

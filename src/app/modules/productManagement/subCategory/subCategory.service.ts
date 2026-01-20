@@ -1,7 +1,8 @@
 import httpStatus from "http-status";
-import { Types } from "mongoose";
+import { PipelineStage, Types } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
+import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { ImageModel } from "../../image/image.model";
 import { CategoryModel } from "../category/category.model";
 import { TSubCategory } from "./subCategory.interface";
@@ -59,7 +60,7 @@ const getAllSubCategoriesFromDB = async (query?: Record<string, unknown>) => {
     matchQuery.category = new Types.ObjectId(query.category as string);
   }
 
-  const pipeline = [
+  const pipeline: PipelineStage[] = [
     { $match: matchQuery },
     {
       $lookup: {
@@ -128,11 +129,18 @@ const getAllSubCategoriesFromDB = async (query?: Record<string, unknown>) => {
           updatedAt: "$image.updatedAt",
         },
         productCount: 1,
+        createdAt: 1,
       },
     },
   ];
 
-  const result = await SubCategoryModel.aggregate(pipeline);
+  const subCategoryQuery = new AggregateQueryHelper(
+    SubCategoryModel.aggregate(pipeline),
+    query || {}
+  ).sort();
+
+  const result = await subCategoryQuery.model;
+
   return result;
 };
 

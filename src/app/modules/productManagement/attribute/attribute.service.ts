@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
-import { Types } from "mongoose";
+import { PipelineStage, Types } from "mongoose";
 import ApiError from "../../../errorHandlers/ApiError";
+import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TAttribute } from "./attribute.interface";
 import { AttributeModel } from "./attribute.model";
 
@@ -33,7 +34,7 @@ const getAllAttributesFromDB = async (query?: Record<string, unknown>) => {
     matchQuery.isActive = query.isActive === "true";
   }
 
-  const result = await AttributeModel.aggregate([
+  const pipeline: PipelineStage[] = [
     {
       $match: matchQuery,
     },
@@ -48,9 +49,19 @@ const getAllAttributesFromDB = async (query?: Record<string, unknown>) => {
             cond: { $eq: ["$$value.isDeleted", false] },
           },
         },
+        createdAt: 1,
       },
     },
-  ]);
+  ];
+
+  const attributeQuery = new AggregateQueryHelper(
+    AttributeModel.aggregate(pipeline),
+    query || {}
+  )
+    .sort()
+    .paginate();
+
+  const result = await attributeQuery.model;
 
   return result;
 };

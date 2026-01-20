@@ -1,7 +1,8 @@
 import httpStatus from "http-status";
-import { Types } from "mongoose";
+import { PipelineStage, Types } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
+import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TBrand } from "./brand.interface";
 import { BrandModel } from "./brand.model";
 
@@ -34,7 +35,7 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
     matchQuery.isActive = query.isActive === "true";
   }
 
-  const pipeline = [
+  const pipeline: PipelineStage[] = [
     { $match: matchQuery },
     {
       $lookup: {
@@ -84,11 +85,19 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
           alt: "$logo.alt",
         },
         productCount: 1,
+        createdAt: 1,
       },
     },
   ];
 
-  const result = await BrandModel.aggregate(pipeline);
+  const brandQuery = new AggregateQueryHelper(
+    BrandModel.aggregate(pipeline),
+    query || {}
+  )
+    .sort()
+    .paginate();
+
+  const result = await brandQuery.model;
   return result;
 };
 
