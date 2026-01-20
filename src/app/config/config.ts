@@ -76,4 +76,5 @@ export default {
     bill_msisdn: env.BL_BILL_MSISDN,
   },
   order_tracking_url: env.ORDER_TRACKING_URL || "",
+  per_item_shipping_cost: 50,
 };
