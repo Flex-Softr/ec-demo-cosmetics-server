@@ -103,7 +103,7 @@ export type TProductPayload = {
     gallery: string[];
   };
   inventory: {
-    sku: string;
+    sku?: string;
     stockStatus?: string;
     stockQuantity?: number;
     stockAvailable?: number;
@@ -159,7 +159,7 @@ export type IAdminProduct = {
   title: string;
   stockStatus: string;
   stockAvailable: number;
-  sku: string;
+  sku?: string;
   thumbnail: {
     _id: string;
     src: string;

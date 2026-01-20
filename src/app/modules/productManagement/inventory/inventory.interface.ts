@@ -8,7 +8,7 @@ export type TInventory = {
   stockStatus: TStockStatus;
   stockQuantity: number;
   stockAvailable?: number;
-  sku: string;
+  sku?: string;
   productCode?: string;
   manageStock: boolean;
   lowStockWarning: number;

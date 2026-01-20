@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { STOCK_STATUS } from "../inventory/inventory.const";
+import { InventoryValidation } from "../inventory/inventory.validation";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 
 const createProductAttribute = z.object({
@@ -45,25 +45,10 @@ const imageSchema = z.object({
   gallery: z.array(z.string()).min(1, "At least one gallery image is required"),
 });
 
-const inventorySchema = z.object({
-  sku: z.string().min(1, "SKU is required"),
-  stockStatus: z.enum([...Object.values(STOCK_STATUS)] as [
-    string,
-    ...string[],
-  ]),
-  stockQuantity: z.number().optional(),
-  stockAvailable: z.number().optional(),
-  preStockQuantity: z.number().optional(),
-  productCode: z.string().optional(),
-  manageStock: z.boolean().optional(),
-  lowStockWarning: z.number().optional(),
-  hideStock: z.boolean().optional(),
-});
-
 const variationSchema = z.object({
   attributes: z.record(z.string(), z.string()),
   price: priceSchema,
-  inventory: inventorySchema,
+  inventory: InventoryValidation.inventorySchema,
   offer: z
     .object({
       flash: z.boolean().optional(),
@@ -89,7 +74,7 @@ const product = z.object({
       usageGuidelines: z.string().optional(),
       image: imageSchema,
       price: priceSchema.optional(),
-      inventory: inventorySchema.optional(),
+      inventory: InventoryValidation.inventorySchema.optional(),
       attributes: z.array(createProductAttribute).optional(),
       variations: z.array(variationSchema).optional(),
       brand: z.string().optional(),
@@ -166,7 +151,7 @@ const updateProduct = z.object({
     usageGuidelines: z.string().trim().optional(),
     image: imageSchema.partial().optional(),
     price: priceSchema.partial().optional(),
-    inventory: inventorySchema.partial().optional(),
+    inventory: InventoryValidation.inventoryBaseSchema.partial().optional(),
     attributes: z.array(createProductAttribute).optional(),
     variations: z.array(variationSchema).optional(),
     brand: z.string().optional(),
