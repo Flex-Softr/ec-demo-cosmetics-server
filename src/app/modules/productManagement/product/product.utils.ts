@@ -395,9 +395,9 @@ export const commonPipelineSingleProduct = (
   {
     $unwind: { path: "$brand", preserveNullAndEmptyArrays: true },
   },
-  {
-    $unwind: { path: "$productCollection", preserveNullAndEmptyArrays: true },
-  },
+  // {
+  //   $unwind: { path: "$productCollection", preserveNullAndEmptyArrays: true },
+  // },
   {
     $project: {
       _id: 1,
@@ -589,11 +589,12 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       localField: "productCollection",
       foreignField: "_id",
       as: "productCollection",
+      pipeline: [{ $project: { title: 1, slug: 1 } }],
     },
   },
-  {
-    $unwind: { path: "$productCollection", preserveNullAndEmptyArrays: true },
-  },
+  // {
+  //   $unwind: { path: "$productCollection", preserveNullAndEmptyArrays: true },
+  // },
   // {
   //   $lookup: {
   //     from: "reviews",

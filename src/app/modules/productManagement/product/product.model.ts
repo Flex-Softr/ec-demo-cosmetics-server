@@ -116,7 +116,7 @@ export const productSchema = new Schema<TProduct>(
     variations: [{ type: Schema.Types.ObjectId, ref: "Variation" }],
     brand: { type: Schema.Types.ObjectId, ref: "Brand" },
     category: categorySchema,
-    productCollection: { type: Schema.Types.ObjectId, ref: "Collection" },
+    productCollection: [{ type: Schema.Types.ObjectId, ref: "Collection" }],
     relatedProducts: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     warranty: { type: Boolean, default: false },
     warrantyInfo: {

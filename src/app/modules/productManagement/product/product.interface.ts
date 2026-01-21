@@ -60,7 +60,7 @@ export type TProduct = {
   variations: Types.ObjectId[] | TVariation[];
   brand: Types.ObjectId;
   category: TCategorySchema;
-  productCollection?: Types.ObjectId;
+  productCollection?: Types.ObjectId[];
   relatedProducts?: Types.ObjectId[];
   warranty: boolean;
   warrantyInfo: TWarrantyInfo;

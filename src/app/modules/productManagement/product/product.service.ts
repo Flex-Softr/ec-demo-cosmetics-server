@@ -476,8 +476,14 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
                 name: "$category.name",
               },
               productCollection: {
-                _id: "$productCollection._id",
-                title: "$productCollection.title",
+                $map: {
+                  input: "$productCollection",
+                  as: "collection",
+                  in: {
+                    _id: "$$collection._id",
+                    title: "$$collection.title",
+                  },
+                },
               },
               // subCategory: {
               //   $map: {

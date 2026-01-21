@@ -137,7 +137,7 @@ const product = z.object({
         }
       }
     }),
-  productCollection: z.string().optional(),
+  productCollection: z.array(z.string()).optional(),
   relatedProducts: z.array(z.string()).optional(),
 });
 
@@ -185,7 +185,7 @@ const updateProduct = z.object({
       })
       .optional(),
     publishedStatus: publishedStatusSchema.optional(),
-    productCollection: z.string().optional(),
+    productCollection: z.array(z.string()).optional(),
     relatedProducts: z.array(z.string()).optional(),
   }),
 });
