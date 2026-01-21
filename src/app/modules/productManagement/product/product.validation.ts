@@ -151,7 +151,7 @@ const updateProduct = z.object({
     usageGuidelines: z.string().trim().optional(),
     image: imageSchema.partial().optional(),
     price: priceSchema.partial().optional(),
-    inventory: InventoryValidation.inventoryBaseSchema.partial().optional(),
+    inventory: InventoryValidation.inventorySchema.optional(),
     attributes: z.array(createProductAttribute).optional(),
     variations: z.array(variationSchema).optional(),
     brand: z.string().optional(),
