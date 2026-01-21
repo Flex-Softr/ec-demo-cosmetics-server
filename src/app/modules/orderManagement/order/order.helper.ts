@@ -414,26 +414,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
   },
   {
     $lookup: {
-      from: "couriers",
-      localField: "courierDetails.courierProvider",
-      foreignField: "_id",
-      as: "courierData",
-    },
-  },
-  {
-    $unwind: { path: "$courierData", preserveNullAndEmptyArrays: true },
-  },
-  {
-    $lookup: {
-      from: "images",
-      localField: "courierData.image",
-      foreignField: "_id",
-      as: "courierImage",
-    },
-  },
-  { $unwind: { path: "$courierImage", preserveNullAndEmptyArrays: true } },
-  {
-    $lookup: {
       from: "images",
       localField: "paymentMethod.image",
       foreignField: "_id",
@@ -511,16 +491,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
           },
         },
       },
-      courier: {
-        name: "$courierData.name",
-        slug: "$courierData.slug",
-        image: {
-          src: {
-            $concat: [config.image_base_url, "/", "$courierImage.src"],
-          },
-          alt: "$courierImage.alt",
-        },
-      },
       statusHistory: {
         refunded: "$statusHistory.refunded",
         history: "$statusHistory.history",
@@ -568,17 +538,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
   },
   {
     $lookup: {
-      from: "variations",
-      localField: "orderedProducts.variation",
-      foreignField: "_id",
-      as: "variation",
-    },
-  },
-  {
-    $unwind: { path: "$variation", preserveNullAndEmptyArrays: true },
-  },
-  {
-    $lookup: {
       from: "warranties",
       localField: "orderedProducts.warranty",
       foreignField: "_id",
@@ -619,6 +578,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
             quantity: "$orderedProducts.quantity",
             total: "$orderedProducts.total",
             attributes: "$orderedProducts.attributes",
+            variation: "$orderedProducts.variation",
             warranty: {
               _id: "$warranty._id",
               warrantyCodes: "$warranty.warrantyCodes",
@@ -628,44 +588,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
               createdAt: "$warranty.createdAt",
             },
             isProductWarrantyAvailable: "$productInfo.warranty",
-            variation: {
-              $cond: {
-                if: {
-                  $and: [
-                    { $isArray: "$productInfo.variations" },
-                    { $gt: [{ $size: "$productInfo.variations" }, 0] },
-                  ],
-                },
-                then: {
-                  _id: "$variation._id",
-                  attributes: "$variation.attributes",
-                  price: {
-                    $cond: {
-                      if: { $ifNull: ["$variation.price", false] },
-                      then: {
-                        regularPrice: "$variation.price.regularPrice",
-                        salePrice: "$variation.price.salePrice",
-                        discountPercent: "$variation.price.discountPercent",
-                      },
-                      else: "$$REMOVE", // or null
-                    },
-                  },
-                  inventory: {
-                    $cond: {
-                      if: { $ifNull: ["$variation.inventory", false] },
-                      then: {
-                        stockStatus: "$variation.inventory.stockStatus",
-                        stockAvailable: "$variation.inventory.stockAvailable",
-                        manageStock: "$variation.inventory.manageStock",
-                        lowStockWarning: "$variation.inventory.lowStockWarning",
-                      },
-                      else: "$$REMOVE", // or null
-                    },
-                  },
-                },
-                else: null,
-              },
-            },
           },
         },
       },
@@ -685,7 +607,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       trackingStatus: { $first: "$trackingStatus" },
       shipping: { $first: "$shipping" },
       payment: { $first: "$payment" },
-      courier: { $first: "$courier" },
       shippingCharge: { $first: "$shippingCharge" },
       officialNotes: { $first: "$officialNotes" },
       invoiceNotes: { $first: "$invoiceNotes" },
@@ -696,7 +617,6 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       followUpDate: { $first: "$followUpDate" },
       orderSource: { $first: "$orderSource" },
       statusHistory: { $first: "$statusHistory" },
-      courierDetails: { $first: "$courierDetails" },
       products: {
         $push: {
           $cond: {
