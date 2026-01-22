@@ -75,10 +75,27 @@ const deleteHomepageSection = catchAsync(
   }
 );
 
+const getHomepageSectionContent = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { data, meta } =
+      await HomepageSectionService.getHomepageSectionContent(id);
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Homepage Section Content retrieved successfully!",
+      data,
+      meta,
+    });
+  }
+);
+
 export const HomepageSectionController = {
   createHomepageSection,
   getAllHomepageSections,
   getHomepageSectionById,
   updateHomepageSection,
   deleteHomepageSection,
+  getHomepageSectionContent,
 };

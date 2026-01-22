@@ -13,6 +13,8 @@ const updateHomepageSection = z.object({
     title: z.string().optional(),
     subtitle: z.string().optional(),
     collectionId: z.string().optional(),
+    limit: z.number().optional(),
+    sortOrder: z.number().optional(),
   }),
 });
 

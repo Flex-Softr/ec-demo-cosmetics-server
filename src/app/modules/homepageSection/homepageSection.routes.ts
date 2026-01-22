@@ -31,4 +31,6 @@ router.delete(
   HomepageSectionController.deleteHomepageSection
 );
 
+router.get("/content/:id", HomepageSectionController.getHomepageSectionContent);
+
 export const HomepageSectionRoutes = router;
