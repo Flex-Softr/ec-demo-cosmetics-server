@@ -1,0 +1,63 @@
+import httpStatus from "http-status";
+import ApiError from "../../errorHandlers/ApiError";
+import { THomePageInput } from "./homepageSection.interface";
+import { HomepageSectionModel } from "./homepageSection.model";
+
+const createHomepageSection = async (payload: THomePageInput) => {
+  const result = await HomepageSectionModel.create(payload);
+  return result;
+};
+
+const getAllHomepageSections = async () => {
+  const result = await HomepageSectionModel.find()
+    .populate("collectionId")
+    .sort({ sortOrder: 1 });
+  return result;
+};
+
+const getHomepageSectionById = async (id: string) => {
+  const result =
+    await HomepageSectionModel.findById(id).populate("collectionId");
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Homepage Section not found!");
+  }
+  return result;
+};
+
+const updateHomepageSection = async (
+  id: string,
+  payload: Partial<THomePageInput>
+) => {
+  const result = await HomepageSectionModel.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Homepage Section not found!");
+  }
+
+  return result;
+};
+
+const deleteHomepageSection = async (id: string) => {
+  const result = await HomepageSectionModel.findByIdAndDelete(id);
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Homepage Section not found!");
+  }
+
+  return result;
+};
+
+// const getHomepageSectionContent = async (id: string) => {
+//   const result = await HomepageSectionModel.findById(id);
+// };
+
+export const HomepageSectionService = {
+  createHomepageSection,
+  getAllHomepageSections,
+  getHomepageSectionById,
+  updateHomepageSection,
+  deleteHomepageSection,
+};

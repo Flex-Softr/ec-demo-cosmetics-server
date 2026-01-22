@@ -1,0 +1,23 @@
+import { Schema, model } from "mongoose";
+import { THomePageSection } from "./homepageSection.interface";
+
+const homepageSectionSchema = new Schema<THomePageSection>(
+  {
+    title: { type: String },
+    subtitle: { type: String, required: true },
+    collectionId: {
+      type: String,
+      required: true,
+      ref: "Collection",
+    },
+    sortOrder: { type: Number },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export const HomepageSectionModel = model<THomePageSection>(
+  "HomepageSection",
+  homepageSectionSchema
+);

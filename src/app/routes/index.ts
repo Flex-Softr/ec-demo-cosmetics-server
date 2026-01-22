@@ -6,6 +6,7 @@ import { CouponRoutes } from "../modules/coupon/coupon.routes";
 import { CourierRoutes } from "../modules/courier/courier.routes";
 import { DistrictRoutes } from "../modules/district/district.routes";
 import { DivisionRoutes } from "../modules/division/division.routes";
+import { HomepageSectionRoutes } from "../modules/homepageSection/homepageSection.routes";
 import { ImageRoutes } from "../modules/image/image.routes";
 import { ImageToOrderRoutes } from "../modules/imageToOrder/imageToOrder.routes";
 import { FraudCheckRoutes } from "../modules/orderManagement/fraudCheck/fraudCheck.routes";
@@ -152,6 +153,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/divisions",
     route: DivisionRoutes,
+  },
+  {
+    path: "/homepage-sections",
+    route: HomepageSectionRoutes,
   },
   {
     path: "/districts",
