@@ -10,7 +10,13 @@ const homepageSectionSchema = new Schema<THomePageSection>(
       required: true,
       ref: "Collection",
     },
-    sortOrder: { type: Number },
+    sortOrder: { type: Number, default: 1 },
+    limit: {
+      type: Number,
+      default: 10,
+    },
+    ctaText: { type: String },
+    ctaLink: { type: String },
   },
   {
     timestamps: true,

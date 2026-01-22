@@ -1,5 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../errorHandlers/ApiError";
+import { TCollection } from "../productManagement/collection/collection.interface";
+import { ProductServices } from "../productManagement/product/product.service";
 import { THomePageInput } from "./homepageSection.interface";
 import { HomepageSectionModel } from "./homepageSection.model";
 
@@ -50,9 +52,15 @@ const deleteHomepageSection = async (id: string) => {
   return result;
 };
 
-// const getHomepageSectionContent = async (id: string) => {
-//   const result = await HomepageSectionModel.findById(id);
-// };
+const getHomepageSectionContent = async (id: string) => {
+  const result =
+    await HomepageSectionModel.findById(id).populate("collectionId");
+  const products = await ProductServices.getAllProductsCustomerFromDB({
+    collection: (result?.collectionId as TCollection)?.slug,
+    limit: result?.limit,
+  });
+  return products;
+};
 
 export const HomepageSectionService = {
   createHomepageSection,
@@ -60,4 +68,5 @@ export const HomepageSectionService = {
   getHomepageSectionById,
   updateHomepageSection,
   deleteHomepageSection,
+  getHomepageSectionContent,
 };
