@@ -985,9 +985,9 @@ const updateOrderStatusIntoDB = async (
         const shipping = (order as unknown as { shippingData: TShipping })
           ?.shippingData;
         return {
-          fullName: shipping.fullName || "",
-          phoneNumber: shipping.phoneNumber || "",
-          email: shipping.email || "",
+          fullName: shipping?.fullName || "",
+          phoneNumber: shipping?.phoneNumber || "",
+          email: shipping?.email || "",
           orderId: order?.orderId || "",
           total: order?.total.toString() || "0",
         };

@@ -689,7 +689,10 @@ const orderStatusUpdatingPipeline = (
       },
     },
     {
-      $unwind: "$defaultInventoryData",
+      $unwind: {
+        path: "$defaultInventoryData",
+        preserveNullAndEmptyArrays: true,
+      },
     },
 
     {
@@ -701,7 +704,10 @@ const orderStatusUpdatingPipeline = (
       },
     },
     {
-      $unwind: "$shippingInfo",
+      $unwind: {
+        path: "$shippingInfo",
+        preserveNullAndEmptyArrays: true,
+      },
     },
     // {
     //   $addFields: {

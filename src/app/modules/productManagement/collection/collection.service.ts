@@ -86,10 +86,13 @@ const getAllCollectionsFromDB = async (query: Record<string, unknown>) => {
   const collectionQuery = new AggregateQueryHelper(
     CollectionModel.aggregate(pipeline),
     query
-  )
-    .search(["title"])
-    .sort()
-    .paginate();
+  ).search(["title"]);
+
+  if (query.sort) {
+    collectionQuery.sort();
+  }
+
+  collectionQuery.paginate();
 
   const data = await collectionQuery.model;
   const total = (await CollectionModel.aggregate(pipeline)).length;
