@@ -289,19 +289,46 @@ const getAProductAdminFromDB = async (id: string) => {
 };
 
 const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
-  let filterQuery: Record<string, unknown> = {};
+  const filterQuery: Record<string, unknown> = {};
   const { minPrice, maxPrice, category, subCategory, brand } = query;
 
   // Price filter
   if (minPrice && maxPrice) {
-    filterQuery = {
-      $expr: {
-        $and: [
-          { $gte: ["$price.salePrice", Number(minPrice)] },
-          { $lte: ["$price.salePrice", Number(maxPrice)] },
-        ],
-      },
-    };
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
+
+    if (!filterQuery.$and) {
+      filterQuery.$and = [];
+    }
+
+    (filterQuery.$and as any[]).push({
+      $or: [
+        {
+          // Simple Product Logic
+          $or: [
+            { "price.salePrice": { $gte: min, $lte: max } },
+            {
+              "price.salePrice": { $in: [null, undefined] },
+              "price.regularPrice": { $gte: min, $lte: max },
+            },
+          ],
+        },
+        {
+          // Variation Product Logic
+          variations: {
+            $elemMatch: {
+              $or: [
+                { "price.salePrice": { $gte: min, $lte: max } },
+                {
+                  "price.salePrice": { $in: [null, undefined] },
+                  "price.regularPrice": { $gte: min, $lte: max },
+                },
+              ],
+            },
+          },
+        },
+      ],
+    });
   }
 
   const filterConditions = [];
