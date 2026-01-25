@@ -65,7 +65,12 @@ const WarrantyCLaimSchema = new Schema<TWarrantyClaim>(
           },
           prevWarrantyInformation: {
             duration: {
-              type: String,
+              quantity: {
+                type: String,
+              },
+              unit: {
+                type: String,
+              },
             },
             startDate: {
               type: String,

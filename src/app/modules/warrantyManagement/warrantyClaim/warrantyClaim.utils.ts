@@ -114,6 +114,7 @@ const getWarrantyData = async (
           _id: "$orderedProducts._id",
           productId: "$productInfo._id",
           title: "$productInfo.title",
+          type: "$productInfo.type",
           image: {
             src: { $concat: [config.image_base_url, "/", "$productThumb.src"] },
             alt: "$productThumb.alt",
