@@ -55,6 +55,12 @@ const deleteHomepageSection = async (id: string) => {
 const getHomepageSectionContent = async (id: string) => {
   const result =
     await HomepageSectionModel.findById(id).populate("collectionId");
+
+  if (!result?.collectionId) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return { meta: {} as any, data: [] };
+  }
+
   const products = await ProductServices.getAllProductsCustomerFromDB({
     collection: (result?.collectionId as TCollection)?.slug,
     limit: result?.limit,
