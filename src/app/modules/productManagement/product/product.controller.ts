@@ -139,12 +139,12 @@ const updateProduct = catchAsync(async (req, res) => {
     req.body.slug = generateSlug(title, true);
   }
 
-  if (slug === generateSlug(title)) {
-    const suffix =
-      Date.now().toString(36).slice(-3) +
-      Math.random().toString(36).slice(2, 4);
-    req.body.slug = slug + "-" + suffix;
-  }
+  // if (slug !== generateSlug(title)) {
+  //   const suffix =
+  //     Date.now().toString(36).slice(-3) +
+  //     Math.random().toString(36).slice(2, 4);
+  //   req.body.slug = slug + "-" + suffix;
+  // }
 
   const result = await ProductServices.updateProductIntoDB(
     updatedBy,
