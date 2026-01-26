@@ -6,8 +6,14 @@ import { ProductServices } from "./product.service";
 
 const createProduct = catchAsync(async (req, res) => {
   const createdBy = req.user.id || req.user._id;
-  if (!req.body.slug) {
-    req.body.slug = generateSlug(req.body.title);
+  const { title, slug } = req.body;
+  if (!slug) {
+    req.body.slug = generateSlug(title, true);
+  } else {
+    const suffix =
+      Date.now().toString(36).slice(-3) +
+      Math.random().toString(36).slice(2, 4);
+    req.body.slug = slug + "-" + suffix;
   }
 
   const result = await ProductServices.createProductIntoDB(createdBy, req.body);
@@ -130,7 +136,14 @@ const updateProduct = catchAsync(async (req, res) => {
   const { title, slug } = req.body;
 
   if (!slug) {
-    req.body.slug = generateSlug(title);
+    req.body.slug = generateSlug(title, true);
+  }
+
+  if (slug === generateSlug(title)) {
+    const suffix =
+      Date.now().toString(36).slice(-3) +
+      Math.random().toString(36).slice(2, 4);
+    req.body.slug = slug + "-" + suffix;
   }
 
   const result = await ProductServices.updateProductIntoDB(
