@@ -77,14 +77,14 @@ const tagSchema = new Schema<TTag>(
 export const productSchema = new Schema<TProduct>(
   {
     id: { type: String, required: true, unique: true },
-    title: { type: String, required: true, unique: true },
+    title: { type: String, required: true },
+    slug: { type: String, required: true, unique: true },
     // permalink: { type: String, unique: true, sparse: true },
     type: {
       type: String,
       enum: [PRODUCT_TYPE.SIMPLE, PRODUCT_TYPE.VARIABLE],
       default: PRODUCT_TYPE.SIMPLE,
     },
-    slug: { type: String, required: true, unique: true },
     description: { type: String },
     shortDescription: { type: String },
     additionalInfo: { type: String },

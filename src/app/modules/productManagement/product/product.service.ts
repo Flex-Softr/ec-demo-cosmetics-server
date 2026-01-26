@@ -24,98 +24,6 @@ import {
   formatPriceUpdatePayload,
 } from "./product.utils";
 
-export const getProductPriceRangeFromDB = async (
-  query: Record<string, unknown>
-) => {
-  const filterQuery: Record<string, unknown> = {};
-  const { category, subCategory, brand, collection } = query;
-
-  const filterConditions = [];
-
-  // Category filter
-  if (typeof category === "string") {
-    const categoryArray = category?.split(",") || [];
-    if (categoryArray.length > 0) {
-      filterConditions.push({ "category.slug": { $in: categoryArray } });
-    }
-  }
-
-  // Subcategory filter
-  if (typeof subCategory === "string") {
-    const subcategoryArray = subCategory?.split(",") || [];
-    if (subcategoryArray.length > 0) {
-      filterConditions.push({ "subcategory.slug": { $in: subcategoryArray } });
-    }
-  }
-
-  // Brand filter
-  if (typeof brand === "string") {
-    const brandArray = brand?.split(",") || [];
-    if (brandArray.length > 0) {
-      filterQuery["brand.slug"] = { $in: brandArray };
-    }
-  }
-
-  // Collection filter
-  if (typeof collection === "string") {
-    const collectionArray = collection?.split(",") || [];
-    if (collectionArray.length > 0) {
-      filterQuery["productCollection.slug"] = { $in: collectionArray };
-    }
-  }
-
-  // Apply $or for category or subcategory
-  if (filterConditions.length > 0) {
-    filterQuery["$or"] = filterConditions;
-  }
-
-  const pipeline = [
-    {
-      $match: {
-        isDeleted: false,
-        publishedStatus: PRODUCT_STATUS.PUBLISHED,
-      },
-    },
-    ...commonPipelineMultipleProduct,
-    { $match: filterQuery },
-    {
-      $project: {
-        price: {
-          $cond: {
-            if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
-            then: {
-              min: { $min: "$variations.price.salePrice" },
-              max: { $max: "$variations.price.salePrice" },
-            },
-            else: {
-              min: "$price.salePrice",
-              max: "$price.salePrice",
-            },
-          },
-        },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        minPrice: { $min: "$price.min" },
-        maxPrice: { $max: "$price.max" },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        minPrice: 1,
-        maxPrice: 1,
-      },
-    },
-  ];
-
-  const result = await ProductModel.aggregate(pipeline as PipelineStage[]);
-
-  return result.length > 0 ? result[0] : { minPrice: 0, maxPrice: 0 };
-};
-
 const createProductIntoDB = async (
   createdBy: Types.ObjectId,
   payload: TProductPayload
@@ -801,6 +709,98 @@ const getRelatedProductsFromDB = async (slug: string) => {
   const result = await ProductModel.aggregate(pipeline as PipelineStage[]);
 
   return result;
+};
+
+export const getProductPriceRangeFromDB = async (
+  query: Record<string, unknown>
+) => {
+  const filterQuery: Record<string, unknown> = {};
+  const { category, subCategory, brand, collection } = query;
+
+  const filterConditions = [];
+
+  // Category filter
+  if (typeof category === "string") {
+    const categoryArray = category?.split(",") || [];
+    if (categoryArray.length > 0) {
+      filterConditions.push({ "category.slug": { $in: categoryArray } });
+    }
+  }
+
+  // Subcategory filter
+  if (typeof subCategory === "string") {
+    const subcategoryArray = subCategory?.split(",") || [];
+    if (subcategoryArray.length > 0) {
+      filterConditions.push({ "subcategory.slug": { $in: subcategoryArray } });
+    }
+  }
+
+  // Brand filter
+  if (typeof brand === "string") {
+    const brandArray = brand?.split(",") || [];
+    if (brandArray.length > 0) {
+      filterQuery["brand.slug"] = { $in: brandArray };
+    }
+  }
+
+  // Collection filter
+  if (typeof collection === "string") {
+    const collectionArray = collection?.split(",") || [];
+    if (collectionArray.length > 0) {
+      filterQuery["productCollection.slug"] = { $in: collectionArray };
+    }
+  }
+
+  // Apply $or for category or subcategory
+  if (filterConditions.length > 0) {
+    filterQuery["$or"] = filterConditions;
+  }
+
+  const pipeline = [
+    {
+      $match: {
+        isDeleted: false,
+        publishedStatus: PRODUCT_STATUS.PUBLISHED,
+      },
+    },
+    ...commonPipelineMultipleProduct,
+    { $match: filterQuery },
+    {
+      $project: {
+        price: {
+          $cond: {
+            if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
+            then: {
+              min: { $min: "$variations.price.salePrice" },
+              max: { $max: "$variations.price.salePrice" },
+            },
+            else: {
+              min: "$price.salePrice",
+              max: "$price.salePrice",
+            },
+          },
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        minPrice: { $min: "$price.min" },
+        maxPrice: { $max: "$price.max" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        minPrice: 1,
+        maxPrice: 1,
+      },
+    },
+  ];
+
+  const result = await ProductModel.aggregate(pipeline as PipelineStage[]);
+
+  return result.length > 0 ? result[0] : { minPrice: 0, maxPrice: 0 };
 };
 
 const updateProductIntoDB = async (
