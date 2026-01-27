@@ -443,6 +443,8 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       discount: 1,
       advance: 1,
       status: 1,
+      statusFromShippingProvider: 1,
+      messageFromShippingProvider: 1,
       shipping: {
         fullName: "$shippingData.fullName",
         phoneNumber: "$shippingData.phoneNumber",
@@ -602,6 +604,8 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       discount: { $first: "$discount" },
       advance: { $first: "$advance" },
       status: { $first: "$status" },
+      messageFromShippingProvider: { $first: "$messageFromShippingProvider" },
+      statusFromShippingProvider: { $first: "$statusFromShippingProvider" },
       deliveryStatus: { $first: "$deliveryStatus" },
       monitoringStatus: { $first: "$monitoringStatus" },
       trackingStatus: { $first: "$trackingStatus" },

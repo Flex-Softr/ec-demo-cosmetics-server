@@ -43,8 +43,19 @@ const updateCourier = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getRedxDeliveryArea = catchAsync(async (req: Request, res: Response) => {
+  const result = await CourierServices.getRedxDeliveryArea();
+
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Redx delivery area retrieved successfully",
+    data: result,
+  });
+});
+
 export const CourierController = {
   getAllCouriers,
   getSingleCourier,
   updateCourier,
+  getRedxDeliveryArea,
 };

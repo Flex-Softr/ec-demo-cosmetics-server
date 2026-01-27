@@ -25,7 +25,6 @@ import { orderStatusWithDesc } from "./order.const";
 import { OrderHelper } from "./order.helper";
 import {
   TOrder,
-  TOrderDeliveryStatus,
   TOrderedProduct,
   TOrderStatus,
   TSMSReceiverInfo,
@@ -426,37 +425,37 @@ const getOrdersByDeliveryStatusFromDB = async (
   query: Record<string, string>
 ) => {
   const matchQuery: Record<string, unknown> = {};
-  const acceptableStatus: TOrderDeliveryStatus[] = [
-    "in_review",
-    "pending",
-    "hold",
-    "delivered_approval_pending",
-    "cancelled_approval_pending",
-    "partial_delivered_approval_pending",
-    "unknown_approval_pending",
-    "delivered",
-    "cancelled",
-    "partial_delivered",
-    "unknown",
-  ];
+  // const acceptableStatus: TOrderDeliveryStatus[] = [
+  //   "in_review",
+  //   "pending",
+  //   "hold",
+  //   "delivered_approval_pending",
+  //   "cancelled_approval_pending",
+  //   "partial_delivered_approval_pending",
+  //   "unknown_approval_pending",
+  //   "delivered",
+  //   "cancelled",
+  //   "partial_delivered",
+  //   "unknown",
+  // ];
 
   if (query.deliveryStatus) {
     matchQuery.deliveryStatus = query?.deliveryStatus as string;
   }
 
-  if (
-    (!query.deliveryStatus || query.deliveryStatus === "all") &&
-    !query.search
-  ) {
-    matchQuery.deliveryStatus = {
-      $in: acceptableStatus,
-    };
-  }
+  // if (
+  //   (!query.deliveryStatus || query.deliveryStatus === "all") &&
+  //   !query.search
+  // ) {
+  //   matchQuery.deliveryStatus = {
+  //     $in: acceptableStatus,
+  //   };
+  // }
 
   const pipeline = OrderHelper.orderDetailsPipeline();
 
   pipeline.unshift({
-    $match: { ...matchQuery, status: "On courier" },
+    $match: { status: "On courier" },
   });
 
   if (query.search) {
@@ -479,7 +478,7 @@ const getOrdersByDeliveryStatusFromDB = async (
   const data = await orderQuery.model;
   const total =
     (await Order.aggregate([
-      { $match: { ...matchQuery, status: "On courier" } },
+      { $match: { status: "On courier" } },
       { $count: "total" },
     ]))![0]?.total || 0;
   const meta = orderQuery.metaData(total);
