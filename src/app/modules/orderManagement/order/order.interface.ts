@@ -105,6 +105,8 @@ export type TOrderData = {
   monitoringNotes?: string;
   reasonNotes?: string;
   courierDetails?: TCourierDetails;
+  statusFromShippingProvider?: string;
+  messageFromShippingProvider?: string;
   orderSource: TOrderSource;
   userIp?: string;
   division?: string;

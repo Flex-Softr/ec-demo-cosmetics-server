@@ -191,6 +191,12 @@ const OrderSchema = new Schema<TOrder>(
       type: String,
     },
     courierDetails: CourierDetailsSchema,
+    statusFromShippingProvider: {
+      type: String,
+    },
+    messageFromShippingProvider: {
+      type: String,
+    },
     orderSource: {
       name: {
         type: String,

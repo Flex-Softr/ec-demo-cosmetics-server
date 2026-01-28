@@ -33,6 +33,7 @@ import { PermissionRoutes } from "../modules/userManagement/permission/permissio
 import { UserRoutes } from "../modules/userManagement/user/user.routes";
 import { WarrantyRoutes } from "../modules/warrantyManagement/warranty/warranty.routes";
 import { WarrantyClaimRoutes } from "../modules/warrantyManagement/warrantyClaim/warrantyClaim.routes";
+import WebhookRoutes from "../modules/webhook/webhook.route";
 
 type TModuleTypes = {
   path: string;
@@ -177,6 +178,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/sms-reports",
     route: SMSReportRoutes,
+  },
+  {
+    path: "/webhook",
+    route: WebhookRoutes,
   },
 ];
 

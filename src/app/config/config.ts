@@ -77,4 +77,5 @@ export default {
   },
   order_tracking_url: env.ORDER_TRACKING_URL || "",
   per_item_shipping_cost: 50,
+  webhook_secret: env.WEBHOOK_SECRET,
 };
