@@ -20,6 +20,7 @@ import {
 } from "./warrantyClaim.interface";
 import { WarrantyClaim } from "./warrantyClaim.model";
 import { WarrantyClaimUtils } from "./warrantyClaim.utils";
+import config from "../../../config/config";
 
 const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
   if (!query.sort) {
@@ -71,7 +72,24 @@ const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
     },
     {
       $project: {
-        videosAndImages: 1,
+        videosAndImages: {
+          $cond: {
+            if: { $isArray: "$videosAndImages" },
+            then: {
+              $map: {
+                input: "$videosAndImages",
+                as: "media",
+                in: {
+                  path: {
+                    $concat: [config.image_base_url, "/", "$$media.path"],
+                  },
+                  fileType: "$$media.fileType",
+                },
+              },
+            },
+            else: [],
+          },
+        },
         warrantyClaimReqData: {
           _id: "$warrantyClaimReqData._id",
           product: {
