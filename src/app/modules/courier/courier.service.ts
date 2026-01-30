@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 import ApiError from "../../errorHandlers/ApiError";
+import { redxDeliveryArea } from "../../utilities/couriers/redx";
 import { decrypt, encrypt } from "../../utilities/encryptAndDecryptDBPass";
 import {
   TShippingMethod,
@@ -93,8 +94,21 @@ const getCourierByIdFromDB = async (id: string) => {
   return result;
 };
 
+const getRedxDeliveryArea = async () => {
+  const shippingMethod = await Courier.findOne({ slug: "redx" });
+  if (!shippingMethod)
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Failed to retrieve delivery area.",
+      "Shipping method not found."
+    );
+  const data = await redxDeliveryArea(shippingMethod);
+  return data;
+};
+
 export const CourierServices = {
   getAllCouriersFromDB,
   getCourierByIdFromDB,
   updateCourierIntoDB,
+  getRedxDeliveryArea,
 };

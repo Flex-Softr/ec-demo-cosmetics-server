@@ -18,6 +18,16 @@ router.get(
   CourierController.getAllCouriers
 );
 
+// Get redx delivery area
+router.get(
+  "/area/redx",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_COURIER,
+  }),
+  CourierController.getRedxDeliveryArea
+);
+
 // Get single courier
 router.get(
   "/:id",
