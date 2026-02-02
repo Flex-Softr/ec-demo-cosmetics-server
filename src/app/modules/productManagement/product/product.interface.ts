@@ -159,6 +159,7 @@ export type IAdminProduct = {
   title: string;
   stockStatus: string;
   stockAvailable: number;
+  manageStock: boolean;
   sku?: string;
   thumbnail: {
     _id: string;

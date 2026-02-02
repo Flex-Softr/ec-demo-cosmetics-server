@@ -399,6 +399,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
               sku: "$inventory.sku",
               stockStatus: "$inventory.stockStatus",
               stockAvailable: "$inventory.stockAvailable",
+              manageStock: "$inventory.manageStock",
               // totalReview: { $size: "$review" },
               // averageRating: { $avg: "$review.rating" },
               thumbnail: {
