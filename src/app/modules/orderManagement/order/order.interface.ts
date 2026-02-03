@@ -2,7 +2,10 @@ import mongoose, { Document, Types } from "mongoose";
 import { TCategory } from "../../productManagement/category/category.interface";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { TPrice } from "../../productManagement/price/price.interface";
-import { TProduct } from "../../productManagement/product/product.interface";
+import {
+  TProduct,
+  TPublishedStatus,
+} from "../../productManagement/product/product.interface";
 import { TVariation } from "../../productManagement/variation/variation.interface";
 import { TUser } from "../../userManagement/user/user.interface";
 import {
@@ -125,6 +128,7 @@ export type TSanitizedOrProduct = {
     defaultInventory?: Types.ObjectId;
     isVariationAvailable?: boolean;
     category: TCategory | mongoose.Types.ObjectId;
+    publishedStatus: TPublishedStatus;
   };
   quantity: number;
   variation?: Types.ObjectId;

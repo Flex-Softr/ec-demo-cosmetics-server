@@ -67,13 +67,19 @@ const checkInventory = async (payload: {
   }
 
   if (stockStatus === STOCK_STATUS.OUT_OF_STOCK) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Product is out of stock");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "The product is currently out of stock."
+    );
   }
 
   // If the stock management is on
   if (manageStock) {
     if (availableStock < quantity) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Insufficient stock quantity");
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        `Insufficient stock quantity. Available: ${availableStock}, Requested: ${quantity}`
+      );
     }
   }
 

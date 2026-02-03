@@ -12,6 +12,7 @@ import { TCategory } from "../../productManagement/category/category.interface";
 import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { TPrice } from "../../productManagement/price/price.interface";
+import { PRODUCT_STATUS } from "../../productManagement/product/product.const";
 import { TProduct } from "../../productManagement/product/product.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { TVariation } from "../../productManagement/variation/variation.interface";
@@ -1057,7 +1058,8 @@ const sanitizeCartsForOrder = async (userQuery: {
   const result = await Cart.find(userQuery, {}).populate([
     {
       path: "product",
-      select: "_id title price isDeleted category.name inventory",
+      select:
+        "_id title price isDeleted category.name inventory publishedStatus",
       populate: [
         {
           path: "price",
@@ -1115,6 +1117,7 @@ const sanitizeCartsForOrder = async (userQuery: {
         stock: Object.keys(variation || {}).length
           ? (variation?.inventory as TInventory)
           : inventory,
+        publishedStatus: product?.publishedStatus,
         defaultInventory: inventory?._id,
       },
       variation: item?.variation?._id,
@@ -1155,21 +1158,34 @@ const validateAndSanitizeOrderedProducts = (
       );
     }
 
-    if (item.product.isDeleted) {
+    if (
+      item.product?.publishedStatus !== PRODUCT_STATUS.PUBLISHED ||
+      item.product?.isDeleted
+    ) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
         `The product '${item.product.title}' is no longer available`
       );
     }
 
+    if (item?.product?.stock?.stockStatus === STOCK_STATUS.OUT_OF_STOCK) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        `The product '${item.product.title}' is currently out of stock.`
+      );
+    }
+
     if (
-      (item?.product?.stock?.manageStock &&
-        Number(item?.product?.stock?.stockAvailable || 0) < item?.quantity) ||
-      item?.product?.stock?.stockStatus === STOCK_STATUS.OUT_OF_STOCK
+      item?.product?.stock?.manageStock &&
+      Number(item?.product?.stock?.stockAvailable || 0) < item?.quantity
     ) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        `The product '${item.product.title}' is 'Out of stock', please contact the support team`
+        `The product '${
+          item.product.title
+        }' has insufficient stock. Available: ${
+          item?.product?.stock?.stockAvailable || 0
+        }, Requested: ${item?.quantity}.`
       );
     }
 

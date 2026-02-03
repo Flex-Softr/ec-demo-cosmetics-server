@@ -12,8 +12,8 @@ import { Coupon } from "../../coupon/coupon.model";
 import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";
-import { TStockStatus } from "../../productManagement/inventory/inventory.interface";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
+import { calculateStockStatus } from "../../productManagement/inventory/inventory.utils";
 import { ROLES } from "../../userManagement/user/user.const";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
@@ -91,12 +91,7 @@ export const updateStockOrderCancelDelete = async (
             item?.variationDetails?.inventory?.lowStockWarning;
           const newStock = currentStock + updateType;
 
-          let status: TStockStatus = STOCK_STATUS.IN_STOCK;
-          if (newStock <= 0) {
-            status = STOCK_STATUS.OUT_OF_STOCK;
-          } else if (newStock <= lowStockWarning) {
-            status = STOCK_STATUS.LOW_STOCK;
-          }
+          const status = calculateStockStatus(newStock, lowStockWarning);
 
           await InventoryModel.updateOne(
             {
@@ -121,12 +116,7 @@ export const updateStockOrderCancelDelete = async (
         const lowStockWarning = item?.defaultInventory?.lowStockWarning;
         const newStock = currentStock + updateType;
 
-        let status: TStockStatus = STOCK_STATUS.IN_STOCK;
-        if (newStock <= 0) {
-          status = STOCK_STATUS.OUT_OF_STOCK;
-        } else if (newStock <= lowStockWarning) {
-          status = STOCK_STATUS.LOW_STOCK;
-        }
+        const status = calculateStockStatus(newStock, lowStockWarning);
 
         await InventoryModel.updateOne(
           { _id: item?.defaultInventory?._id },
@@ -291,39 +281,54 @@ export const createNewOrder = async (
   // Execute DB operations after mapping
   for (const { item } of orderedProductData) {
     if (item?.product?.stock?.manageStock) {
-      const currentStock =
-        Number(item?.product?.stock?.stockAvailable || 0) - item.quantity;
+      const inventoryId = item.variation
+        ? item?.product?.stock?._id
+        : item?.product?.defaultInventory;
 
-      let status: TStockStatus = STOCK_STATUS.IN_STOCK;
-      if (currentStock <= 0) {
-        status = STOCK_STATUS.OUT_OF_STOCK;
-      } else if (currentStock <= (item?.product?.stock?.lowStockWarning || 0)) {
-        status = STOCK_STATUS.LOW_STOCK;
+      // Atomic stock deduction
+      const result = await InventoryModel.updateOne(
+        {
+          _id: inventoryId,
+          stockAvailable: { $gte: item.quantity },
+          stockStatus: { $ne: STOCK_STATUS.OUT_OF_STOCK },
+        },
+        {
+          $inc: { stockAvailable: -item.quantity },
+        }
+      ).session(session);
+
+      if (result.modifiedCount === 0) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          `The product '${item.product.title}' is either out of stock or insufficient stock. Please try again.`
+        );
       }
 
-      if (currentStock < item?.product?.stock?.lowStockWarning) {
-        await lowStockWarningEmail({
-          productName: item?.product?.title,
-          currentStock,
-          sku: item?.product?.stock?.sku,
-        });
-      }
-      if (item.variation) {
+      // Fetch the updated inventory to set the correct status
+      const updatedInventory =
+        await InventoryModel.findById(inventoryId).session(session);
+
+      if (updatedInventory) {
+        const newStatus = calculateStockStatus(
+          updatedInventory.stockAvailable || 0,
+          updatedInventory.lowStockWarning || 0
+        );
+
         await InventoryModel.updateOne(
-          { _id: item?.product?.stock?._id },
-          {
-            $inc: { stockAvailable: -item.quantity },
-            $set: { stockStatus: status },
-          }
+          { _id: inventoryId },
+          { $set: { stockStatus: newStatus } }
         ).session(session);
-      } else {
-        await InventoryModel.updateOne(
-          { _id: item?.product?.defaultInventory },
-          {
-            $inc: { stockAvailable: -item.quantity },
-            $set: { stockStatus: status },
-          }
-        ).session(session);
+
+        if (
+          (updatedInventory.stockAvailable || 0) <
+          (updatedInventory.lowStockWarning || 0)
+        ) {
+          await lowStockWarningEmail({
+            productName: item?.product?.title,
+            currentStock: updatedInventory.stockAvailable || 0,
+            sku: updatedInventory.sku || "",
+          });
+        }
       }
     }
   }
