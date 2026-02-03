@@ -21,12 +21,20 @@ export function encrypt(text: string): string {
 }
 
 export function decrypt(enc: string): string {
+  if (!enc) throw new Error("Encrypted string is empty!");
+
   const data = Buffer.from(enc, "base64");
+  if (data.length < IV_LENGTH + 16) {
+    throw new Error("Encrypted data is too short!");
+  }
+
   const iv = data.subarray(0, IV_LENGTH);
   const tag = data.subarray(IV_LENGTH, IV_LENGTH + 16);
   const text = data.subarray(IV_LENGTH + 16);
+
   const decipher = crypto.createDecipheriv(ALGO, ENC_KEY, iv);
   decipher.setAuthTag(tag);
+
   const decrypted = Buffer.concat([decipher.update(text), decipher.final()]);
   return decrypted.toString("utf8");
 }

@@ -21,7 +21,7 @@ const getAllCouriersFromDB = async () => {
     const credentials = (courierObj.credentials as TShippingMethodCredential[])
       ?.map((cred) => {
         if (cred.need_to_hash && cred.value) {
-          return { ...cred, value: decrypt(cred.value) };
+          return { ...cred, value: cred.value ? decrypt(cred.value) : "" };
         }
         return cred;
       })
@@ -75,7 +75,11 @@ const updateCourierIntoDB = async (
     let finalValue = input.value;
 
     if (field.need_to_hash && input.value) {
-      finalValue = encrypt(input.value);
+      if (input.value === "") {
+        finalValue = "";
+      } else {
+        finalValue = encrypt(input.value);
+      }
     }
 
     field.value = finalValue; // mutate subdoc directly
