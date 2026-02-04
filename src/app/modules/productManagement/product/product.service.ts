@@ -12,6 +12,7 @@ import {
   ExtendedPipelineStage,
 } from "../../../helper/query.helper";
 import { Order } from "../../orderManagement/order/order.model";
+import { calculateStockStatus } from "../inventory/inventory.utils";
 import VariationModel from "../variation/variation.model";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 import { TProductPayload } from "./product.interface";
@@ -861,10 +862,10 @@ const updateProductIntoDB = async (
       }
 
       if (inventory && Object.keys(inventory).length) {
+        const existingInventory = await InventoryModel.findById(
+          isProductExist.inventory
+        );
         if (inventory.stockQuantity !== undefined) {
-          const existingInventory = await InventoryModel.findById(
-            isProductExist.inventory
-          );
           if (
             existingInventory &&
             existingInventory.stockQuantity !== undefined
@@ -875,6 +876,26 @@ const updateProductIntoDB = async (
               existingInventory.stockAvailable || 0
             );
           }
+        }
+
+        const currentManageStock =
+          inventory.manageStock !== undefined
+            ? inventory.manageStock
+            : existingInventory?.manageStock;
+        const currentLowStockWarning =
+          inventory.lowStockWarning !== undefined
+            ? inventory.lowStockWarning
+            : existingInventory?.lowStockWarning || 0;
+        const currentStockAvailable =
+          inventory.stockAvailable !== undefined
+            ? inventory.stockAvailable
+            : existingInventory?.stockAvailable || 0;
+
+        if (currentManageStock) {
+          inventory.stockStatus = calculateStockStatus(
+            currentStockAvailable,
+            currentLowStockWarning
+          );
         }
 
         await InventoryModel.findByIdAndUpdate(
@@ -955,16 +976,17 @@ const updateProductIntoDB = async (
               priceBulkOps.push({
                 updateOne: {
                   filter: { _id: existingVariation.price },
-                  update: updatePrice,
+                  update: { $set: updatePrice },
                 },
               });
             }
             if (variationInventory) {
+              const currentInv = inventoryMap.get(
+                existingVariation.inventory.toString()
+              );
+
               // Calculate stock logic for variations
               if (variationInventory.stockQuantity !== undefined) {
-                const currentInv = inventoryMap.get(
-                  existingVariation.inventory.toString()
-                );
                 if (currentInv && currentInv.stockQuantity !== undefined) {
                   variationInventory.stockAvailable = calculateStockAvailable(
                     variationInventory.stockQuantity,
@@ -974,10 +996,30 @@ const updateProductIntoDB = async (
                 }
               }
 
+              const currentManageStock =
+                variationInventory.manageStock !== undefined
+                  ? variationInventory.manageStock
+                  : currentInv?.manageStock;
+              const currentLowStockWarning =
+                variationInventory.lowStockWarning !== undefined
+                  ? variationInventory.lowStockWarning
+                  : currentInv?.lowStockWarning || 0;
+              const currentStockAvailable =
+                variationInventory.stockAvailable !== undefined
+                  ? variationInventory.stockAvailable
+                  : currentInv?.stockAvailable || 0;
+
+              if (currentManageStock) {
+                variationInventory.stockStatus = calculateStockStatus(
+                  currentStockAvailable,
+                  currentLowStockWarning
+                );
+              }
+
               inventoryBulkOps.push({
                 updateOne: {
                   filter: { _id: existingVariation.inventory },
-                  update: variationInventory,
+                  update: { $set: variationInventory },
                 },
               });
             }
@@ -991,10 +1033,12 @@ const updateProductIntoDB = async (
             variationIds.push(existingVariation._id);
           } else {
             // Create new variation data structure to hold temporarily
-            // We need separate Price and Inventory documents first
-            // Since insertMany returns docs with IDs, we can't easily bulkWrite the dependent Variation *before* we have IDs.
-            // BUT, we can generate IDs manually or just use single creates for NEW items (usually few)
-            // or use insertMany for the batch of new items.
+            if (variationInventory?.manageStock) {
+              variationInventory.stockStatus = calculateStockStatus(
+                variationInventory.stockAvailable || 0,
+                variationInventory.lowStockWarning || 0
+              );
+            }
 
             // Let's collect new items to batch create them
             newVariationsData.push({
