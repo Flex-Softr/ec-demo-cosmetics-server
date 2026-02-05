@@ -43,7 +43,7 @@ router.get(
 );
 
 router.get(
-  "/:id/admin",
+  "/admin/:id",
   authGuard({
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
@@ -54,6 +54,15 @@ router.get(
 router.get("/:slug", ProductControllers.getAProductCustomer);
 
 router.get("/", ProductControllers.getAllProductsCustomer);
+
+router.patch(
+  "/update-status",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PRODUCT,
+  }),
+  ProductControllers.updateProductStatus
+);
 
 router.patch(
   "/:id",

@@ -158,6 +158,23 @@ const updateProduct = catchAsync(async (req, res) => {
   });
 });
 
+const updateProductStatus = catchAsync(async (req, res) => {
+  const updatedBy = req.user.id || req.user._id;
+  const { publishedStatus, productIds } = req.body;
+
+  const result = await ProductServices.updateProductStatusIntoDB(
+    productIds,
+    publishedStatus,
+    updatedBy
+  );
+
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Product status updated successfully",
+    data: result,
+  });
+});
+
 const deleteProduct = catchAsync(async (req, res) => {
   const deletedBy = req.user.id || req.user._id;
   const { productIds } = req.body;
@@ -181,5 +198,6 @@ export const ProductControllers = {
   getProductPriceRange,
   getRelatedProducts,
   updateProduct,
+  updateProductStatus,
   deleteProduct,
 };

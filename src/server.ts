@@ -13,7 +13,7 @@ import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app";
 import config from "./app/config/config";
-import { deleteDraftProducts } from "./app/modules/productManagement/product/product.utils";
+// import { deleteDraftProducts } from "./app/modules/productManagement/product/product.utils";
 
 let server: Server;
 /**
@@ -30,8 +30,8 @@ const bootstrap = async () => {
         `✅ The server is running on http://localhost:${config.port}`
       );
     });
-
-    deleteDraftProducts.start();
+    // draft product deletion after 30 days
+    // deleteDraftProducts.start();
   } catch (error) {
     errorLogger.error(`❌ Can't connect to Database.`, error);
   }

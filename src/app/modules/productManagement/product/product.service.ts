@@ -393,6 +393,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
           {
             $project: {
               title: 1,
+              slug: 1,
               type: 1,
               variations: 1,
               regularPrice: "$price.regularPrice",
@@ -458,7 +459,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
   const statusMap = {
     all: 0,
     [PRODUCT_STATUS.PUBLISHED]: 0,
-    [PRODUCT_STATUS.DRAFT]: 0,
+    // [PRODUCT_STATUS.DRAFT]: 0, // enable when need
     [PRODUCT_STATUS.PRIVATE]: 0,
   };
 
@@ -1159,6 +1160,24 @@ const updateProductIntoDB = async (
   }
 };
 
+const updateProductStatusIntoDB = async (
+  productIds: string[],
+  publishedStatus: string,
+  updatedBy: Types.ObjectId
+) => {
+  const result = await ProductModel.updateMany(
+    { _id: { $in: productIds } },
+    {
+      $set: {
+        publishedStatus,
+        updatedBy,
+      },
+    }
+  );
+
+  return result;
+};
+
 const deleteProductFromDB = async (
   productIds: string[],
   deletedBy: Types.ObjectId
@@ -1186,6 +1205,7 @@ export const ProductServices = {
   getBestSellingProductsFromDB,
   getRelatedProductsFromDB,
   updateProductIntoDB,
+  updateProductStatusIntoDB,
   deleteProductFromDB,
   getProductPriceRangeFromDB,
 };
