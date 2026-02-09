@@ -154,24 +154,29 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
     const tree = nodes
       .filter((node) => String(node?.parent ?? null) === String(parentId))
       .map((node) => {
-        const { categories: subcategories, allProductIds: subProductIds } =
-          buildTree(nodes, node._id);
+        const { categories: subcategories } = buildTree(nodes, node._id);
 
         const nodeDirectProductIds =
           (node?._id && categoryProductMap.get(node._id.toString())) ||
           new Set();
 
-        const combinedProductIds = new Set([
-          ...nodeDirectProductIds,
-          ...subProductIds,
-        ]);
+        // Use only direct products for the count
+        const productCount = nodeDirectProductIds.size;
 
-        // Accumulate IDs for parent
-        combinedProductIds.forEach((id) => currentLevelProductIds.add(id));
+        // Collect direct product IDs for the current level (if needed for other logic, duplicate checks etc,
+        // though strictly for independent count we don't need subProducts).
+        // If we strictly follow "independent", we don't need to bubble up subProductIds.
+        // But let's keeping bubbling direct IDs just in case, but NOT mixing subProducts if we don't want them to count.
+        // Wait, if I stop mixing subProducts, then subProductIds (from recursion) will only contain direct products of children.
+        // If I don't add them to 'currentLevelProductIds', then they are lost to the parent.
+        // The prompt says "will not be count children product count under parent".
+        // So the parent should NOT know about children's products.
+
+        nodeDirectProductIds.forEach((id) => currentLevelProductIds.add(id));
 
         return {
           ...node,
-          productCount: combinedProductIds.size,
+          productCount,
           subcategories,
         };
       });
@@ -182,20 +187,20 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
   /* ------------------ FINAL TREE ------------------ */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const categoryTree = result.map((cat: any) => {
-    const { categories: subcategories, allProductIds: subProductIds } =
-      buildTree(cat.descendants || [], cat._id);
+    const { categories: subcategories } = buildTree(
+      cat.descendants || [],
+      cat._id
+    );
 
     const nodeDirectProductIds =
       (cat._id && categoryProductMap.get(cat._id.toString())) || new Set();
 
-    const combinedProductIds = new Set([
-      ...nodeDirectProductIds,
-      ...subProductIds,
-    ]);
+    // Independent count for root
+    const productCount = nodeDirectProductIds.size;
 
     return {
       ...cat,
-      productCount: combinedProductIds.size,
+      productCount,
       subcategories,
       descendants: undefined,
     };
