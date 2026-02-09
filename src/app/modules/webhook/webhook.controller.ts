@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import httpStatus from "http-status";
 import catchAsync from "../../utilities/catchAsync";
 import successResponse from "../../utilities/successResponse";
 import { TShippingMethodSlug } from "./webhook.interface";
@@ -17,7 +16,7 @@ const parcelStatusHandler = catchAsync(async (req: Request, res: Response) => {
   }
 
   successResponse(res, {
-    statusCode: httpStatus.ACCEPTED,
+    statusCode: result.statusCode,
     success: true,
     message: result.message,
     data: null,

@@ -34,10 +34,12 @@ const parcelStatusHandler = async (req: Request) => {
     shipping_status: "",
     message: "",
   };
-
+  let statusCode: number = httpStatus.OK;
+  let query: Record<string, string> = {};
   if (provider === "steadfast") {
     token = req.headers["authorization"]?.split("Bearer ")[1];
     const data = payload as TSteadfastWebhookResponse;
+    query = { orderId: data?.invoice };
     updatedData.tracking_id = data?.consignment_id?.toString();
     updatedData.status = data?.status === "delivered" ? "completed" : undefined;
     updatedData.message = data?.tracking_message;
@@ -52,9 +54,11 @@ const parcelStatusHandler = async (req: Request) => {
     updatedData.message = data?.message_bn;
     updatedData.shipping_status = data?.status?.replace(/-/g, " ");
   } else if (provider === "pathao") {
+    statusCode = httpStatus.ACCEPTED;
     const tokenHeader = req.headers["x-pathao-signature"];
     token = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
     const data = payload as TPathaoWebhookResponse;
+    query = { "courierDetails.trackingId": data?.consignment_id };
     const event = data?.event?.split(".")[1];
     updatedData.tracking_id = data?.consignment_id;
     updatedData.status = event === "delivered" ? "completed" : undefined;
@@ -76,19 +80,17 @@ const parcelStatusHandler = async (req: Request) => {
   }
 
   if (updatedData.tracking_id) {
-    await Order.updateMany(
-      { "courierDetails.trackingId": updatedData.tracking_id },
-      {
-        status: updatedData.status,
-        statusFromShippingProvider: updatedData.shipping_status,
-        messageFromShippingProvider: updatedData.message,
-      }
-    );
+    await Order.updateMany(query, {
+      status: updatedData.status,
+      statusFromShippingProvider: updatedData.shipping_status,
+      messageFromShippingProvider: updatedData.message,
+    });
   }
 
   return {
     status: "success",
     message: "Webhook received successfully.",
+    statusCode,
   };
 };
 
