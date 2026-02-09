@@ -4,21 +4,22 @@ import ApiError from "../../../errorHandlers/ApiError";
 import { ImageModel } from "../../image/image.model";
 import { TCategory } from "./category.interface";
 
-// const subcategorySchema = new Schema<TCategory>({
-//   name: { type: String, required: true, unique: true },
-//   slug: { type: String, required: true, unique: true },
-//   image: { type: Schema.Types.ObjectId, ref: "Image" },
-//   description: { type: String },
-//   isDeleted: { type: Boolean, default: false },
-// });
-
 const categorySchema = new Schema<TCategory>(
   {
     name: { type: String, required: true, unique: true },
     slug: { type: String, required: true, unique: true },
     image: { type: Schema.Types.ObjectId, ref: "Image" },
     description: { type: String },
-    // subcategories: [subcategorySchema],
+    parent: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
+    },
+    level: {
+      type: Number,
+      default: 0,
+    },
+    isActive: { type: Boolean, default: true },
     createdBy: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -33,9 +34,7 @@ const categorySchema = new Schema<TCategory>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: true },
   },
-
   {
     timestamps: true,
   }

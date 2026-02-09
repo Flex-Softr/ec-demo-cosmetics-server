@@ -59,7 +59,7 @@ export type TProduct = {
   attributes: TProductAttribute[];
   variations: Types.ObjectId[] | TVariation[];
   brand: Types.ObjectId;
-  category: TCategorySchema;
+  category: Types.ObjectId[];
   productCollection?: Types.ObjectId[];
   relatedProducts?: Types.ObjectId[];
   warranty: boolean;
@@ -118,10 +118,7 @@ export type TProductPayload = {
     values: string[];
   }[];
   variations?: TVariation[];
-  category: {
-    name: string;
-    subCategory?: string;
-  };
+  category: string[];
   brand?: string;
   tag?: {
     label: string;

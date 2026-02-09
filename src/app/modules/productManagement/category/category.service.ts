@@ -3,6 +3,7 @@ import { PipelineStage, Types } from "mongoose";
 import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
+import ProductModel from "../product/product.model";
 import { TCategory } from "./category.interface";
 import { CategoryModel } from "./category.model";
 
@@ -12,32 +13,38 @@ const createCategoryIntoDB = async (
 ) => {
   payload.createdBy = createdBy;
 
-  const isCategoryDeleted = await CategoryModel.findOne({
-    name: { $regex: new RegExp(payload.name, "i") },
-    isDeleted: true,
+  const { parent } = payload;
+
+  const category = parent ? await CategoryModel.findById(parent) : null;
+  const level = category?.level != null ? category.level + 1 : 0;
+
+  const result = await CategoryModel.create({
+    ...payload,
+    level,
   });
 
-  if (isCategoryDeleted) {
-    const result = await CategoryModel.findByIdAndUpdate(
-      isCategoryDeleted._id,
-      { ...payload, isDeleted: false },
-      { new: true }
-    );
-    return result;
-  } else {
-    const result = await CategoryModel.create(payload);
-    return result;
-  }
+  return result;
 };
 
 const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
-  const matchQuery: Record<string, unknown> = { isDeleted: false };
-  if (query?.isActive) {
+  /* ------------------ MATCH QUERY ------------------ */
+  const matchQuery: Record<string, unknown> = {
+    parent: null,
+    isDeleted: false,
+  };
+
+  if (query?.isActive !== undefined) {
     matchQuery.isActive = query.isActive === "true";
   }
 
+  /* ------------------ AGGREGATION ------------------ */
   const pipeline: PipelineStage[] = [
-    { $match: matchQuery },
+    // 1️⃣ Root categories
+    {
+      $match: matchQuery,
+    },
+
+    // 2️⃣ Image lookup
     {
       $lookup: {
         from: "images",
@@ -46,109 +53,240 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         as: "image",
       },
     },
-    { $unwind: { path: "$image", preserveNullAndEmptyArrays: true } },
     {
-      $lookup: {
-        from: "products",
-        let: { categoryId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$category.name", "$$categoryId"] },
-                  { $eq: ["$isDeleted", false] },
-                ],
-              },
-            },
-          },
-          { $count: "count" },
-        ],
-        as: "productCount",
+      $unwind: {
+        path: "$image",
+        preserveNullAndEmptyArrays: true,
       },
     },
+
+    // 3️⃣ Recursive children (all levels)
     {
-      $addFields: {
-        productCount: {
-          $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
+      $graphLookup: {
+        from: "categories",
+        startWith: "$_id",
+        connectFromField: "_id",
+        connectToField: "parent",
+        as: "descendants",
+        restrictSearchWithMatch: {
+          isDeleted: false,
+          ...(query?.isActive !== undefined && {
+            isActive: query.isActive === "true",
+          }),
         },
+        depthField: "depth",
       },
     },
-    {
-      $lookup: {
-        from: "subcategories",
-        localField: "_id",
-        foreignField: "category",
-        as: "subCategory",
-        pipeline: [
-          { $match: { isDeleted: false } },
-          { $sort: { createdAt: -1 } },
-          {
-            $lookup: {
-              from: "products",
-              let: { subCategoryId: "$_id" },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ["$category.subCategory", "$$subCategoryId"] },
-                        { $eq: ["$isDeleted", false] },
-                      ],
-                    },
-                  },
-                },
-                { $count: "count" },
-              ],
-              as: "productCount",
-            },
-          },
-          {
-            $addFields: {
-              productCount: {
-                $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0],
-              },
-            },
-          },
-          {
-            $project: {
-              _id: 1,
-              name: 1,
-              slug: 1,
-              description: 1,
-              productCount: 1,
-            },
-          },
-        ],
-      },
-    },
+
+    // 4️⃣ Final projection
     {
       $project: {
         _id: 1,
         name: 1,
         slug: 1,
-        image: {
-          _id: "$image._id",
-          src: { $concat: [config.image_base_url, "/", "$image.src"] },
-          alt: "$image.alt",
-        },
+        level: 1,
         description: 1,
         isActive: 1,
-        subcategories: "$subCategory",
-        productCount: 1,
         createdAt: 1,
+        image: {
+          _id: "$image._id",
+          src: {
+            $cond: [
+              { $ifNull: ["$image.src", false] },
+              { $concat: [config.image_base_url, "/", "$image.src"] },
+              null,
+            ],
+          },
+          alt: "$image.alt",
+        },
+        descendants: {
+          _id: 1,
+          name: 1,
+          slug: 1,
+          parent: 1,
+          level: 1,
+          description: 1,
+          depth: 1,
+          isActive: 1,
+        },
       },
     },
   ];
+
+  /* ------------------ QUERY HELPER ------------------ */
   const categoryQuery = new AggregateQueryHelper(
     CategoryModel.aggregate(pipeline),
     query || {}
   )
+    .search(["name"])
     .sort()
     .paginate();
 
   const result = await categoryQuery.model;
-  return result;
+  const total =
+    (await CategoryModel.aggregate([
+      { $match: matchQuery },
+      { $count: "total" },
+    ]))![0]?.total || 0;
+  const meta = categoryQuery.metaData(total);
+
+  /* ------------------ PRODUCT COUNTS ------------------ */
+  const productCategoryData = await ProductModel.aggregate([
+    { $match: { isDeleted: false } },
+    { $unwind: "$category" },
+    { $group: { _id: "$category", productIds: { $addToSet: "$_id" } } },
+  ]);
+
+  const categoryProductMap = new Map<string, Set<string>>();
+  productCategoryData.forEach((item) => {
+    categoryProductMap.set(
+      item._id.toString(),
+      new Set(item.productIds.map((id: Types.ObjectId) => id.toString()))
+    );
+  });
+
+  /* ------------------ TREE BUILDER ------------------ */
+  const buildTree = (
+    nodes: TCategory[],
+    parentId: Types.ObjectId | undefined
+  ): { categories: TCategory[]; allProductIds: Set<string> } => {
+    const currentLevelProductIds = new Set<string>();
+    const tree = nodes
+      .filter((node) => String(node?.parent ?? null) === String(parentId))
+      .map((node) => {
+        const { categories: subcategories, allProductIds: subProductIds } =
+          buildTree(nodes, node._id);
+
+        const nodeDirectProductIds =
+          (node?._id && categoryProductMap.get(node._id.toString())) ||
+          new Set();
+
+        const combinedProductIds = new Set([
+          ...nodeDirectProductIds,
+          ...subProductIds,
+        ]);
+
+        // Accumulate IDs for parent
+        combinedProductIds.forEach((id) => currentLevelProductIds.add(id));
+
+        return {
+          ...node,
+          productCount: combinedProductIds.size,
+          subcategories,
+        };
+      });
+
+    return { categories: tree, allProductIds: currentLevelProductIds };
+  };
+
+  /* ------------------ FINAL TREE ------------------ */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const categoryTree = result.map((cat: any) => {
+    const { categories: subcategories, allProductIds: subProductIds } =
+      buildTree(cat.descendants || [], cat._id);
+
+    const nodeDirectProductIds =
+      (cat._id && categoryProductMap.get(cat._id.toString())) || new Set();
+
+    const combinedProductIds = new Set([
+      ...nodeDirectProductIds,
+      ...subProductIds,
+    ]);
+
+    return {
+      ...cat,
+      productCount: combinedProductIds.size,
+      subcategories,
+      descendants: undefined,
+    };
+  });
+
+  return { data: categoryTree, meta };
+};
+
+const getSingleCategoryFromDB = async (id: string) => {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid category id");
+  }
+
+  const category = await CategoryModel.aggregate([
+    {
+      $match: {
+        _id: new Types.ObjectId(id),
+        isDeleted: false,
+      },
+    },
+    // 3️⃣ Get direct subcategories
+    {
+      $lookup: {
+        from: "categories",
+        let: { parentId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              isDeleted: false,
+              $expr: {
+                $eq: ["$parent", "$$parentId"],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "images",
+              localField: "image",
+              foreignField: "_id",
+              as: "image",
+            },
+          },
+          {
+            $unwind: {
+              path: "$image",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          { $sort: { createdAt: -1 } },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              slug: 1,
+              image: {
+                _id: "$image._id",
+                src: {
+                  $cond: [
+                    { $ifNull: ["$image.src", false] },
+                    { $concat: [config.image_base_url, "/", "$image.src"] },
+                    null,
+                  ],
+                },
+                alt: "$image.alt",
+              },
+              description: 1,
+              level: 1,
+              createdAt: 1,
+            },
+          },
+        ],
+        as: "subcategories",
+      },
+    },
+
+    // 4️⃣ Final shape
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        slug: 1,
+        description: 1,
+        level: 1,
+        isActive: 1,
+        createdAt: 1,
+        subcategories: 1,
+      },
+    },
+  ]);
+
+  return category[0] || null;
 };
 
 const updateCategoryIntoDB = async (
@@ -194,6 +332,7 @@ const deleteCategoryFromDB = async (
 export const CategoryServices = {
   createCategoryIntoDB,
   getAllCategoriesFromDB,
+  getSingleCategoryFromDB,
   updateCategoryIntoDB,
   deleteCategoryFromDB,
 };

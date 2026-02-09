@@ -20,6 +20,8 @@ router.post(
 
 router.get("/", CategoryControllers.getAllCategories);
 
+router.get("/:id", CategoryControllers.getSingleCategory);
+
 router.patch(
   "/:id",
   authGuard({

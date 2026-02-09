@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 import {
-  TCategorySchema,
   TProduct,
   TProductAttribute,
   TProductImage,
@@ -8,14 +7,12 @@ import {
   TTag,
   TWarrantyInfo,
 } from "./product.interface";
-// import { TAttribute } from "../attribute/attribute.interface";
 import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
 import { ImageModel } from "../../image/image.model";
 import { AttributeModel } from "../attribute/attribute.model";
 import { BrandModel } from "../brand/brand.model";
 import { CategoryModel } from "../category/category.model";
-import { SubCategoryModel } from "../subCategory/subCategory.model";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 
 const productImageSchema = new Schema<TProductImage>(
@@ -33,14 +30,6 @@ const productAttributeSchema = new Schema<TProductAttribute>(
   {
     name: { type: Schema.Types.ObjectId, ref: "Attribute" },
     values: { type: [Schema.Types.ObjectId] },
-  },
-  { _id: false }
-);
-
-const categorySchema = new Schema<TCategorySchema>(
-  {
-    name: { type: Schema.Types.ObjectId, required: true, ref: "Category" },
-    subCategory: { type: Schema.Types.ObjectId, ref: "SubCategory" },
   },
   { _id: false }
 );
@@ -89,7 +78,6 @@ export const productSchema = new Schema<TProduct>(
     shortDescription: { type: String },
     additionalInfo: { type: String },
     // usageGuidelines: { type: String },
-    // downloadable: { type: Boolean, default: false },
     featured: { type: Boolean, default: false },
     // review: { type: Boolean, default: false },
     price: {
@@ -115,7 +103,7 @@ export const productSchema = new Schema<TProduct>(
     },
     variations: [{ type: Schema.Types.ObjectId, ref: "Variation" }],
     brand: { type: Schema.Types.ObjectId, ref: "Brand" },
-    category: categorySchema,
+    category: [{ type: Schema.Types.ObjectId, ref: "Category" }],
     productCollection: [{ type: Schema.Types.ObjectId, ref: "Collection" }],
     relatedProducts: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     warranty: { type: Boolean, default: false },
@@ -157,7 +145,7 @@ export const productSchema = new Schema<TProduct>(
 productSchema.pre("save", async function (next) {
   const product = this as unknown as TProduct;
   const { thumbnail, gallery } = product.image;
-  const { name, subCategory } = product.category;
+  const { category, brand, attributes } = product;
 
   const isThumbnailExist = await ImageModel.findById(thumbnail);
   if (!isThumbnailExist) {
@@ -189,32 +177,18 @@ productSchema.pre("save", async function (next) {
     }
   }
 
-  const isCategoryExist = await CategoryModel.findById(name);
-  if (!isCategoryExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, "The category was not found!");
-  }
-  if (isCategoryExist.isDeleted) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "The category is deleted!");
-  }
-
-  if (subCategory) {
-    const isSubCategoryExist = await SubCategoryModel.findById(subCategory);
-    if (!isSubCategoryExist) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "The sub category was not found!"
-      );
+  for (const id of category) {
+    const isCategoryExist = await CategoryModel.findById(id);
+    if (!isCategoryExist) {
+      throw new ApiError(httpStatus.NOT_FOUND, "The category was not found!");
     }
-    if (isSubCategoryExist.isDeleted) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "The sub category is deleted!"
-      );
+    if (isCategoryExist.isDeleted) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "The category is deleted!");
     }
   }
 
-  if (product.brand) {
-    const isBrandExist = await BrandModel.findById(product.brand);
+  if (brand) {
+    const isBrandExist = await BrandModel.findById(brand);
     if (!isBrandExist) {
       throw new ApiError(httpStatus.NOT_FOUND, "The brand was not found!");
     }
@@ -223,8 +197,8 @@ productSchema.pre("save", async function (next) {
     }
   }
 
-  if (product.attributes) {
-    for (const { name, values } of product.attributes) {
+  if (attributes) {
+    for (const { name, values } of attributes) {
       const isAttributeExist = await AttributeModel.findById(name);
       if (!isAttributeExist) {
         throw new ApiError(

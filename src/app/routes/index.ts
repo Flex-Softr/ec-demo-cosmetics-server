@@ -19,7 +19,6 @@ import { CategoryRoutes } from "../modules/productManagement/category/category.r
 import { CollectionRoutes } from "../modules/productManagement/collection/collection.routes";
 import { ProductRoutes } from "../modules/productManagement/product/product.routes";
 import { ReviewRoutes } from "../modules/productManagement/review/review.route";
-import { SubCategoryRoutes } from "../modules/productManagement/subCategory/subCategory.routes";
 import { TagRoutes } from "../modules/productManagement/tag/tag.route";
 import { VariationRoutes } from "../modules/productManagement/variation/variation.route";
 import { ReportsRoutes } from "../modules/reports/reports.routes";
@@ -82,10 +81,6 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/categories",
     route: CategoryRoutes,
-  },
-  {
-    path: "/sub-categories",
-    route: SubCategoryRoutes,
   },
   {
     path: "/brands",

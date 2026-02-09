@@ -9,11 +9,6 @@ const createProductAttribute = z.object({
     .min(1, { message: "Attribute values are required!" }),
 });
 
-const category = z.object({
-  name: z.string().min(1, { message: "Category is required!" }),
-  subCategory: z.string().optional(),
-});
-
 const warrantyInfo = z.object({
   duration: z.object({
     quantity: z.string().trim().optional(),
@@ -78,7 +73,7 @@ const product = z.object({
       attributes: z.array(createProductAttribute).optional(),
       variations: z.array(variationSchema).optional(),
       brand: z.string().optional(),
-      category: category,
+      category: z.array(z.string()).min(1, "Category is required"),
       featured: z.boolean().optional(),
       downloadable: z.boolean().optional(),
       review: z.boolean().optional(),
@@ -155,7 +150,7 @@ const updateProduct = z.object({
     attributes: z.array(createProductAttribute).optional(),
     variations: z.array(variationSchema).optional(),
     brand: z.string().optional(),
-    category: category.partial().optional(),
+    category: z.array(z.string()).min(1, "Category is required").optional(),
     featured: z.boolean().optional(),
     downloadable: z.boolean().optional(),
     review: z.boolean().optional(),

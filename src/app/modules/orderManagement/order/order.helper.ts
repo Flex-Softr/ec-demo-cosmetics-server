@@ -104,9 +104,8 @@ const sanitizeOrderedProducts = async (
         price: (findVariation?.price || product?.price) as TPrice,
         stock: (findVariation?.inventory || product?.inventory) as TInventory,
         defaultInventory: product?.inventory?._id,
-        variations: undefined,
         inventory: undefined,
-        category: product?.category?.name as unknown as TCategory,
+        category: product?.category as unknown as TCategory[],
       },
       quantity: item.quantity,
       variation: item?.variation
@@ -1089,7 +1088,7 @@ const sanitizeCartsForOrder = async (userQuery: {
     const product = item?.product as TProduct;
     const variation = item?.variation as TVariation;
     const price = product?.price as TPrice;
-    const category = product?.category.name;
+    const category = product?.category;
     const inventory = product?.inventory as TInventory;
     const data = {
       product: {
@@ -1311,11 +1310,21 @@ const orderCostAfterCoupon = async (
     // If the coupon only for listed categories
     if (fixedCategories?.length) {
       const filteredProducts = orderedProductInfo.filter((item) => {
-        if (
-          fixedCategories
-            ?.map((item) => item.toString())
-            ?.includes(item?.product?.category?._id?.toString() || "")
-        ) {
+        const productCategories = Array.isArray(item?.product?.category)
+          ? item?.product?.category
+          : [item?.product?.category];
+
+        const productCategoryIds = productCategories.map((cat) =>
+          (cat as TCategory)?._id
+            ? (cat as TCategory)._id?.toString()
+            : cat.toString()
+        );
+
+        const hasMatchingCategory = fixedCategories?.some((fixedCat) =>
+          productCategoryIds.includes(fixedCat.toString())
+        );
+
+        if (hasMatchingCategory) {
           return item;
         }
       });
@@ -1333,11 +1342,22 @@ const orderCostAfterCoupon = async (
     // If the coupon except for listed categories
     if (restrictedCategories?.length) {
       const filteredProducts = orderedProductInfo.filter((item) => {
-        if (
-          !restrictedCategories
-            ?.map((item) => item.toString())
-            ?.includes(item?.product?.category?._id?.toString() || "")
-        ) {
+        const productCategories = Array.isArray(item?.product?.category)
+          ? item?.product?.category
+          : [item?.product?.category];
+
+        const productCategoryIds = productCategories.map((cat) =>
+          (cat as TCategory)?._id
+            ? (cat as TCategory)._id?.toString()
+            : cat.toString()
+        );
+
+        const hasRestrictedCategory = restrictedCategories?.some(
+          (restrictedCat) =>
+            productCategoryIds.includes(restrictedCat.toString())
+        );
+
+        if (!hasRestrictedCategory) {
           return item;
         }
       });

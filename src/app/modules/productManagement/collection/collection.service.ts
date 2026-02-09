@@ -61,7 +61,7 @@ const getAllCollectionsFromDB = async (query: Record<string, unknown>) => {
             $match: {
               $expr: {
                 $and: [
-                  { $eq: ["$productCollection", "$$collectionId"] },
+                  { $in: ["$$collectionId", "$productCollection"] },
                   { $eq: ["$isDeleted", false] },
                 ],
               },

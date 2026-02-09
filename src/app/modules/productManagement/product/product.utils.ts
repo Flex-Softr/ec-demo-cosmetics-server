@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CronJob } from "cron";
-import { Request } from "express";
 import { PipelineStage } from "mongoose";
 import config from "../../../config/config";
 import { STOCK_STATUS } from "../inventory/inventory.const";
@@ -8,44 +7,6 @@ import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 import ProductModel from "./product.model";
-
-const modifiedPriceData = (req: Request) => {
-  const { price } = req.body;
-  const save = price.regularPrice - price.salePrice || 0;
-  price.priceSave = save === price.regularPrice ? 0 : save;
-  const calculatedPrice: Record<string, unknown> = {};
-  if (price && price.salePrice) {
-    calculatedPrice.discountPercent = Number(
-      (
-        ((price.regularPrice - price.salePrice) / price.regularPrice) *
-        100
-      ).toFixed(2)
-    );
-    req.body.price = { ...price, ...calculatedPrice };
-    return;
-  }
-  if (price && price.discountPercent) {
-    calculatedPrice.salePrice = Number(
-      (
-        price.regularPrice -
-        price.regularPrice * (price.discountPercent / 100)
-      ).toFixed(2)
-    );
-    req.body.price = {
-      ...price,
-      ...calculatedPrice,
-    };
-  }
-  if (!calculatedPrice.salePrice) {
-    calculatedPrice.salePrice = price.regularPrice;
-    req.body.price = {
-      ...price,
-      ...calculatedPrice,
-    };
-  }
-};
-
-export default modifiedPriceData;
 
 export const formatPriceUpdatePayload = (price: Record<string, any>) => {
   const updatePrice: Record<string, unknown> = {};
@@ -335,18 +296,9 @@ export const commonPipelineSingleProduct = (
   {
     $lookup: {
       from: "categories",
-      localField: "category.name",
+      localField: "category",
       foreignField: "_id",
-      as: "myCategory",
-      // pipeline: [{ $project: { name: 1 } }],
-    },
-  },
-  {
-    $lookup: {
-      from: "subcategories",
-      localField: "category.subCategory",
-      foreignField: "_id",
-      as: "subCategory",
+      as: "category",
       pipeline: [{ $project: { _id: 1, name: 1, slug: 1 } }],
     },
   },
@@ -387,12 +339,6 @@ export const commonPipelineSingleProduct = (
     $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
   },
   {
-    $unwind: "$myCategory",
-  },
-  {
-    $unwind: { path: "$subCategory", preserveNullAndEmptyArrays: true },
-  },
-  {
     $unwind: { path: "$brand", preserveNullAndEmptyArrays: true },
   },
   // {
@@ -415,12 +361,7 @@ export const commonPipelineSingleProduct = (
       price: "$price",
       inventory: "$inventory",
       variations: "$variations",
-      category: {
-        _id: "$myCategory._id",
-        name: "$myCategory.name",
-        slug: "$myCategory.slug",
-        subCategory: "$subCategory",
-      },
+      category: "$category",
       attributes: {
         $map: {
           input: "$myAttributes",
@@ -465,9 +406,9 @@ export const commonPipelineSingleProduct = (
       relatedProducts: 1,
       warranty: 1,
       warrantyInfo: 1,
+      publishedStatus: 1,
       createdAt: 1,
       updatedAt: 1,
-      publishedStatus: 1,
     },
   },
 ];
@@ -516,21 +457,13 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
   },
   {
     $lookup: {
-      from: "subcategories",
-      localField: "category.subCategory",
-      foreignField: "_id",
-      as: "subcategory",
-    },
-  },
-  {
-    $lookup: {
       from: "categories",
-      localField: "category.name",
+      localField: "category",
       foreignField: "_id",
       as: "category",
+      pipeline: [{ $project: { _id: 1, name: 1, slug: 1 } }],
     },
   },
-  { $unwind: "$category" },
   {
     $lookup: {
       from: "variations",
@@ -593,9 +526,6 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       pipeline: [{ $project: { title: 1, slug: 1 } }],
     },
   },
-  // {
-  //   $unwind: { path: "$productCollection", preserveNullAndEmptyArrays: true },
-  // },
   // {
   //   $lookup: {
   //     from: "reviews",

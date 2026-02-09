@@ -8,22 +8,7 @@ const createCategory = catchAsync(async (req, res) => {
   const createdBy = req.user.id;
   const { name } = req.body;
   req.body.slug = generateSlug(name);
-  // req.body.subcategories = subcategories?.map(
-  //   ({
-  //     name,
-  //     image,
-  //     description,
-  //   }: {
-  //     name: string;
-  //     image: string;
-  //     description: string;
-  //   }) => ({
-  //     name,
-  //     slug: generateSlug(name),
-  //     image,
-  //     description,
-  //   })
-  // );
+
   const result = await CategoryServices.createCategoryIntoDB(
     createdBy,
     req.body
@@ -41,6 +26,15 @@ const getAllCategories = catchAsync(async (req, res) => {
   successResponse(res, {
     statusCode: httpStatus.OK,
     message: "Categories retrieved successfully",
+    data: result,
+  });
+});
+
+const getSingleCategory = catchAsync(async (req, res) => {
+  const result = await CategoryServices.getSingleCategoryFromDB(req.params.id);
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Category retrieved successfully",
     data: result,
   });
 });
@@ -79,6 +73,7 @@ const deleteCategory = catchAsync(async (req, res) => {
 export const CategoryControllers = {
   createCategory,
   getAllCategories,
+  getSingleCategory,
   updateCategory,
   deleteCategory,
 };
