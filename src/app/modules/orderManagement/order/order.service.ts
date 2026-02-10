@@ -12,6 +12,7 @@ import { Courier } from "../../courier/courier.model";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
+import { calculateStockStatus } from "../../productManagement/inventory/inventory.utils";
 import { TPrice } from "../../productManagement/price/price.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
@@ -1572,12 +1573,25 @@ const updateOrderDetailsByAdminIntoDB = async (
                     previousQuantity -
                     updatedProduct.quantity;
 
-                  await VariationModel.updateOne(
+                  const inventoryId =
+                    currentProduct?.inventoryInfo?.variationInventory?._id;
+                  const lowStockWarning =
+                    currentProduct?.inventoryInfo?.variationInventory
+                      ?.lowStockWarning || 0;
+                  const newStatus = calculateStockStatus(
+                    quantityCalculation,
+                    lowStockWarning
+                  );
+
+                  await InventoryModel.updateOne(
                     {
-                      _id: currentProduct?.variation,
+                      _id: inventoryId,
                     },
                     {
-                      $set: { "inventory.stockAvailable": quantityCalculation },
+                      $set: {
+                        stockAvailable: quantityCalculation,
+                        stockStatus: newStatus,
+                      },
                     },
                     { session }
                   );
@@ -1585,8 +1599,7 @@ const updateOrderDetailsByAdminIntoDB = async (
               }
             } else {
               if (
-                currentProduct?.inventoryInfo?.defaultInventory?.manageStock ===
-                true
+                currentProduct?.inventoryInfo?.defaultInventory?.manageStock
               ) {
                 const quantityCalculation =
                   Number(
@@ -1595,9 +1608,21 @@ const updateOrderDetailsByAdminIntoDB = async (
                   ) +
                   previousQuantity -
                   updatedProduct.quantity;
+                const lowStockWarning =
+                  currentProduct?.inventoryInfo?.defaultInventory
+                    ?.lowStockWarning || 0;
+                const newStatus = calculateStockStatus(
+                  quantityCalculation,
+                  lowStockWarning
+                );
                 await InventoryModel.updateOne(
                   { _id: currentProduct?.inventoryInfo?.defaultInventory?._id },
-                  { $set: { stockAvailable: quantityCalculation } },
+                  {
+                    $set: {
+                      stockAvailable: quantityCalculation,
+                      stockStatus: newStatus,
+                    },
+                  },
                   { session }
                 );
               }

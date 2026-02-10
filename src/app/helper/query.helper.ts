@@ -1,5 +1,9 @@
 import { Aggregate, FilterQuery, Model, Query } from "mongoose";
 
+const escapeRegex = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
 export class QueryHelper<T> {
   model: Query<T[], T>;
   query: Record<string, unknown>;
@@ -11,8 +15,9 @@ export class QueryHelper<T> {
   search(searchFields: string[]): this {
     const search = this.query?.search;
     if (search) {
+      const escapedSearch = escapeRegex(search as string);
       const searchConditions = searchFields.map((field) => ({
-        [field]: { $regex: new RegExp(search as string, "i") },
+        [field]: { $regex: new RegExp(escapedSearch, "i") },
       }));
       this.model = this.model.find({ $or: searchConditions } as FilterQuery<T>);
     }
@@ -85,8 +90,9 @@ export class AggregateQueryHelper<T> {
     //ex:["phoneNumber","orderId"]
     const search = this.query?.search;
     if (search) {
+      const escapedSearch = escapeRegex(search as string);
       const searchConditions = searchFields.map((field) => ({
-        [field]: { $regex: new RegExp(search as string, "i") },
+        [field]: { $regex: new RegExp(escapedSearch, "i") },
       }));
       this.model = this.model.match({
         $or: searchConditions,
@@ -150,8 +156,9 @@ export class AggregateQueryHelperFacet<T> {
   search(searchableFields: string[]) {
     const search = this.query?.search;
     if (search) {
+      const escapedSearch = escapeRegex(search as string);
       const searchConditions = searchableFields.map((field) => ({
-        [field]: { $regex: new RegExp(search as string, "i") },
+        [field]: { $regex: new RegExp(escapedSearch, "i") },
       }));
       // Check if the pipeline already includes a $facet stage
       const facetStageIndex = this.pipeline.findIndex(

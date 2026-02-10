@@ -35,7 +35,9 @@ const createOrder = z.object({
         variation: z.string().optional(),
       })
       .array()
-      .optional(),
+      .refine((items) => items.length > 0, {
+        message: "Ordered products cannot be empty",
+      }),
     advance: z.number().optional(),
     discount: z.number().optional(),
     orderNotes: z.string().optional(),

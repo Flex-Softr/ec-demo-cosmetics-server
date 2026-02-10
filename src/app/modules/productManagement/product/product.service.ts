@@ -333,7 +333,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
   const filterQuery: Record<string, unknown> = {};
   const andConditions: Record<string, unknown>[] = [];
 
-  if (status) {
+  if (status && status !== "all") {
     andConditions.push({ publishedStatus: status });
   }
 

@@ -51,6 +51,7 @@ const sanitizeOrderedProducts = async (
         variations: 1,
         category: 1,
         isDeleted: 1,
+        publishedStatus: 1,
       }
     )
       .populate([
@@ -236,6 +237,20 @@ const findOrderForUpdatingOrder = async (
         },
       },
       {
+        $lookup: {
+          from: "inventories",
+          localField: "variation.inventory",
+          foreignField: "_id",
+          as: "variationInventoryData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$variationInventoryData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $addFields: {
           "orderedProducts.productInfo.variations": {
             $cond: {
@@ -290,11 +305,13 @@ const findOrderForUpdatingOrder = async (
                   variations: "$allVariations",
                   inventoryInfo: {
                     variationInventory: {
+                      _id: "$variationInventoryData._id",
                       variation: "$variation._id",
-                      stockStatus: "$variation.inventory.stockStatus",
-                      stockAvailable: "$variation.inventory.stockAvailable",
-                      manageStock: "$variation.inventory.manageStock",
-                      lowStockWarning: "$variation.inventory.lowStockWarning",
+                      stockStatus: "$variationInventoryData.stockStatus",
+                      stockAvailable: "$variationInventoryData.stockAvailable",
+                      manageStock: "$variationInventoryData.manageStock",
+                      lowStockWarning:
+                        "$variationInventoryData.lowStockWarning",
                     },
                     defaultInventory: {
                       _id: "$orderedProducts.productInfo.inventoryInfo._id",
@@ -1156,7 +1173,6 @@ const validateAndSanitizeOrderedProducts = (
         `On product ${item?.product?.title}, selected variation is no longer available.`
       );
     }
-
     if (
       item.product?.publishedStatus !== PRODUCT_STATUS.PUBLISHED ||
       item.product?.isDeleted
