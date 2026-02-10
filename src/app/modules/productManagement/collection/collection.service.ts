@@ -45,7 +45,9 @@ const getAllCollectionsFromDB = async (query: Record<string, unknown>) => {
         pipeline: [
           {
             $project: {
-              src: { $concat: [config.image_base_url, "/", "$src"] },
+              src: {
+                $concat: [config.image_base_url || "", "/", "$src"],
+              },
               alt: 1,
             },
           },
@@ -61,7 +63,12 @@ const getAllCollectionsFromDB = async (query: Record<string, unknown>) => {
             $match: {
               $expr: {
                 $and: [
-                  { $in: ["$$collectionId", "$productCollection"] },
+                  {
+                    $in: [
+                      "$$collectionId",
+                      { $ifNull: ["$productCollection", []] },
+                    ],
+                  },
                   { $eq: ["$isDeleted", false] },
                 ],
               },
