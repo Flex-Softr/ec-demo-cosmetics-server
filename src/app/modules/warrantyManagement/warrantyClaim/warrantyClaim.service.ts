@@ -15,7 +15,7 @@ import {
   TWarrantyClaim,
   TWarrantyClaimedContactStatus,
   TWarrantyClaimedProductCondition,
-  TWarrantyClaimedProductDetails,
+  TWarrantyClaimedOrderedProducts,
   TWarrantyClaimReqData,
 } from "./warrantyClaim.interface";
 import { WarrantyClaim } from "./warrantyClaim.model";
@@ -309,7 +309,7 @@ const createNewWarrantyClaimOrderIntoDB = async (
   try {
     session.startTransaction();
 
-    const orderedProducts: TWarrantyClaimedProductDetails[] = [];
+    const orderedProducts: TWarrantyClaimedOrderedProducts[] = [];
 
     for (const item of claimReq?.warrantyClaimReqData || []) {
       const existingOrderedProducts = (
@@ -356,7 +356,7 @@ const createNewWarrantyClaimOrderIntoDB = async (
       );
 
       // Create product details for order data
-      const newProductDetailsItem = {
+      const newOrderedProductsItem = {
         product: item.productId,
         quantity: item.claimedCodes?.length,
         variation: item.variation
@@ -369,7 +369,7 @@ const createNewWarrantyClaimOrderIntoDB = async (
       };
 
       orderedProducts.push(
-        newProductDetailsItem as unknown as TWarrantyClaimedProductDetails
+        newOrderedProductsItem as unknown as TWarrantyClaimedOrderedProducts
       );
     }
 

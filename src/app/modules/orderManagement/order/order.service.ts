@@ -22,7 +22,7 @@ import { TShipping } from "../shipping/shipping.interface";
 import { Shipping } from "../shipping/shipping.model";
 import { TShippingCharge } from "../shippingCharge/shippingCharge.interface";
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
-import { orderStatusWithDesc } from "./order.const";
+import { orderStatus, orderStatusWithDesc } from "./order.const";
 import { OrderHelper } from "./order.helper";
 import {
   TOrder,
@@ -627,7 +627,7 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
   const pipeline = OrderHelper.orderDetailsPipeline();
 
   if (queryProducts.length > 0) {
-    matchQuery.productDetails = {
+    matchQuery.orderedProducts = {
       $elemMatch: {
         product: {
           $in: queryProducts.map((item) => new Types.ObjectId(item)),
@@ -1107,8 +1107,15 @@ const updateProcessingStatusIntoDB = async (
         });
 
         await Promise.all([
-          updateStockOrderCancelDelete(order.productDetails, session),
-          deleteWarrantyFromOrder(order.productDetails, order._id, session),
+          updateStockOrderCancelDelete(
+            order.orderedProducts as unknown as TUpStOnCanDelProducts[],
+            session
+          ),
+          deleteWarrantyFromOrder(
+            order.orderedProducts as unknown as TOrderedProduct[],
+            order._id,
+            session
+          ),
         ]);
       }
     }
@@ -1261,7 +1268,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
         });
 
         await updateStockOrderCancelDelete(
-          order?.productDetails || [],
+          order?.orderedProducts as unknown as TUpStOnCanDelProducts[],
           session
         );
         if (
@@ -1732,7 +1739,7 @@ const updateOrderDetailsByAdminIntoDB = async (
             (selectedVariation?.price as TPrice)?.regularPrice ||
             0;
 
-          const newProductDetails = {
+          const newOrderedProducts = {
             product: productInfo?._id,
             attributes: selectedVariation?.attributes,
             unitPrice: selectedVariation ? variationUnitPrice : unitPrice,
@@ -1746,10 +1753,10 @@ const updateOrderDetailsByAdminIntoDB = async (
             variation: (selectedVariation as TVariation)?._id || undefined,
           };
 
-          if (newProductDetails?.isWarrantyClaim) {
+          if (newOrderedProducts?.isWarrantyClaim) {
             if (
-              newProductDetails?.claimedCodes?.length !==
-              newProductDetails?.quantity
+              newOrderedProducts?.claimedCodes?.length !==
+              newOrderedProducts?.quantity
             ) {
               throw new ApiError(
                 httpStatus.BAD_REQUEST,
@@ -1758,10 +1765,10 @@ const updateOrderDetailsByAdminIntoDB = async (
             }
           }
 
-          if (newProductDetails) {
+          if (newOrderedProducts) {
             findOrder.orderedProducts.push(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              newProductDetails as any
+              newOrderedProducts as any
             );
           }
           if (selectedVariation) {
@@ -1898,24 +1905,25 @@ const deleteOrdersByIdFromBD = async (orderIds: string[]) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    for (const orderId of orderIds) {
-      const order = await Order.findOne({ _id: orderId });
-      if (order) {
-        // update quantity
-        for (const item of order.orderedProducts) {
-          const product = await ProductModel.findById(item.product, {
-            inventory: 1,
-            title: 1,
-          }).lean();
-          await InventoryModel.updateOne(
-            { _id: product?.inventory },
-            { $inc: { stockAvailable: item.quantity } }
-          ).session(session);
-        }
-        order.isDeleted = true;
-        order.status = "deleted";
-        await order.save({ session });
-      }
+
+    const pipeline = OrderHelper.orderStatusUpdatingPipeline(
+      orderIds.map((id) => new Types.ObjectId(id)),
+      orderStatus
+    );
+
+    const orders = await Order.aggregate(pipeline).session(session);
+
+    for (const order of orders) {
+      await updateStockOrderCancelDelete(
+        order.orderedProducts as unknown as TUpStOnCanDelProducts[],
+        session
+      );
+
+      await Order.updateOne(
+        { _id: order._id },
+        { status: "deleted", isDeleted: true },
+        { session }
+      );
     }
     await session.commitTransaction();
   } catch (error) {

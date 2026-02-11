@@ -21,7 +21,7 @@ import {
   TOrderSMSNotificationType,
 } from "../../smsManagement/orderSMSNotification/orderSMSNotification.interface";
 import { OrderSMSNotification } from "../../smsManagement/orderSMSNotification/orderSMSNotification.model";
-import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
+import { TWarrantyClaimedOrderedProducts } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
 import {
   TFindOrderForUpdatingOrder,
@@ -32,7 +32,7 @@ import {
 } from "./order.interface";
 import { Order } from "./order.model";
 
-type TsnOrderProduct = TOrderedProduct[] | TWarrantyClaimedProductDetails[];
+type TsnOrderProduct = TOrderedProduct[] | TWarrantyClaimedOrderedProducts[];
 
 const sanitizeOrderedProducts = async (
   orderedProducts: TsnOrderProduct,

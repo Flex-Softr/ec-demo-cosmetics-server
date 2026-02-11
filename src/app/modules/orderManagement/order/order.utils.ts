@@ -16,7 +16,7 @@ import { InventoryModel } from "../../productManagement/inventory/inventory.mode
 import { calculateStockStatus } from "../../productManagement/inventory/inventory.utils";
 import { ROLES } from "../../userManagement/user/user.const";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
-import { TWarrantyClaimedProductDetails } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
+import { TWarrantyClaimedOrderedProducts } from "../../warrantyManagement/warrantyClaim/warrantyClaim.interface";
 import { TPaymentData } from "../orderPayment/orderPayment.interface";
 import { OrderPayment } from "../orderPayment/orderPayment.model";
 import { OrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.model";
@@ -167,7 +167,7 @@ export const createNewOrder = async (
     warrantyClaim?: boolean;
     orderedProducts?:
       | Partial<TOrderedProduct[]>
-      | TWarrantyClaimedProductDetails[];
+      | TWarrantyClaimedOrderedProducts[];
   }
 ) => {
   const {

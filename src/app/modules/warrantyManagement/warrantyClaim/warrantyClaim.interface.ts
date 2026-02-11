@@ -58,7 +58,7 @@ export type TWarrantyClaimData = {
 
 export type TWarrantyClaim = TWarrantyClaimData & Document;
 
-export type TWarrantyClaimedProductDetails = TOrderedProduct & {
+export type TWarrantyClaimedOrderedProducts = TOrderedProduct & {
   claimedCodes: TClaimedCodes[];
   prevWarrantyInformation: TWarrantyClaimPrevWarrantyInformation;
   warrantyClaimHistory: Types.ObjectId;
