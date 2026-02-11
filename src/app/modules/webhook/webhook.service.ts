@@ -79,7 +79,7 @@ const parcelStatusHandler = async (req: Request) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid webhook secret.");
   }
 
-  if (updatedData.tracking_id) {
+  if (Object.keys(query)?.length) {
     await Order.updateMany(query, {
       status: updatedData.status,
       statusFromShippingProvider: updatedData.shipping_status,
