@@ -1,4 +1,5 @@
 import mongoose, { Document, Types } from "mongoose";
+import { TCourier } from "../../courier/courier.interface";
 import { TCategory } from "../../productManagement/category/category.interface";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
 import { TPrice } from "../../productManagement/price/price.interface";
@@ -74,7 +75,7 @@ export type TOrderedProduct = {
 } & Document;
 
 export type TCourierDetails = {
-  courierProvider: mongoose.Types.ObjectId;
+  courierProvider: mongoose.Types.ObjectId | TCourier;
   trackingId: string;
 } & Document;
 
