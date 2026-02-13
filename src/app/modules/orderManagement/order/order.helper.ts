@@ -452,6 +452,17 @@ const orderDetailsPipeline = (): PipelineStage[] => [
     $unwind: { path: "$statusHistory", preserveNullAndEmptyArrays: true },
   },
   {
+    $lookup: {
+      from: "couriers",
+      localField: "courierDetails.courierProvider",
+      foreignField: "_id",
+      as: "courier",
+    },
+  },
+  {
+    $unwind: { path: "$courier", preserveNullAndEmptyArrays: true },
+  },
+  {
     $project: {
       _id: 1,
       orderId: 1,
@@ -527,7 +538,15 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       trackingStatus: 1,
       reasonNotes: 1,
       createdAt: 1,
-      courierDetails: 1,
+      courierDetails: {
+        courierProvider: {
+          _id: "$courier._id",
+          name: "$courier.name",
+          slug: "$courier.slug",
+          thumb: "$courier.thumb",
+        },
+        trackingId: "$courierDetails.trackingId",
+      },
     },
   },
   {
