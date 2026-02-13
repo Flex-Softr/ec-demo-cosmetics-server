@@ -646,6 +646,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       discount: { $first: "$discount" },
       advance: { $first: "$advance" },
       status: { $first: "$status" },
+      courierDetails: { $first: "$courierDetails" },
       messageFromShippingProvider: { $first: "$messageFromShippingProvider" },
       statusFromShippingProvider: { $first: "$statusFromShippingProvider" },
       deliveryStatus: { $first: "$deliveryStatus" },
