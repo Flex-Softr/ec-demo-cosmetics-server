@@ -539,13 +539,19 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       reasonNotes: 1,
       createdAt: 1,
       courierDetails: {
-        courierProvider: {
-          _id: "$courier._id",
-          name: "$courier.name",
-          slug: "$courier.slug",
-          thumb: "$courier.thumb",
+        $cond: {
+          if: { $not: ["$courierDetails"] },
+          then: "$$REMOVE",
+          else: {
+            courierProvider: {
+              _id: "$courier._id",
+              name: "$courier.name",
+              slug: "$courier.slug",
+              thumb: "$courier.thumb",
+            },
+            trackingId: "$courierDetails.trackingId",
+          },
         },
-        trackingId: "$courierDetails.trackingId",
       },
     },
   },
