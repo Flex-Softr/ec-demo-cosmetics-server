@@ -39,7 +39,8 @@ const parcelStatusHandler = async (req: Request) => {
   if (provider === "steadfast") {
     token = req.headers["authorization"]?.split("Bearer ")[1];
     const data = payload as TSteadfastWebhookResponse;
-    query = { orderId: data?.invoice };
+    // query = { orderId: data?.invoice };
+    query = { "courierDetails.trackingId": data?.consignment_id?.toString() };
     updatedData.tracking_id = data?.consignment_id?.toString();
     updatedData.status = data?.status === "delivered" ? "completed" : undefined;
     updatedData.message = data?.tracking_message;
