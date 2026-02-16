@@ -65,13 +65,20 @@ const getAccessToken = async (
 
     const { access_token, expires_in } = response?.data || {};
 
-    const updatedCredentials = [...credentials]?.filter(
+    if (!access_token) {
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to retrieve access token"
+      );
+    }
+
+    const updatedCredentials = (credentials || []).filter(
       (cr) => cr.key !== "access_token" && cr.key !== "access_token_expires_in"
     );
 
     updatedCredentials.push({
       key: "access_token_expires_in",
-      value: computeExpiresAt(expires_in) as unknown as string,
+      value: computeExpiresAt(expires_in).toISOString(),
       is_optional: true,
     });
     updatedCredentials.push({
@@ -82,15 +89,8 @@ const getAccessToken = async (
 
     await Courier.updateOne(
       { slug: "pathao" },
-      { credentials: updatedCredentials }
+      { $set: { credentials: updatedCredentials } }
     );
-
-    if (!access_token) {
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to retrieve access token"
-      );
-    }
 
     return access_token;
   } catch (err) {
@@ -105,7 +105,7 @@ const getAccessToken = async (
   }
 };
 
-const pathaoApi = async (config: {
+export const pathaoApi = async (config: {
   credentials: TShippingMethod["credentials"];
   endpoints: string;
   data?: Record<string, unknown>;
