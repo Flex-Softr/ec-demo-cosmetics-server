@@ -79,7 +79,7 @@ const steadfast = async (
 
   return {
     success: true,
-    tracking_code: data.consignment.tracking_code,
+    tracking_code: data?.consignment?.consignment_id?.toString(),
   };
 };
 
