@@ -1,3 +1,4 @@
+import config from "../../../config/config";
 import { Courier, Errors, Report } from "./fraudCheck.interface";
 import {
   formatPaperFlyFraudData,
@@ -8,12 +9,30 @@ import {
 } from "./fraudCheck.utils";
 
 const fraudCheckDB = async (mobile: string) => {
+  // Define empty result for missing credentials
+  const emptyResult = {
+    totalOrders: 0,
+    totalDeliveries: 0,
+    couriers: [],
+    reports: [],
+  };
+
+  // Check for credentials
+  const hasSteadfast = config.stead_fast.email && config.stead_fast.password;
+  const hasPathao = config.pathao.username && config.pathao.password;
+  const hasRedX = config.redx.phoneNumber && config.redx.password;
+  const hasPaperFly = config.paperfly.username && config.paperfly.password;
+
   // Fetch all data concurrently
   const [steadFast, pathao, redX, paperFly] = await Promise.all([
-    formatSteadfastFraudData(mobile),
-    formatPathaoFraudData(mobile),
-    formatRedXFraudData(mobile),
-    formatPaperFlyFraudData(mobile),
+    hasSteadfast
+      ? formatSteadfastFraudData(mobile)
+      : Promise.resolve(emptyResult),
+    hasPathao ? formatPathaoFraudData(mobile) : Promise.resolve(emptyResult),
+    hasRedX ? formatRedXFraudData(mobile) : Promise.resolve(emptyResult),
+    hasPaperFly
+      ? formatPaperFlyFraudData(mobile)
+      : Promise.resolve(emptyResult),
   ]);
 
   const errors: Errors[] = [];
