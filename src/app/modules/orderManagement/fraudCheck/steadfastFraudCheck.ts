@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 import axios, { AxiosError } from "axios";
-import { CookieJar } from "tough-cookie";
 import { wrapper } from "axios-cookiejar-support";
 import * as cheerio from "cheerio";
+import { CookieJar } from "tough-cookie";
 import config from "../../../config/config";
 
 const API_BASE_URL = "https://steadfast.com.bd";
@@ -80,20 +80,25 @@ async function steadfastFraudCheck(phoneNumber: string) {
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
-      const statusCode = axiosError.response?.status || 500; // Default to 500 if no response
-      const errorMessage =
-        axiosError.response?.data ||
+      const statusCode = axiosError.response?.status || 500;
+      const responseData = axiosError.response?.data as any;
+
+      let errorMessage =
+        responseData?.error ||
+        responseData?.message ||
         axiosError.message ||
         "Unknown error occurred when checking steadfast fraud status";
 
-      // Handle rate limit errors (429 Too Many Requests)
-      if (statusCode === 429 && typeof errorMessage === "string") {
+      if (typeof errorMessage === "object") {
+        errorMessage = JSON.stringify(errorMessage);
+      }
+
+      if (statusCode === 429) {
         throw new Error(
-          "Too many requests in the steadfast! Please try again after sometime for Steadfast data."
+          `Failed to check steadfast fraud status. ${errorMessage}`
         );
       }
 
-      // Handle other Axios errors with status
       throw new Error(
         `Failed to check steadfast fraud status. ${errorMessage}`
       );
