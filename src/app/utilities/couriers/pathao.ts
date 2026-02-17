@@ -5,7 +5,11 @@ import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
 import { TShippingMethod } from "../../modules/courier/courier.interface";
 import { Courier } from "../../modules/courier/courier.model";
-import { TPathaoRequestBody, TPathaoResponse } from "../../types/pathao";
+import {
+  TPathaoErrorResponse,
+  TPathaoRequestBody,
+  TPathaoResponse,
+} from "../../types/pathao";
 import {
   TSchedulePickRequestBody,
   TSchedulePickResponse,
@@ -145,12 +149,11 @@ export const pathaoApi = async (config: {
   } catch (err) {
     if (err instanceof AxiosError) {
       const error = (err as AxiosError).response?.data as {
-        errors: TPathaoResponse;
+        errors: TPathaoErrorResponse;
         message: string;
       };
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
-        error.message,
         Object.values(error.errors ?? {})
           .flat()
           .join(", ")

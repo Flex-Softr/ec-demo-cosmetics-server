@@ -2151,7 +2151,7 @@ const returnAndPartialManagementIntoDB = async (
   user: TJwtPayload
 ) => {
   const changeableStatus: Partial<TOrderStatus[]> = ["On courier"];
-  const acceptableStatus = ["partial completed", "returned"];
+  const acceptableStatus = ["completed", "partial completed", "returned"];
   if (![...acceptableStatus].includes(status)) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Can't change to ${status}`);
   }

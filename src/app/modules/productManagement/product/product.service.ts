@@ -7,6 +7,8 @@ import generateProductId from "../../../utilities/generateProductId";
 import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
 // import { SeoDataModel } from "../seoData/seoData.model";
+import { create } from "xmlbuilder2";
+import config from "../../../config/config";
 import {
   AggregateQueryHelperFacet,
   ExtendedPipelineStage,
@@ -1153,6 +1155,139 @@ const deleteProductFromDB = async (
   return result;
 };
 
+const generateFacebookCatalogXML = async () => {
+  const products = await ProductModel.find({
+    isDeleted: false,
+    publishedStatus: "published",
+  })
+    .populate("price")
+    .populate("inventory")
+    .populate("brand")
+    .populate("variations");
+
+  const root = create({ version: "1.0", encoding: "UTF-8" })
+    .ele("rss", {
+      version: "2.0",
+      "xmlns:g": "http://base.google.com/ns/1.0",
+    })
+    .ele("channel");
+
+  root
+    .ele("title")
+    .txt(config.company_name || "Store")
+    .up();
+  root.ele("link").txt(`https://${config.main_domain}`).up();
+  root.ele("description").txt("Facebook Product Feed").up();
+
+  for (const product of products) {
+    const productUrl = `${config.main_domain}/product/${product.slug}`;
+
+    // IMAGE
+    const thumbnail = product.image?.thumbnail;
+    const imageUrl = thumbnail ? `${config.image_base_url}/${thumbnail}` : "";
+
+    // SIMPLE PRODUCT
+    if (product.type === "simple") {
+      const price: any = product.price;
+      const inventory: any = product.inventory;
+
+      const finalPrice = price?.salePrice || price?.regularPrice || 0;
+
+      const availability =
+        inventory?.stockAvailable > 0 ? "in stock" : "out of stock";
+
+      const item = root.ele("item");
+
+      item.ele("g:id").txt(product.id).up();
+      item.ele("g:title").txt(product.title).up();
+      item
+        .ele("g:description")
+        .txt(product.shortDescription || product.description || "")
+        .up();
+      item.ele("g:availability").txt(availability).up();
+      item.ele("g:condition").txt("new").up();
+      item.ele("g:price").txt(`${finalPrice} BDT`).up();
+      item.ele("g:link").txt(productUrl).up();
+      item.ele("g:image_link").txt(imageUrl).up();
+
+      if (product.brand) {
+        item
+          .ele("g:brand")
+          .txt((product.brand as any).name)
+          .up();
+      }
+    }
+
+    // VARIABLE PRODUCT
+    if (product.type === "variable" && product.variations?.length) {
+      const variations = await VariationModel.find({
+        _id: { $in: product.variations },
+        isDeleted: false,
+        isActive: true,
+      })
+        .populate("price")
+        .populate("inventory");
+
+      for (const variation of variations) {
+        const price: any = variation.price;
+        const inventory: any = variation.inventory;
+
+        const finalPrice = price?.salePrice || price?.regularPrice || 0;
+
+        const availability =
+          inventory?.stockAvailable > 0 ? "in stock" : "out of stock";
+
+        const variantId = `${product.id}-${variation.serial}`;
+
+        const item = root.ele("item");
+
+        item.ele("g:id").txt(variantId).up();
+        item.ele("g:item_group_id").txt(product.id).up();
+
+        // title with attributes
+        let title = product.title;
+        if (variation.attributes) {
+          const attrs = Object.values(
+            Object.fromEntries(variation.attributes as any)
+          );
+          title += " - " + attrs.join(" ");
+        }
+
+        item.ele("g:title").txt(title).up();
+        item
+          .ele("g:description")
+          .txt(product.shortDescription || product.description || "")
+          .up();
+        item.ele("g:availability").txt(availability).up();
+        item.ele("g:condition").txt("new").up();
+        item.ele("g:price").txt(`${finalPrice} BDT`).up();
+        item.ele("g:link").txt(productUrl).up();
+        item.ele("g:image_link").txt(imageUrl).up();
+
+        if (product.brand) {
+          item
+            .ele("g:brand")
+            .txt((product.brand as any).name)
+            .up();
+        }
+
+        // optional: color/size mapping
+        if (variation.attributes) {
+          const attrs = Object.fromEntries(variation.attributes as any);
+          if (attrs.color) {
+            item.ele("g:color").txt(attrs.color).up();
+          }
+          if (attrs.size) {
+            item.ele("g:size").txt(attrs.size).up();
+          }
+        }
+      }
+    }
+  }
+
+  return root.end({ prettyPrint: true });
+};
+
 export const ProductServices = {
   createProductIntoDB,
   getAProductCustomerFromDB,
@@ -1166,4 +1301,5 @@ export const ProductServices = {
   updateProductStatusIntoDB,
   deleteProductFromDB,
   getProductPriceRangeFromDB,
+  generateFacebookCatalogXML,
 };
