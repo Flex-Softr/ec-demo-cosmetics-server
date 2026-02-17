@@ -23,6 +23,12 @@ export type TPathaoResponse = {
     delivery_fee: string;
   };
 };
+export type TPathaoErrorResponse = {
+  message: string;
+  type: "error";
+  code: number;
+  errors: Record<string, string[]>;
+};
 
 export type TPathaoWebhookEvent =
   | "order.created"

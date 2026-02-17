@@ -42,6 +42,8 @@ router.get(
   ProductControllers.getAllProductsAdmin
 );
 
+router.get("/facebook-catalog.xml", ProductControllers.getFacebookCatalog);
+
 router.get(
   "/admin/:id",
   authGuard({
