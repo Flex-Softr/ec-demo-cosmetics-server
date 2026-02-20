@@ -741,12 +741,38 @@ export const getProductPriceRangeFromDB = async (
           $cond: {
             if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
             then: {
-              min: { $min: "$variations.price.salePrice" },
-              max: { $max: "$variations.price.salePrice" },
+              min: {
+                $min: {
+                  $map: {
+                    input: "$variations",
+                    as: "v",
+                    in: {
+                      $ifNull: [
+                        "$$v.price.salePrice",
+                        "$$v.price.regularPrice",
+                      ],
+                    },
+                  },
+                },
+              },
+              max: {
+                $max: {
+                  $map: {
+                    input: "$variations",
+                    as: "v",
+                    in: {
+                      $ifNull: [
+                        "$$v.price.salePrice",
+                        "$$v.price.regularPrice",
+                      ],
+                    },
+                  },
+                },
+              },
             },
             else: {
-              min: "$price.salePrice",
-              max: "$price.salePrice",
+              min: { $ifNull: ["$price.salePrice", "$price.regularPrice"] },
+              max: { $ifNull: ["$price.salePrice", "$price.regularPrice"] },
             },
           },
         },
