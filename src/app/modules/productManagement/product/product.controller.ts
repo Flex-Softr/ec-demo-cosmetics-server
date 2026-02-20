@@ -187,6 +187,13 @@ const deleteProduct = catchAsync(async (req, res) => {
   });
 });
 
+const getFacebookCatalog = catchAsync(async (req, res) => {
+  const xml = await ProductServices.generateFacebookCatalogXML();
+
+  res.set("Content-Type", "application/xml");
+  res.send(xml);
+});
+
 export const ProductControllers = {
   createProduct,
   getAProductCustomer,
@@ -200,4 +207,5 @@ export const ProductControllers = {
   updateProduct,
   updateProductStatus,
   deleteProduct,
+  getFacebookCatalog,
 };

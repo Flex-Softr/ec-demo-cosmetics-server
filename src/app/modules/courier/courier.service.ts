@@ -86,8 +86,11 @@ const updateCourierIntoDB = async (
     return field;
   });
 
+  // Handle manual merge of credentials to preserve encryption
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { credentials: _credentials, ...restPayload } = payload;
+  Object.assign(courier, restPayload);
   courier.credentials = mergedCredentials;
-  Object.assign(courier, payload);
 
   await courier.save();
   return courier;
