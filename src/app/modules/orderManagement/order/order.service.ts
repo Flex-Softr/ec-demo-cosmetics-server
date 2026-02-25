@@ -247,6 +247,22 @@ const getProcessingOrdersAdminFromDB = async (
     };
   }
 
+  if (query.startFrom) {
+    const startTime = convertIso(query.startFrom);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $gte: startTime,
+    };
+  }
+
+  if (query.endAt) {
+    const endTime = convertIso(query.endAt, false);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $lte: endTime,
+    };
+  }
+
   if (![...acceptableStatus, undefined].includes(query.status as never)) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
@@ -352,6 +368,22 @@ const getProcessingDoneCourierOrdersAdminFromDB = async (
     };
   }
 
+  if (query.startFrom) {
+    const startTime = convertIso(query.startFrom);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $gte: startTime,
+    };
+  }
+
+  if (query.endAt) {
+    const endTime = convertIso(query.endAt, false);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $lte: endTime,
+    };
+  }
+
   if (![...acceptableStatus, undefined].includes(query.status as never)) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
@@ -444,6 +476,22 @@ const getOrdersByDeliveryStatusFromDB = async (
     matchQuery.deliveryStatus = query?.deliveryStatus as string;
   }
 
+  if (query.startFrom) {
+    const startTime = convertIso(query.startFrom);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $gte: startTime,
+    };
+  }
+
+  if (query.endAt) {
+    const endTime = convertIso(query.endAt, false);
+    matchQuery.createdAt = {
+      ...(matchQuery.createdAt || {}),
+      $lte: endTime,
+    };
+  }
+
   // if (
   //   (!query.deliveryStatus || query.deliveryStatus === "all") &&
   //   !query.search
@@ -456,7 +504,7 @@ const getOrdersByDeliveryStatusFromDB = async (
   const pipeline = OrderHelper.orderDetailsPipeline();
 
   pipeline.unshift({
-    $match: { status: "On courier" },
+    $match: { status: "On courier", ...matchQuery },
   });
 
   if (query.search) {
