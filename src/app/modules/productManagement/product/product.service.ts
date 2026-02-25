@@ -1189,7 +1189,8 @@ const generateFacebookCatalogXML = async () => {
     .populate("price")
     .populate("inventory")
     .populate("brand")
-    .populate("variations");
+    .populate("variations")
+    .populate("image.thumbnail");
 
   const root = create({ version: "1.0", encoding: "UTF-8" })
     .ele("rss", {
@@ -1209,8 +1210,10 @@ const generateFacebookCatalogXML = async () => {
     const productUrl = `${config.main_domain}/product/${product.slug}`;
 
     // IMAGE
-    const thumbnail = product.image?.thumbnail;
-    const imageUrl = thumbnail ? `${config.image_base_url}/${thumbnail}` : "";
+    const thumbnail = product?.image?.thumbnail as any;
+    const imageUrl = thumbnail?.src
+      ? `${config.image_base_url}/${thumbnail.src}`
+      : "";
 
     // SIMPLE PRODUCT
     if (product.type === "simple") {
