@@ -471,6 +471,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       discount: 1,
       advance: 1,
       status: 1,
+      couponDiscount: 1,
       statusFromShippingProvider: 1,
       messageFromShippingProvider: 1,
       shipping: {
@@ -480,6 +481,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         district: "$shippingData.district",
         division: "$shippingData.division",
         upazila: "$shippingData.upazila",
+        email: "$shippingData.email",
         // division: {
         //   id: "$shippingData.division.id",
         //   name: "$shippingData.division.name",
@@ -644,6 +646,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
       total: { $first: "$total" },
       subtotal: { $first: "$subtotal" },
       discount: { $first: "$discount" },
+      couponDiscount: { $first: "$couponDiscount" },
       advance: { $first: "$advance" },
       status: { $first: "$status" },
       courierDetails: { $first: "$courierDetails" },
@@ -940,6 +943,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
       subtotal: 1,
       total: 1,
       discount: 1,
+      couponDiscount: 1,
       advance: 1,
       status: 1,
       shipping: {
@@ -1060,6 +1064,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
       total: { $first: "$total" },
       subtotal: { $first: "$subtotal" },
       discount: { $first: "$discount" },
+      couponDiscount: { $first: "$couponDiscount" },
       advance: { $first: "$advance" },
       status: { $first: "$status" },
       shipping: { $first: "$shipping" },
