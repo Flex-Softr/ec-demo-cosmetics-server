@@ -481,6 +481,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
         district: "$shippingData.district",
         division: "$shippingData.division",
         upazila: "$shippingData.upazila",
+        email: "$shippingData.email",
         // division: {
         //   id: "$shippingData.division.id",
         //   name: "$shippingData.division.name",
