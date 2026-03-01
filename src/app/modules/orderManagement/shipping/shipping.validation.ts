@@ -4,7 +4,12 @@ import { object, string } from "zod";
 
 export const shippingValidationZodSchema = (isOptional = false) => {
   const baseSchema = object({
-    email: string().email().optional(),
+    email: string()
+      .transform((val) => (val === "" ? undefined : val))
+      .optional()
+      .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+        message: "Invalid email address",
+      }),
     notes: string().optional(),
     city: string().optional(),
     state: string().optional(),
