@@ -2408,7 +2408,7 @@ const schedulePickupFromOrderIntoDB = async (
 
     const pickupInfo: TSchedulePickRequestBody = {
       invoice_id: order.orderId,
-      cod_amount: (order.total - (order.advance || 0)).toString(),
+      cod_amount: order.total.toString(),
       full_name: shippingData?.fullName ?? "N/A",
       full_address: shippingData?.fullAddress ?? "N/A",
       phone: shippingData?.phoneNumber ?? "N/A",
