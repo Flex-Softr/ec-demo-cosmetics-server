@@ -1182,7 +1182,7 @@ const generateFacebookCatalogXML = async () => {
   root.ele("description").txt("Facebook Product Feed").up();
 
   for (const product of products) {
-    const productUrl = `${config.main_domain}/product/${product.slug}`;
+    const productUrl = `https://${config.main_domain}/product/${product.slug}`;
 
     // IMAGE
     const thumbnail = product?.image?.thumbnail as any;
@@ -1245,7 +1245,7 @@ const generateFacebookCatalogXML = async () => {
         const availability =
           inventory?.stockAvailable > 0 ? "in stock" : "out of stock";
 
-        const variantId = `${product._id.toString()}-${variation.serial}`;
+        const variantId = `${product._id.toString()}-${variation._id.toString()}`;
 
         const item = root.ele("item");
 
