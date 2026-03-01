@@ -535,3 +535,11 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
   //   },
   // },
 ];
+
+export const stripHtmlAndEntities = (str: string): string => {
+  if (!str) return "";
+  return str
+    .replace(/<[^>]*>/g, "") // Remove HTML tags
+    .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
+    .trim();
+};
