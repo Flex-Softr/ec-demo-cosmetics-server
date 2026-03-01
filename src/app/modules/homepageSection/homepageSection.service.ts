@@ -64,7 +64,7 @@ const getHomepageSectionContent = async (id: string) => {
   const products = await ProductServices.getAllProductsCustomerFromDB({
     collection: (result?.collectionId as TCollection)?.slug,
     limit: result?.limit,
-    sort: "updatedAt",
+    sort: "-updatedAt",
   });
   return products;
 };
