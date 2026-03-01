@@ -68,6 +68,7 @@ const sanitizeOrderedProducts = async (
         },
         { path: "price" },
         { path: "category.name" },
+        { path: "category.subCategory" },
         { path: "inventory" },
       ])
       .lean();
@@ -1106,13 +1107,16 @@ const sanitizeCartsForOrder = async (userQuery: {
     {
       path: "product",
       select:
-        "_id title price isDeleted category.name inventory publishedStatus",
+        "_id title price isDeleted category.name category.subCategory inventory publishedStatus",
       populate: [
         {
           path: "price",
         },
         {
           path: "category.name",
+        },
+        {
+          path: "category.subCategory",
         },
         {
           path: "inventory",
@@ -1361,11 +1365,38 @@ const orderCostAfterCoupon = async (
           ? item?.product?.category
           : [item?.product?.category];
 
-        const productCategoryIds = productCategories.map((cat) =>
-          (cat as TCategory)?._id
-            ? (cat as TCategory)._id?.toString()
-            : cat.toString()
-        );
+        const productCategoryIds: string[] = [];
+
+        productCategories.forEach((cat: unknown) => {
+          const mapping = cat as {
+            name?: string | Types.ObjectId | TCategory;
+            subCategory?: string | Types.ObjectId | TCategory;
+            _id?: string | Types.ObjectId;
+          };
+
+          if (mapping?.name) {
+            const name = mapping.name;
+            productCategoryIds.push(
+              (name as TCategory)?._id
+                ? (name as TCategory)._id!.toString()
+                : (name as string).toString()
+            );
+          }
+          if (mapping?.subCategory) {
+            const subCat = mapping.subCategory;
+            productCategoryIds.push(
+              (subCat as TCategory)?._id
+                ? (subCat as TCategory)._id!.toString()
+                : (subCat as string).toString()
+            );
+          }
+          // Fallback for old structure or if it's already an ID/TCategory
+          if (mapping?._id || typeof cat === "string") {
+            productCategoryIds.push(
+              mapping?._id ? mapping._id.toString() : (cat as string).toString()
+            );
+          }
+        });
 
         const hasMatchingCategory = fixedCategories?.some((fixedCat) =>
           productCategoryIds.includes(fixedCat.toString())
@@ -1393,11 +1424,37 @@ const orderCostAfterCoupon = async (
           ? item?.product?.category
           : [item?.product?.category];
 
-        const productCategoryIds = productCategories.map((cat) =>
-          (cat as TCategory)?._id
-            ? (cat as TCategory)._id?.toString()
-            : cat.toString()
-        );
+        const productCategoryIds: string[] = [];
+
+        productCategories.forEach((cat: unknown) => {
+          const mapping = cat as {
+            name?: string | Types.ObjectId | TCategory;
+            subCategory?: string | Types.ObjectId | TCategory;
+            _id?: string | Types.ObjectId;
+          };
+
+          if (mapping?.name) {
+            const name = mapping.name;
+            productCategoryIds.push(
+              (name as TCategory)?._id
+                ? (name as TCategory)._id!.toString()
+                : (name as string).toString()
+            );
+          }
+          if (mapping?.subCategory) {
+            const subCat = mapping.subCategory;
+            productCategoryIds.push(
+              (subCat as TCategory)?._id
+                ? (subCat as TCategory)._id!.toString()
+                : (subCat as string).toString()
+            );
+          }
+          if (mapping?._id || typeof cat === "string") {
+            productCategoryIds.push(
+              mapping?._id ? mapping._id.toString() : (cat as string).toString()
+            );
+          }
+        });
 
         const hasRestrictedCategory = restrictedCategories?.some(
           (restrictedCat) =>

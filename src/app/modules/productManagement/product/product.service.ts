@@ -25,6 +25,7 @@ import {
   commonPipelineSingleProduct,
   commonProductProjection,
   formatPriceUpdatePayload,
+  stripHtmlAndEntities,
 } from "./product.utils";
 
 const createProductIntoDB = async (
@@ -1227,11 +1228,15 @@ const generateFacebookCatalogXML = async () => {
 
       const item = root.ele("item");
 
-      item.ele("g:id").txt(product.id).up();
-      item.ele("g:title").txt(product.title).up();
+      item.ele("g:id").txt(product._id.toString()).up();
+      item.ele("g:title").txt(stripHtmlAndEntities(product.title)).up();
       item
         .ele("g:description")
-        .txt(product.shortDescription || product.description || "")
+        .txt(
+          stripHtmlAndEntities(
+            product.shortDescription || product.description || ""
+          )
+        )
         .up();
       item.ele("g:availability").txt(availability).up();
       item.ele("g:condition").txt("new").up();
@@ -1266,12 +1271,12 @@ const generateFacebookCatalogXML = async () => {
         const availability =
           inventory?.stockAvailable > 0 ? "in stock" : "out of stock";
 
-        const variantId = `${product.id}-${variation.serial}`;
+        const variantId = `${product._id.toString()}-${variation.serial}`;
 
         const item = root.ele("item");
 
         item.ele("g:id").txt(variantId).up();
-        item.ele("g:item_group_id").txt(product.id).up();
+        item.ele("g:item_group_id").txt(product._id.toString()).up();
 
         // title with attributes
         let title = product.title;
@@ -1282,10 +1287,14 @@ const generateFacebookCatalogXML = async () => {
           title += " - " + attrs.join(" ");
         }
 
-        item.ele("g:title").txt(title).up();
+        item.ele("g:title").txt(stripHtmlAndEntities(title)).up();
         item
           .ele("g:description")
-          .txt(product.shortDescription || product.description || "")
+          .txt(
+            stripHtmlAndEntities(
+              product.shortDescription || product.description || ""
+            )
+          )
           .up();
         item.ele("g:availability").txt(availability).up();
         item.ele("g:condition").txt("new").up();
