@@ -67,8 +67,7 @@ const sanitizeOrderedProducts = async (
           ],
         },
         { path: "price" },
-        { path: "category.name" },
-        { path: "category.subCategory" },
+        { path: "category", select: "name" },
         { path: "inventory" },
       ])
       .lean();
@@ -1106,18 +1105,18 @@ const sanitizeCartsForOrder = async (userQuery: {
   const result = await Cart.find(userQuery, {}).populate([
     {
       path: "product",
-      select:
-        "_id title price isDeleted category.name category.subCategory inventory publishedStatus",
+      select: "_id title price isDeleted category inventory publishedStatus",
       populate: [
         {
           path: "price",
         },
         {
-          path: "category.name",
+          path: "category",
+          select: "name",
         },
-        {
-          path: "category.subCategory",
-        },
+        // {
+        //   path: "category.subCategory",
+        // },
         {
           path: "inventory",
         },
@@ -1138,6 +1137,7 @@ const sanitizeCartsForOrder = async (userQuery: {
 
   const cart = result?.map((item) => {
     const product = item?.product as TProduct;
+
     const variation = item?.variation as TVariation;
     const price = product?.price as TPrice;
     const category = product?.category;

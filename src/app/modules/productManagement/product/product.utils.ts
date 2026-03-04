@@ -60,6 +60,7 @@ export const commonProductProjection = {
   slug: 1,
   type: 1,
   createdAt: 1,
+  updatedAt: 1,
   // variations: 1,
   // shortDescription: 1,
 

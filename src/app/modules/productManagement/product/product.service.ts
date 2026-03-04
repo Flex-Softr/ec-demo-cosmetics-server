@@ -325,7 +325,6 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
     ])
     .sort()
     .paginate();
-
   const data = await productQuery.metaData();
 
   return { ...data };

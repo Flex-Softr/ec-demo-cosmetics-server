@@ -175,6 +175,7 @@ export class AggregateQueryHelperFacet<T> {
   }
   sort(): this {
     const sort = this.query?.sort;
+
     const facetStageIndex = this.pipeline.findIndex(
       (stage) => stage.$facet !== undefined
     );

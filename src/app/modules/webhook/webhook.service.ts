@@ -42,18 +42,22 @@ const parcelStatusHandler = async (req: Request) => {
     // query = { orderId: data?.invoice };
     query = { "courierDetails.trackingId": data?.consignment_id?.toString() };
     updatedData.tracking_id = data?.consignment_id?.toString();
-    updatedData.status = data?.status === "delivered" ? "completed" : undefined;
+    updatedData.status =
+      data?.status === "delivered"
+        ? "completed"
+        : data?.status?.replace(/_/g, " ");
     updatedData.message = data?.tracking_message;
-    updatedData.shipping_status = data?.status?.replace(/_/g, " ");
   } else if (provider === "redx") {
     token = (
       Array.isArray(req.query?.token) ? req.query?.token[0] : req.query?.token
     )?.toString();
     const data = payload as TRedXWebhookResponse;
     updatedData.tracking_id = data?.tracking_number;
-    updatedData.status = data?.status === "delivered" ? "completed" : undefined;
+    updatedData.status =
+      data?.status === "delivered"
+        ? "completed"
+        : data?.status?.replace(/-/g, " ");
     updatedData.message = data?.message_bn;
-    updatedData.shipping_status = data?.status?.replace(/-/g, " ");
   } else if (provider === "pathao") {
     statusCode = httpStatus.ACCEPTED;
     const tokenHeader = req.headers["x-pathao-signature"];
@@ -62,9 +66,9 @@ const parcelStatusHandler = async (req: Request) => {
     query = { "courierDetails.trackingId": data?.consignment_id };
     const event = data?.event?.split(".")[1];
     updatedData.tracking_id = data?.consignment_id;
-    updatedData.status = event === "delivered" ? "completed" : undefined;
+    updatedData.status =
+      event === "delivered" ? "completed" : event?.replace(/-/g, " ");
     updatedData.message = data?.reason;
-    updatedData.shipping_status = event?.replace(/-/g, " ");
   }
 
   const existingToken = config.webhook_secret;
