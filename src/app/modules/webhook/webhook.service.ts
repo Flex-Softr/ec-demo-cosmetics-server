@@ -28,11 +28,13 @@ const parcelStatusHandler = async (req: Request) => {
     status: string | undefined;
     shipping_status: string;
     message: string | undefined;
+    statusFromShippingProvider: string | undefined;
   } = {
     tracking_id: "",
     status: undefined,
     shipping_status: "",
     message: "",
+    statusFromShippingProvider: undefined,
   };
   let statusCode: number = httpStatus.OK;
   let query: Record<string, string> = {};
@@ -42,10 +44,8 @@ const parcelStatusHandler = async (req: Request) => {
     // query = { orderId: data?.invoice };
     query = { "courierDetails.trackingId": data?.consignment_id?.toString() };
     updatedData.tracking_id = data?.consignment_id?.toString();
-    updatedData.status =
-      data?.status === "delivered"
-        ? "completed"
-        : data?.status?.replace(/_/g, " ");
+    updatedData.status = data?.status === "delivered" ? "completed" : undefined;
+    updatedData.statusFromShippingProvider = data?.status?.replace(/-/g, " ");
     updatedData.message = data?.tracking_message;
   } else if (provider === "redx") {
     token = (
@@ -53,10 +53,9 @@ const parcelStatusHandler = async (req: Request) => {
     )?.toString();
     const data = payload as TRedXWebhookResponse;
     updatedData.tracking_id = data?.tracking_number;
-    updatedData.status =
-      data?.status === "delivered"
-        ? "completed"
-        : data?.status?.replace(/-/g, " ");
+    updatedData.status = data?.status === "delivered" ? "completed" : undefined;
+    updatedData.statusFromShippingProvider = data?.status?.replace(/-/g, " ");
+
     updatedData.message = data?.message_bn;
   } else if (provider === "pathao") {
     statusCode = httpStatus.ACCEPTED;
@@ -66,8 +65,8 @@ const parcelStatusHandler = async (req: Request) => {
     query = { "courierDetails.trackingId": data?.consignment_id };
     const event = data?.event?.split(".")[1];
     updatedData.tracking_id = data?.consignment_id;
-    updatedData.status =
-      event === "delivered" ? "completed" : event?.replace(/-/g, " ");
+    updatedData.status = event === "delivered" ? "completed" : undefined;
+    updatedData.statusFromShippingProvider = event?.replace(/-/g, " ");
     updatedData.message = data?.reason;
   }
 
@@ -87,7 +86,7 @@ const parcelStatusHandler = async (req: Request) => {
   if (Object.keys(query)?.length) {
     await Order.updateMany(query, {
       status: updatedData.status,
-      statusFromShippingProvider: updatedData.shipping_status,
+      statusFromShippingProvider: updatedData.statusFromShippingProvider,
       messageFromShippingProvider: updatedData.message,
     });
   }
