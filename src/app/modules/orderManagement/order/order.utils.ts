@@ -252,6 +252,7 @@ export const createNewOrder = async (
     const cart = await OrderHelper.sanitizeCartsForOrder(userQuery);
     orderedProductInfo = cart as unknown as TSanitizedOrProduct[];
   }
+
   // if (config.env === "production") {
   //   if (salesPage || fromWebsite) {
   //     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
