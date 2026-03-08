@@ -9,6 +9,7 @@ export type THomePageInput = {
   limit?: number;
   ctaText?: string;
   ctaLink?: string;
+  isActive?: boolean;
 };
 
 export type THomePageSection = Document & THomePageInput;

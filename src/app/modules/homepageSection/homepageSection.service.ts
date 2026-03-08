@@ -10,8 +10,13 @@ const createHomepageSection = async (payload: THomePageInput) => {
   return result;
 };
 
-const getAllHomepageSections = async () => {
-  const result = await HomepageSectionModel.find()
+const getAllHomepageSections = async (query: Record<string, unknown>) => {
+  const filter: Record<string, unknown> = {};
+  if (query.isActive) {
+    filter.isActive = query.isActive === "true";
+  }
+
+  const result = await HomepageSectionModel.find(filter)
     .populate("collectionId")
     .sort({ sortOrder: 1 });
   return result;
@@ -32,7 +37,6 @@ const updateHomepageSection = async (
 ) => {
   const result = await HomepageSectionModel.findByIdAndUpdate(id, payload, {
     new: true,
-    runValidators: true,
   });
 
   if (!result) {

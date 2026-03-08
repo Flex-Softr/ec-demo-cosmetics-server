@@ -13,10 +13,11 @@ const homepageSectionSchema = new Schema<THomePageSection>(
     sortOrder: { type: Number, default: 1 },
     limit: {
       type: Number,
-      default: 10,
+      default: 4,
     },
     ctaText: { type: String },
     ctaLink: { type: String },
+    isActive: { type: Boolean, default: true },
   },
   {
     timestamps: true,

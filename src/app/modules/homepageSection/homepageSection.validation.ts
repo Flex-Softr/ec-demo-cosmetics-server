@@ -5,6 +5,9 @@ const createHomepageSection = z.object({
     title: z.string({ required_error: "Title is required!" }),
     subtitle: z.string().optional(),
     collectionId: z.string({ required_error: "Collection ID is required!" }),
+    limit: z.number().optional(),
+    sortOrder: z.number().optional(),
+    isActive: z.boolean().optional(),
   }),
 });
 
@@ -15,6 +18,7 @@ const updateHomepageSection = z.object({
     collectionId: z.string().optional(),
     limit: z.number().optional(),
     sortOrder: z.number().optional(),
+    isActive: z.boolean().optional(),
   }),
 });
 

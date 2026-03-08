@@ -19,7 +19,9 @@ const createHomepageSection = catchAsync(
 
 const getAllHomepageSections = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await HomepageSectionService.getAllHomepageSections();
+    const result = await HomepageSectionService.getAllHomepageSections(
+      req.query
+    );
 
     successResponse(res, {
       statusCode: httpStatus.OK,
