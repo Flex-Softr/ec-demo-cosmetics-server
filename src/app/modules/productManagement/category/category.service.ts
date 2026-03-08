@@ -268,6 +268,7 @@ const getSingleCategoryFromDB = async (id: string) => {
               },
               description: 1,
               level: 1,
+              isActive: 1,
               createdAt: 1,
             },
           },

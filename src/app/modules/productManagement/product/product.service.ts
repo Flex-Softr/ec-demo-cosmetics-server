@@ -523,9 +523,6 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
       },
     },
     {
-      $sort: { totalQuantity: -1 },
-    },
-    {
       $lookup: {
         from: "products",
         localField: "_id",
@@ -542,10 +539,8 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
         localField: "product.price",
         foreignField: "_id",
         as: "price",
+        pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
       },
-    },
-    {
-      $unwind: "$price",
     },
     {
       $lookup: {
@@ -553,30 +548,33 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
         localField: "product.image.thumbnail",
         foreignField: "_id",
         as: "thumbnail",
+        pipeline: [
+          {
+            $project: {
+              src: { $concat: [config.image_base_url, "/", "$src"] },
+              alt: 1,
+            },
+          },
+        ] as any[],
       },
     },
-    {
-      $unwind: "$thumbnail",
-    },
-    {
-      $lookup: {
-        from: "categories",
-        localField: "product.category.name",
-        foreignField: "_id",
-        as: "category",
-      },
-    },
-    { $unwind: "$category" },
     {
       $lookup: {
         from: "inventories",
         localField: "product.inventory",
         foreignField: "_id",
         as: "inventory",
+        pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
       },
     },
     {
-      $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
+      $lookup: {
+        from: "categories",
+        localField: "product.category",
+        foreignField: "_id",
+        as: "category",
+        pipeline: [{ $project: { _id: 1, name: 1, slug: 1 } }] as any[],
+      },
     },
     {
       $lookup: {
@@ -615,31 +613,63 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
         ] as any[],
       },
     },
-    // {
-    //   $lookup: {
-    //     from: "reviews",
-    //     localField: "_id",
-    //     foreignField: "product",
-    //     as: "review",
-    //   },
-    // },
-    // Project specific fields
+    {
+      $lookup: {
+        from: "brands",
+        localField: "product.brand",
+        foreignField: "_id",
+        as: "brand",
+        pipeline: [{ $project: { name: 1, slug: 1 } }] as any[],
+      },
+    },
+    // Promote product fields to root level
     {
       $addFields: {
+        _id: "$product._id",
         title: "$product.title",
         slug: "$product.slug",
         type: "$product.type",
+        createdAt: "$product.createdAt",
+        updatedAt: "$product.updatedAt",
+        publishedStatus: "$product.publishedStatus",
+        isDeleted: "$product.isDeleted",
+      },
+    },
+    // Only include published, non-deleted products
+    {
+      $match: {
+        isDeleted: false,
+        publishedStatus: PRODUCT_STATUS.PUBLISHED,
       },
     },
     {
-      $project: commonProductProjection,
+      $unwind: { path: "$price", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $unwind: "$thumbnail",
+    },
+    {
+      $unwind: { path: "$inventory", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $unwind: { path: "$brand", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $project: {
+        ...commonProductProjection,
+        totalQuantity: 1,
+      },
     },
   ];
 
+  // Default sort by totalQuantity descending (best selling first)
+  const queryWithDefaultSort = { sort: "-totalQuantity", ...query };
   const productQuery = new AggregateQueryHelper(
     Order.aggregate(pipeline),
-    query
-  ).paginate();
+    queryWithDefaultSort
+  )
+    .sort()
+    .paginate();
 
   const data = await productQuery.model;
   const total = (await Order.aggregate(pipeline)).length;

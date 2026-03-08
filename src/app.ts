@@ -22,11 +22,7 @@ const corsOptions: CorsOptions = {
   origin:
     config.env === "production"
       ? config.clientSideURL?.split(",")
-      : [
-          "http://localhost:3000",
-          "http://localhost:3001",
-          "http://localhost:8000",
-        ],
+      : ["http://localhost:3000", "http://localhost:3001"],
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Content-Type, Authorization",

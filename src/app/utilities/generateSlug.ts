@@ -10,9 +10,10 @@ export const generateSlug = (text: string, unique?: boolean): string => {
   let slug = text
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, "") // remove special chars
+    .replace(/[^\p{L}\p{N}\p{M}\s-]/gu, "") // remove special chars but keep Unicode letters/numbers/marks
     .replace(/\s+/g, "-") // replace spaces with hyphens
-    .replace(/-+/g, "-"); // remove multiple hyphens
+    .replace(/-+/g, "-") // remove multiple hyphens
+    .replace(/^-+|-+$/g, ""); // trim hyphens from start and end
 
   if (unique) {
     const suffix =

@@ -1,9 +1,8 @@
 {
-  "name": "electro-commerce-server-side",
+  "name": "siddikiaprokashoni-backend",
   "version": "1.0.0",
   "description": "",
   "keywords": [],
-  "author": "Flex Softr",
   "license": "ISC",
   "main": "dist/server.js",
   "private": true,
