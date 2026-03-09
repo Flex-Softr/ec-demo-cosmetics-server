@@ -28,6 +28,7 @@ import {
   TOrder,
   TOrderedProduct,
   TOrderStatus,
+  TOrderStatusWithDesc,
   TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
@@ -2153,7 +2154,7 @@ const getOrderTrackingInfo = async (orderId: string) => {
         },
         parcelTrackingLink: {
           $cond: {
-            if: { $eq: ["$courierDetailsData.slug", "steedfast"] },
+            if: { $eq: ["$courierDetailsData.slug", "steadfast"] },
             then: {
               $concat: [
                 "https://steadfast.com.bd/t/",
@@ -2174,18 +2175,27 @@ const getOrderTrackingInfo = async (orderId: string) => {
   ];
 
   const result = (await Order.aggregate(pipeline))[0];
-  const updatedStatusHistory = result.statusHistory.map(
-    ({ status, createdAt }: { status: TOrderStatus; createdAt: string }) => {
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Order not found");
+  }
+
+  const updatedStatusHistory = (
+    result.statusHistory as { status: TOrderStatus; createdAt: string }[]
+  ).reduce((acc: (TOrderStatusWithDesc & { createdAt: string })[], current) => {
+    if (acc.length === 0 || acc[acc.length - 1].status !== current.status) {
       const currentStatusDesc = orderStatusWithDesc.find(
-        (item) => item.status === status
+        (item) => item.status === current.status
       );
-      return {
-        status,
-        description: currentStatusDesc?.description,
-        createdAt,
-      };
+      acc.push({
+        status: current.status,
+        description: currentStatusDesc?.description || { bn: "", en: "" },
+        createdAt: current.createdAt,
+      });
     }
-  );
+    return acc;
+  }, []);
+
   result.statusHistory = updatedStatusHistory;
   return result;
 };
