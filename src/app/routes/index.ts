@@ -7,6 +7,7 @@ import { CourierRoutes } from "../modules/courier/courier.routes";
 import { DistrictRoutes } from "../modules/district/district.routes";
 import { DivisionRoutes } from "../modules/division/division.routes";
 import { HomepageSectionRoutes } from "../modules/homepageSection/homepageSection.routes";
+import { ContactMessageRoutes } from "../modules/contactMessage/contactMessage.routes";
 import { ImageRoutes } from "../modules/image/image.routes";
 import { ImageToOrderRoutes } from "../modules/imageToOrder/imageToOrder.routes";
 import { FraudCheckRoutes } from "../modules/orderManagement/fraudCheck/fraudCheck.routes";
@@ -153,6 +154,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/homepage-sections",
     route: HomepageSectionRoutes,
+  },
+  {
+    path: "/contact-messages",
+    route: ContactMessageRoutes,
   },
   {
     path: "/districts",
