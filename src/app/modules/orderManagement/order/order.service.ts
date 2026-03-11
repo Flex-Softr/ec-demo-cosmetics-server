@@ -16,6 +16,7 @@ import { calculateStockStatus } from "../../productManagement/inventory/inventor
 import { TPrice } from "../../productManagement/price/price.interface";
 import ProductModel from "../../productManagement/product/product.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
+import { User } from "../../userManagement/user/user.model";
 import { OrderPayment } from "../orderPayment/orderPayment.model";
 import { OrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.model";
 import { TShipping } from "../shipping/shipping.interface";
@@ -828,18 +829,57 @@ const getOrderInfoByOrderIdAdminFromDB = async (
 ----------------------------------------- */
 const getAllOrdersCustomerFromDB = async (user: TOptionalAuthGuardPayload) => {
   const userQuery = optionalAuthUserQuery(user);
+
+  const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: "shippings",
+        localField: "shipping",
+        foreignField: "_id",
+        as: "shippingData",
+      },
+    },
+    {
+      $unwind: { path: "$shippingData", preserveNullAndEmptyArrays: true },
+    },
+  ];
+
+  const orQueries: Record<string, unknown>[] = [];
+
   if (userQuery.userId) {
-    userQuery.userId = new Types.ObjectId(userQuery.userId);
+    const userId = new Types.ObjectId(userQuery.userId);
+    orQueries.push({ userId });
+
+    // Find user's phone number from DB if it's not in the query
+    if (!userQuery.phoneNumber) {
+      const userData = await User.findById(userId).select("phoneNumber");
+      if (userData?.phoneNumber) {
+        userQuery.phoneNumber = userData.phoneNumber;
+      }
+    }
   }
 
-  const matchQuery = {
-    ...userQuery,
+  if (userQuery.phoneNumber) {
+    orQueries.push({ "shippingData.phoneNumber": userQuery.phoneNumber });
+  }
+
+  if (userQuery.sessionId) {
+    orQueries.push({ sessionId: userQuery.sessionId });
+  }
+
+  const matchQuery: Record<string, unknown> = {
+    isDeleted: false,
   };
 
-  const pipeline = [
-    { $match: matchQuery },
-    ...OrderHelper.orderDetailsCustomerPipeline(),
-  ];
+  if (orQueries.length > 0) {
+    matchQuery.$or = orQueries;
+  }
+
+  pipeline.push({ $match: matchQuery });
+
+  // Append the rest of the customer pipeline (excluding the shipping lookup and unwind stages)
+  const customerPipeline = OrderHelper.orderDetailsCustomerPipeline();
+  pipeline.push(...customerPipeline.slice(2));
 
   const result = await Order.aggregate(pipeline);
   return result;

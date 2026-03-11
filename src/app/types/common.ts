@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { TResponseMeta } from "../utilities/successResponse";
+import { TUser } from "../modules/userManagement/user/user.interface";
 
 export type TMetaAndDataRes<T> = {
   meta: TResponseMeta;
@@ -14,4 +15,5 @@ export type TOptionalAuthGuardPayload = {
   iat?: Date;
   exp?: Date;
   sessionId?: string;
+  data?: TUser;
 };
