@@ -848,19 +848,16 @@ const getAllOrdersCustomerFromDB = async (user: TOptionalAuthGuardPayload) => {
 /* -----------------------------------------
     Get single order info for customers
 -------------------------------------------- */
-const getOrderInfoByOrderIdCustomerFromDB = async (
-  user: TOptionalAuthGuardPayload,
-  id: string
-) => {
-  const userQuery = optionalAuthUserQuery(user);
-  if (userQuery.userId) {
-    userQuery.userId = new Types.ObjectId(userQuery.userId);
-  }
+const getOrderInfoByOrderIdCustomerFromDB = async (id: string) => {
+  const isObjectId = mongoose.Types.ObjectId.isValid(id);
 
-  const matchQuery = {
-    ...userQuery,
-    _id: new Types.ObjectId(id),
-  };
+  const matchQuery: Record<string, unknown> = {};
+
+  if (isObjectId) {
+    matchQuery._id = new Types.ObjectId(id);
+  } else {
+    matchQuery.orderId = id;
+  }
 
   const pipeline = [
     { $match: matchQuery },
@@ -2091,6 +2088,37 @@ const getCustomersOrdersCountByPhoneFromDB = async (phoneNumber: string) => {
 };
 
 /* -----------------------------------------
+      Get a guest customers order history
+-------------------------------------------- */
+const getGuestOrderHistoryByPhoneFromDB = async (phoneNumber: string) => {
+  const pipeline = [
+    {
+      $lookup: {
+        from: "shippings",
+        localField: "shipping",
+        foreignField: "_id",
+        as: "shippingData",
+      },
+    },
+    {
+      $unwind: "$shippingData",
+    },
+    {
+      $match: {
+        "shippingData.phoneNumber": phoneNumber,
+      },
+    },
+    {
+      $sort: { createdAt: -1 as const },
+    },
+    ...OrderHelper.orderDetailsCustomerPipeline(),
+  ];
+
+  const result = await Order.aggregate(pipeline);
+  return result;
+};
+
+/* -----------------------------------------
         Track order
 -------------------------------------------- */
 const getOrderTrackingInfo = async (orderId: string) => {
@@ -2521,4 +2549,5 @@ export const OrderServices = {
   getMobileNumbersForSendingSMSFromDB,
   schedulePickupFromOrderIntoDB,
   getCourierForOrder,
+  getGuestOrderHistoryByPhoneFromDB,
 };

@@ -18,11 +18,7 @@ router.post(
   OrderController.createOrder
 );
 
-router.get(
-  "/customer/:id",
-  optionalAuthGuard,
-  OrderController.getOrderInfoByOrderIdCustomer
-);
+router.get("/customer/:id", OrderController.getOrderInfoByOrderIdCustomer);
 
 router.get(
   "/admin/order-id/:id",
@@ -35,7 +31,7 @@ router.get(
 
 router.get(
   "/customer",
-  optionalAuthGuard,
+  authGuard({ requiredRoles: [ROLES.CUSTOMER, ROLES.SUPER_ADMIN] }),
   OrderController.getAllOrdersCustomer
 );
 
@@ -157,6 +153,11 @@ router.get(
     // requiredPermission: PERMISSIONS.ORDER.MANAGE,
   }),
   OrderController.getCustomersOrdersCountByPhone
+);
+
+router.get(
+  "/guest-order-history/:phoneNumber",
+  OrderController.getGuestOrderHistoryByPhone
 );
 
 router.get("/track/:orderId", OrderController.getOrderTrackingInfo);

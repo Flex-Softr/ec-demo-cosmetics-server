@@ -24,10 +24,7 @@ const getOrderInfoByOrderIdCustomer = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const result = await OrderServices.getOrderInfoByOrderIdCustomerFromDB(
-      req.user as TOptionalAuthGuardPayload,
-      id
-    );
+    const result = await OrderServices.getOrderInfoByOrderIdCustomerFromDB(id);
 
     successResponse(res, {
       statusCode: httpStatus.OK,
@@ -254,6 +251,20 @@ const getCustomersOrdersCountByPhone = catchAsync(
   }
 );
 
+const getGuestOrderHistoryByPhone = catchAsync(
+  async (req: Request, res: Response) => {
+    const { phoneNumber } = req.params;
+    const result =
+      await OrderServices.getGuestOrderHistoryByPhoneFromDB(phoneNumber);
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Guest order history retrieved successfully",
+      data: result,
+    });
+  }
+);
+
 const getOrderTrackingInfo = catchAsync(async (req: Request, res: Response) => {
   const { orderId } = req.params;
   const result = await OrderServices.getOrderTrackingInfo(orderId);
@@ -341,4 +352,5 @@ export const OrderController = {
   getMobileNumbersForSendingSMS,
   schedulePickupFromOrder,
   getCourierForOrder,
+  getGuestOrderHistoryByPhone,
 };
