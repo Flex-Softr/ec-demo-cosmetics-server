@@ -1,3 +1,4 @@
+import config from "../config/config";
 import { hashUserData } from "./hash256";
 import { logger } from "./logger";
 
@@ -22,14 +23,16 @@ const triggerRefundEvent = (data: {
     contents: data.contents,
     content_type: "product",
     order_id: data.orderId,
-    refund_event_secret: process.env.REFUND_EVENT_SECRET,
+    refund_event_secret: config.refund_event_secret,
   };
 
-  const secret = process.env.REFUND_EVENT_SECRET;
-  const trackingBaseUrl = process.env.TRACKING_BASE_URL;
+  const secret = config.refund_event_secret;
+  const trackingBaseUrl = config.tracking_server_base_url;
 
   if (!secret || !trackingBaseUrl) {
-    logger.error("REFUND_EVENT_SECRET or TRACKING_BASE_URL is not defined");
+    logger.error(
+      "REFUND_EVENT_SECRET or TRACKING_SERVER_BASE_URL is not defined"
+    );
     return;
   }
 

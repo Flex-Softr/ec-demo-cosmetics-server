@@ -41,8 +41,6 @@ export default {
     phone_number: env.TWILIO_PHONE_NUMBER,
   },
   stead_fast: {
-    api_key: env.STEAD_FAST_API_KEY,
-    secret_key: env.STEAD_FAST_SECRET_KEY,
     email: env.STEADFAST_EMAIL,
     password: env.STEADFAST_PASSWORD,
   },
@@ -68,7 +66,6 @@ export default {
   email: env.EMAIL,
   password: env.PASSWORD,
   fullAddress: env.FULL_ADDRESS,
-  tmp_shipping_id: env.SHIPPING_ID,
   banglaLink: {
     base_url: env.BL_BASE_URL || "https://corpsms.banglalink.net/bl",
     user: env.BL_USER,
@@ -78,4 +75,6 @@ export default {
   order_tracking_url: env.ORDER_TRACKING_URL || "",
   per_item_shipping_cost: 0,
   webhook_secret: env.WEBHOOK_SECRET,
+  refund_event_secret: env.REFUND_EVENT_SECRET,
+  tracking_server_base_url: env.TRACKING_SERVER_BASE_URL,
 };
