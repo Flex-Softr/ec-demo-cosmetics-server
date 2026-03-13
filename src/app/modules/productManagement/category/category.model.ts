@@ -19,6 +19,10 @@ const categorySchema = new Schema<TCategory>(
       type: Number,
       default: 0,
     },
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
     isActive: { type: Boolean, default: true },
     createdBy: {
       type: Schema.Types.ObjectId,

@@ -85,6 +85,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         name: 1,
         slug: 1,
         level: 1,
+        sortOrder: 1,
         description: 1,
         isActive: 1,
         createdAt: 1,
@@ -105,12 +106,15 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
           slug: 1,
           parent: 1,
           level: 1,
+          sortOrder: 1,
           description: 1,
           depth: 1,
           isActive: 1,
+          createdAt: 1,
         },
       },
     },
+    { $sort: { sortOrder: 1, createdAt: -1 } },
   ];
 
   /* ------------------ QUERY HELPER ------------------ */
@@ -121,6 +125,10 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
     .search(["name"])
     .sort()
     .paginate();
+
+  if (query?.sort) {
+    categoryQuery.sort();
+  }
 
   const result = await categoryQuery.model;
   const total =
@@ -179,6 +187,15 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
           productCount,
           subcategories,
         };
+      })
+      .sort((a, b) => {
+        if (a.sortOrder !== b.sortOrder) {
+          return a.sortOrder - b.sortOrder;
+        }
+        return (
+          new Date(b.createdAt as string).getTime() -
+          new Date(a.createdAt as string).getTime()
+        );
       });
 
     return { categories: tree, allProductIds: currentLevelProductIds };
@@ -249,7 +266,7 @@ const getSingleCategoryFromDB = async (id: string) => {
               preserveNullAndEmptyArrays: true,
             },
           },
-          { $sort: { createdAt: -1 } },
+          { $sort: { sortOrder: 1, createdAt: -1 } },
           {
             $project: {
               _id: 1,

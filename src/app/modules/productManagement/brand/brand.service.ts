@@ -85,20 +85,30 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
           alt: "$logo.alt",
         },
         productCount: 1,
+        sortOrder: 1,
         createdAt: 1,
       },
     },
+    { $sort: { sortOrder: 1, createdAt: -1 } },
   ];
 
   const brandQuery = new AggregateQueryHelper(
     BrandModel.aggregate(pipeline),
     query || {}
   )
+    .search(["name"])
     .sort()
     .paginate();
 
-  const result = await brandQuery.model;
-  return result;
+  if (query?.sort) {
+    brandQuery.sort();
+  }
+
+  const data = await brandQuery.model;
+  const total = (await BrandModel.aggregate(pipeline)).length;
+  const meta = brandQuery.metaData(total);
+
+  return { meta, data };
 };
 
 const updateBrandIntoDB = async (

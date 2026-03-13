@@ -5,6 +5,7 @@ export const brand = z.object({
     name: z.string().min(1, { message: "Brand name is required!" }),
     description: z.string().optional(),
     logo: z.string().optional(),
+    sortOrder: z.number().optional(),
     isActive: z.boolean().optional(),
   }),
 });
@@ -14,6 +15,7 @@ export const updateBrand = z.object({
     name: z.string().min(1, { message: "Brand name is required!" }).optional(),
     description: z.string().optional(),
     logo: z.string().optional(),
+    sortOrder: z.number().optional(),
     isActive: z.boolean().optional(),
   }),
 });

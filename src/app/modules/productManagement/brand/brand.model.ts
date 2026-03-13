@@ -20,7 +20,7 @@ const brandSchema = new Schema<TBrand>(
       ref: "User",
     },
     isDeleted: { type: Boolean, default: false },
-
+    sortOrder: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
   },
 

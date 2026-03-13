@@ -9,5 +9,8 @@ export type TBrand = {
   createdBy: Types.ObjectId;
   updatedBy?: Types.ObjectId;
   isDeleted: boolean;
+  sortOrder: number;
   isActive: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 };

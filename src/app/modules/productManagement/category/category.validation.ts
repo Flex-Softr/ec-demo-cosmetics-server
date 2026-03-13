@@ -6,6 +6,7 @@ const category = z.object({
     image: z.string().optional(),
     description: z.string().optional(),
     parent: z.string().optional(),
+    sortOrder: z.number().optional(),
     isActive: z.boolean().optional(),
   }),
 });
@@ -16,6 +17,7 @@ const updateCategory = z.object({
     image: z.string().optional(),
     description: z.string().optional(),
     parent: z.string().optional(),
+    sortOrder: z.number().optional(),
     isActive: z.boolean().optional(),
   }),
 });
