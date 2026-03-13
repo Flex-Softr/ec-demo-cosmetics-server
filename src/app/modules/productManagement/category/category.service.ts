@@ -121,14 +121,13 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
   const categoryQuery = new AggregateQueryHelper(
     CategoryModel.aggregate(pipeline),
     query || {}
-  )
-    .search(["name"])
-    .sort()
-    .paginate();
+  ).search(["name"]);
 
   if (query?.sort) {
     categoryQuery.sort();
   }
+
+  categoryQuery.paginate();
 
   const result = await categoryQuery.model;
   const total =

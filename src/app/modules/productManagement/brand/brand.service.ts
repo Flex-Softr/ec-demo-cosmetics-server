@@ -95,14 +95,13 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
   const brandQuery = new AggregateQueryHelper(
     BrandModel.aggregate(pipeline),
     query || {}
-  )
-    .search(["name"])
-    .sort()
-    .paginate();
+  ).search(["name"]);
 
   if (query?.sort) {
     brandQuery.sort();
   }
+
+  brandQuery.paginate();
 
   const data = await brandQuery.model;
   const total = (await BrandModel.aggregate(pipeline)).length;
