@@ -185,6 +185,17 @@ const moduleRoutes: TModuleTypes[] = [
   },
 ];
 
-moduleRoutes.forEach((route) => router.use(route.path, route.route));
+moduleRoutes.forEach((route) => {
+  const isLargePayload =
+    route.path === "/images" || route.path === "/image-to-order";
+  const limitSize = isLargePayload ? "25mb" : "1mb";
+
+  router.use(
+    route.path,
+    express.json({ limit: limitSize }),
+    express.urlencoded({ limit: limitSize, extended: true }),
+    route.route
+  );
+});
 
 export default router;
