@@ -1114,7 +1114,12 @@ const updateProcessingStatusIntoDB = async (
     "processing done",
     "warranty processing",
   ];
-  const acceptableStatus = ["warranty added", "processing done", "canceled"];
+  const acceptableStatus = [
+    "warranty added",
+    "processing done",
+    "canceled",
+    "follow up",
+  ];
   if (![...acceptableStatus].includes(status)) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Can't change to ${status}`);
   }

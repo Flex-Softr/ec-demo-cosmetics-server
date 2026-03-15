@@ -45,18 +45,20 @@ export class QueryHelper<T> {
     return this;
   }
   paginate(): this {
-    if (this.query?.page) {
-      const page = Number(this.query?.page) || 1;
-      const limit = Number(this.query?.limit) || 10;
-      const skip = (page - 1) * limit;
+    const page = Number(this.query?.page) || 1;
+    const limit = Number(this.query?.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    if (this.query?.page || this.query?.limit) {
       this.model = this.model.skip(skip).limit(limit);
     }
     return this;
   }
+
   select(): this {
-    const select = this.query?.select;
+    const select = (this.query?.fields || this.query?.select) as string;
     if (select) {
-      this.model = this.model.select((select as string).split(",").join(" "));
+      this.model = this.model.select(select.split(",").join(" "));
     }
     return this;
   }
@@ -110,11 +112,23 @@ export class AggregateQueryHelper<T> {
     return this;
   }
   paginate(): this {
-    if (this.query?.page) {
-      const page = Number(this.query?.page) || 1;
-      const limit = Number(this.query?.limit) || 10;
-      const skip = (page - 1) * limit;
+    const page = Number(this.query?.page) || 1;
+    const limit = Number(this.query?.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    if (this.query?.page || this.query?.limit) {
       this.model = this.model.skip(skip).limit(limit);
+    }
+    return this;
+  }
+  select(): this {
+    const select = (this.query?.fields || this.query?.select) as string;
+    if (select) {
+      const projection: Record<string, number> = {};
+      select.split(",").forEach((field) => {
+        projection[field.trim()] = 1;
+      });
+      this.model = this.model.project(projection);
     }
     return this;
   }
@@ -198,7 +212,7 @@ export class AggregateQueryHelperFacet<T> {
     return this;
   }
   paginate(): this {
-    if (this.query?.page) {
+    if (this.query?.page || this.query?.limit) {
       const page = Number(this.query?.page) || 1;
       const limit = Number(this.query?.limit) || 10;
       const skip = (page - 1) * limit;
@@ -206,7 +220,6 @@ export class AggregateQueryHelperFacet<T> {
         (stage) => stage.$facet !== undefined
       );
       if (facetStageIndex !== -1) {
-        // Push the $match stage into the existing $facet stage
         this.pipeline[facetStageIndex].$facet!.data.push(
           {
             $skip: skip,
@@ -215,6 +228,37 @@ export class AggregateQueryHelperFacet<T> {
             $limit: limit,
           }
         );
+      }
+    }
+    return this;
+  }
+
+  select(): this {
+    const select = (this.query?.fields || this.query?.select) as string;
+    if (select) {
+      const facetStageIndex = this.pipeline.findIndex(
+        (stage) => stage.$facet !== undefined
+      );
+      if (facetStageIndex !== -1) {
+        const projection: Record<string, number> = {};
+        select.split(",").forEach((field) => {
+          projection[field.trim()] = 1;
+        });
+
+        // Find the index of the $project stage in the 'data' sub-pipeline of the $facet
+        const dataPipeline = this.pipeline[facetStageIndex].$facet!.data;
+        const projectIndex = dataPipeline.findIndex(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (stage: any) => stage.$project !== undefined
+        );
+
+        if (projectIndex !== -1) {
+          // Merge or override existing projection
+          dataPipeline[projectIndex].$project = projection;
+        } else {
+          // Add a new $project stage
+          dataPipeline.push({ $project: projection });
+        }
       }
     }
     return this;
