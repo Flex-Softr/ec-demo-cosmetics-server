@@ -1,7 +1,7 @@
 import { Document, Types } from "mongoose";
 
 export type TCollection = {
-  title: string;
+  name: string;
   slug: string;
   image?: Types.ObjectId;
   isActive: boolean;

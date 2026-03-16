@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const createCollection = z.object({
   body: z.object({
-    title: z.string().trim().min(1, { message: "Title is required!" }),
+    name: z.string().trim().min(1, { message: "Name is required!" }),
     slug: z.string().trim().optional(),
     image: z.string().optional(),
     isActive: z.boolean().optional(),
@@ -12,7 +12,7 @@ const createCollection = z.object({
 
 const updateCollection = z.object({
   body: z.object({
-    title: z.string().trim().optional(),
+    name: z.string().trim().optional(),
     slug: z.string().trim().optional(),
     image: z.string().optional(),
     isActive: z.boolean().optional(),

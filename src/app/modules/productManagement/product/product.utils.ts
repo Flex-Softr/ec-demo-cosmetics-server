@@ -192,11 +192,22 @@ export const commonProductProjection = {
     src: "$thumbnail.src",
     alt: "$thumbnail.alt",
   },
-  // category: {
-  //   _id: "$category._id",
-  //   name: "$category.name",
-  //   slug: "$category.slug",
-  // },
+  // Calculated active price for sorting (salePrice if exists, else regularPrice)
+  price: {
+    $cond: {
+      if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
+      then: {
+        $min: {
+          $map: {
+            input: "$variations.price",
+            as: "vp",
+            in: { $ifNull: ["$$vp.salePrice", "$$vp.regularPrice"] },
+          },
+        },
+      },
+      else: { $ifNull: ["$price.salePrice", "$price.regularPrice"] },
+    },
+  },
 };
 
 export const commonPipelineSingleProduct = (
@@ -327,7 +338,7 @@ export const commonPipelineSingleProduct = (
       localField: "productCollection",
       foreignField: "_id",
       as: "productCollection",
-      pipeline: [{ $project: { title: 1, slug: 1 } }],
+      pipeline: [{ $project: { name: 1, slug: 1 } }],
     },
   },
   {
@@ -524,7 +535,7 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       localField: "productCollection",
       foreignField: "_id",
       as: "productCollection",
-      pipeline: [{ $project: { title: 1, slug: 1 } }],
+      pipeline: [{ $project: { name: 1, slug: 1 } }],
     },
   },
   // {

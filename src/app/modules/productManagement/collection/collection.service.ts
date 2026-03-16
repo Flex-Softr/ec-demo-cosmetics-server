@@ -18,7 +18,7 @@ const createCollectionIntoDB = async (
   payload: TCollection
 ) => {
   if (!payload.slug) {
-    payload.slug = generateSlug(payload.title);
+    payload.slug = generateSlug(payload.name);
   } else {
     payload.slug = generateSlug(payload.slug);
   }
@@ -93,7 +93,7 @@ const getAllCollectionsFromDB = async (query: Record<string, unknown>) => {
   const collectionQuery = new AggregateQueryHelper(
     CollectionModel.aggregate(pipeline),
     query
-  ).search(["title"]);
+  ).search(["name"]);
 
   if (query.sort) {
     collectionQuery.sort();
@@ -156,8 +156,8 @@ const updateCollectionIntoDB = async (
   id: string,
   payload: Partial<TCollection>
 ) => {
-  if (payload.title) {
-    payload.slug = generateSlug(payload.title);
+  if (payload.name) {
+    payload.slug = generateSlug(payload.name);
   }
 
   const result = await CollectionModel.findByIdAndUpdate(id, payload, {

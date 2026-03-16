@@ -6,7 +6,7 @@ import { TCollection } from "./collection.interface";
 
 const collectionSchema = new Schema<TCollection>(
   {
-    title: { type: String, required: true, unique: true },
+    name: { type: String, required: true, unique: true },
     slug: { type: String, required: true, unique: true },
     image: { type: Schema.Types.ObjectId, ref: "Image" },
     isActive: { type: Boolean, default: true },

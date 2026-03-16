@@ -272,6 +272,16 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
     });
   }
 
+  // Stock filter
+  if (typeof query.stock === "string" && query.stock.trim()) {
+    andConditions.push({
+      $or: [
+        { "inventory.stockStatus": query.stock },
+        { "variations.inventory.stockStatus": query.stock },
+      ],
+    });
+  }
+
   if (andConditions.length > 0) {
     filterQuery.$and = andConditions;
   }
@@ -317,11 +327,11 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
   )
     .search([
       "title",
-      "inventory.sku",
-      "variations.inventory.sku",
+      "shortDescription",
       "description",
       "category.name",
       "brand.name",
+      "productCollection.name",
     ])
     .sort()
     .select()
@@ -400,6 +410,26 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
               // productCollection: "$productCollection",
               publishedStatus: 1,
               createdAt: 1,
+              // Calculated active price for sorting
+              price: {
+                $cond: {
+                  if: { $eq: ["$type", PRODUCT_TYPE.VARIABLE] },
+                  then: {
+                    $min: {
+                      $map: {
+                        input: "$variations.price",
+                        as: "vp",
+                        in: {
+                          $ifNull: ["$$vp.salePrice", "$$vp.regularPrice"],
+                        },
+                      },
+                    },
+                  },
+                  else: {
+                    $ifNull: ["$price.salePrice", "$price.regularPrice"],
+                  },
+                },
+              },
             },
           },
         ],
