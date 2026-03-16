@@ -256,9 +256,7 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
   if (typeof brand === "string" && brand.trim()) {
     const brandArray = brand.split(",");
     andConditions.push({
-      brand: {
-        $elemMatch: { slug: { $in: brandArray } },
-      },
+      "brand.slug": { $in: brandArray },
     });
   }
 
