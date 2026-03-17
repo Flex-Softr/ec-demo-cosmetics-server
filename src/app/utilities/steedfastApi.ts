@@ -10,7 +10,7 @@ const steedFastApi = async (config: {
   const url = `https://portal.packzy.com/api/v1${endpoints}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...Object.fromEntries([credentials]),
+    ...Object.fromEntries(credentials.map((c) => [c.key, c.value])),
   };
   const reqConfig: Record<string, unknown> = { method, headers };
   if (payload) {
@@ -18,13 +18,14 @@ const steedFastApi = async (config: {
   }
   try {
     const res = await fetch(url, reqConfig);
+    const responseData = await res.json();
+
     if (!res.ok) {
-      const errorText = await res.text();
       throw new Error(
-        `Request failed: ${res.status} ${res.statusText} - ${errorText}`
+        `Request failed: ${res.status} ${res.statusText} - ${responseData?.message || "Unknown error"}`
       );
     }
-    return await res.json();
+    return responseData;
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`SteedFast API error: ${error.message}`);

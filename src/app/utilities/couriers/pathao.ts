@@ -5,11 +5,7 @@ import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
 import { TShippingMethod } from "../../modules/courier/courier.interface";
 import { Courier } from "../../modules/courier/courier.model";
-import {
-  TPathaoErrorResponse,
-  TPathaoRequestBody,
-  TPathaoResponse,
-} from "../../types/pathao";
+import { TPathaoRequestBody, TPathaoResponse } from "../../types/pathao";
 import {
   TSchedulePickRequestBody,
   TSchedulePickResponse,
@@ -47,7 +43,6 @@ const getAccessToken = async (
   if (!client_id || !client_secret || !username || !password) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Operation failed.",
       "Pathao API credentials missing"
     );
   }
@@ -98,14 +93,27 @@ const getAccessToken = async (
 
     return access_token;
   } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
     const error = err as AxiosError;
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      "Failed to fetch courier access token",
-      typeof error?.response?.data === "string"
-        ? error.response.data
-        : JSON.stringify(error?.response?.data) || error.message
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const responseData = error?.response?.data as any;
+    let errorMessage = "Failed to fetch courier access token";
+
+    if (responseData) {
+      if (typeof responseData === "string") {
+        errorMessage = responseData;
+      } else if (responseData.message) {
+        errorMessage = responseData.message;
+      } else {
+        errorMessage = JSON.stringify(responseData);
+      }
+    } else {
+      errorMessage = error.message || errorMessage;
+    }
+
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, errorMessage);
   }
 };
 
@@ -148,22 +156,23 @@ export const pathaoApi = async (config: {
     return resData;
   } catch (err) {
     if (err instanceof AxiosError) {
-      const error = (err as AxiosError).response?.data as {
-        errors: TPathaoErrorResponse;
-        message: string;
-      };
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        Object.values(error.errors ?? {})
-          .flat()
-          .join(", ")
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const error = (err as AxiosError).response?.data as any;
+      const errorMessage =
+        (error?.errors && Object.values(error.errors).flat().join(", ")) ||
+        error?.message ||
+        "Pathao API error";
+
+      throw new ApiError(httpStatus.BAD_REQUEST, errorMessage);
+    }
+
+    if (err instanceof ApiError) {
+      throw err;
     }
 
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Operation failed.",
-      (err as Error).message
+      (err as Error).message || "Pathao API error occurred."
     );
   }
 };
@@ -175,28 +184,24 @@ export const schedulePickOnPathao = async (
   if (!payload.item_quantity)
     throw new ApiError(
       httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to schedule pickup.",
       "Item quantity is required."
     );
 
   if (!payload.store_id)
     throw new ApiError(
       httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to schedule pickup.",
       "Store ID is required."
     );
 
   if (!payload.parcel_weight)
     throw new ApiError(
       httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to schedule pickup.",
       "Parcel weight is required."
     );
 
   if (isNaN(Number(payload.parcel_weight)))
     throw new ApiError(
       httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to schedule pickup.",
       "Parcel weight must be a valid number."
     );
 
@@ -219,5 +224,11 @@ export const schedulePickOnPathao = async (
     data,
   })) as TPathaoResponse;
 
-  return { success: true, tracking_code: result?.data?.consignment_id };
+  return {
+    success: !!result?.data?.consignment_id,
+    tracking_code: result?.data?.consignment_id,
+    message: result?.data?.consignment_id
+      ? "Success"
+      : "Failed to get consignment ID",
+  };
 };

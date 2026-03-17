@@ -28,7 +28,6 @@ const steadfastApi = async (config: {
   if (!API_KEY || !SECRET_KEY) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Operation failed.",
       "Steadfast API credentials missing"
     );
   }
@@ -46,13 +45,22 @@ const steadfastApi = async (config: {
 
     const responseData = await res.json();
 
+    if (!res.ok) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        responseData?.message || "Courier booking failed."
+      );
+    }
+
     return responseData;
   } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
     const error = err as Error;
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Operation failed.",
-      error.message
+      error.message || "Steadfast API error occurred."
     );
   }
 };
@@ -78,8 +86,9 @@ const steadfast = async (
   })) as TSteadfastResponse;
 
   return {
-    success: true,
+    success: !!data?.consignment?.consignment_id,
     tracking_code: data?.consignment?.consignment_id?.toString(),
+    message: data?.status === 200 ? "Success" : data?.message,
   };
 };
 

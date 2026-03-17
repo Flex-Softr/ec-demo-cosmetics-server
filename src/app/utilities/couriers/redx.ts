@@ -27,7 +27,6 @@ const redxApi = async (configData: {
   if (!API_ACCESS_TOKEN) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Operation failed.",
       "RedX API credentials missing"
     );
   }
@@ -49,16 +48,21 @@ const redxApi = async (configData: {
 
     const responseData = await res.json();
     if (!res.ok) {
-      throw new Error((responseData as { message: string }).message);
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        (responseData as { message: string }).message || "RedX API error"
+      );
     }
 
     return responseData;
   } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
     const error = err as Error;
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Operation failed.",
-      error.message
+      error.message || "RedX API error occurred."
     );
   }
 };
@@ -80,30 +84,23 @@ export const schedulePickOnRedx = async (
   if (!payload.delivery_area)
     throw new ApiError(
       httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to book courier.",
       "Delivery area is required."
     );
 
   if (!payload.delivery_area_id)
     throw new ApiError(
       httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to book courier.",
       "Delivery area ID is required."
     );
 
   if (!payload.parcel_weight)
     throw new ApiError(
       httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to book courier.",
       "Parcel weight is required."
     );
 
   if (!payload.value)
-    throw new ApiError(
-      httpStatus.UNPROCESSABLE_ENTITY,
-      "Failed to book courier.",
-      "Value is required."
-    );
+    throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, "Value is required.");
 
   const body: TRedXRequestBody = {
     customer_name: payload.full_name,
@@ -125,7 +122,8 @@ export const schedulePickOnRedx = async (
   })) as TRedxResponse;
 
   return {
-    success: true,
+    success: !!data.tracking_id,
     tracking_code: data.tracking_id,
+    message: data.tracking_id ? "Success" : "Failed to get tracking ID",
   };
 };

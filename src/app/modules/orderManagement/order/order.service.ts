@@ -1244,7 +1244,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
     trackingId?: string;
     status?: string;
   }[] = [];
-  let failedCourierOrders = [];
+  let failedCourierOrders: string[] = [];
 
   const session = await mongoose.startSession();
   try {
@@ -1446,7 +1446,10 @@ const bookCourierAndUpdateStatusIntoDB = async (
   return {
     success: status === "On courier" ? successCourierOrders?.length : undefined,
     error: status === "On courier" ? failedCourierOrders?.length : undefined,
-    message,
+    message:
+      status === "On courier" && failedCourierOrders.length > 0
+        ? `Finished with ${failedCourierOrders.length} failed orders: ${failedCourierOrders.join(", ")}`
+        : message,
   };
 };
 
@@ -1633,26 +1636,72 @@ const updateOrderDetailsByAdminIntoDB = async (
                 );
               }
 
-              // 1. Restore stock of the old variation
+              const qty =
+                updatedProduct.quantity || updatedProduct.quantity === 0
+                  ? updatedProduct.quantity
+                  : previousQuantity;
+
+              // 1. Restore stock of the old state (variation or simple)
               if (currentProduct.variation) {
-                if (
-                  currentProduct?.inventoryInfo?.variationInventory?.manageStock
-                ) {
+                const oldInv =
+                  currentProduct?.inventoryInfo?.variationInventory;
+                if (oldInv?.manageStock) {
+                  const quantityCalculation =
+                    Number(oldInv.stockAvailable || 0) + previousQuantity;
+                  const newStatus = calculateStockStatus(
+                    quantityCalculation,
+                    oldInv.lowStockWarning || 0
+                  );
                   await InventoryModel.updateOne(
+                    { _id: oldInv._id },
                     {
-                      _id: currentProduct.inventoryInfo.variationInventory._id,
+                      $set: {
+                        stockAvailable: quantityCalculation,
+                        stockStatus: newStatus,
+                      },
                     },
-                    { $inc: { stockAvailable: previousQuantity } },
+                    { session }
+                  );
+                }
+              } else {
+                const oldInv = currentProduct?.inventoryInfo?.defaultInventory;
+                if (oldInv?.manageStock) {
+                  const quantityCalculation =
+                    Number(oldInv.stockAvailable || 0) + previousQuantity;
+                  const newStatus = calculateStockStatus(
+                    quantityCalculation,
+                    oldInv.lowStockWarning || 0
+                  );
+                  await InventoryModel.updateOne(
+                    { _id: oldInv._id },
+                    {
+                      $set: {
+                        stockAvailable: quantityCalculation,
+                        stockStatus: newStatus,
+                      },
+                    },
                     { session }
                   );
                 }
               }
 
               // 2. Decrease stock of the new variation
-              if ((newVariation.inventory as TInventory)?.manageStock) {
+              const newInv = newVariation.inventory as TInventory;
+              if (newInv?.manageStock) {
+                const quantityCalculation =
+                  Number(newInv.stockAvailable || 0) - qty;
+                const newStatus = calculateStockStatus(
+                  quantityCalculation,
+                  newInv.lowStockWarning || 0
+                );
                 await InventoryModel.updateOne(
-                  { _id: (newVariation.inventory as TInventory)._id },
-                  { $inc: { stockAvailable: -updatedProduct.quantity } },
+                  { _id: newInv._id },
+                  {
+                    $set: {
+                      stockAvailable: quantityCalculation,
+                      stockStatus: newStatus,
+                    },
+                  },
                   { session }
                 );
               }
@@ -1666,14 +1715,16 @@ const updateOrderDetailsByAdminIntoDB = async (
                 (newVariation.price as TPrice)?.regularPrice ||
                 0;
               currentProduct.unitPrice = unitPrice;
-              currentProduct.total = unitPrice * updatedProduct.quantity;
+              currentProduct.total = unitPrice * qty;
 
-              // Prevent double stock calculation below
-              if (
-                currentProduct.inventoryInfo &&
-                currentProduct.inventoryInfo.variationInventory
-              ) {
-                currentProduct.inventoryInfo.variationInventory.manageStock = false;
+              // 4. Prevent double stock calculation below
+              if (currentProduct.inventoryInfo) {
+                if (currentProduct.inventoryInfo.variationInventory) {
+                  currentProduct.inventoryInfo.variationInventory.manageStock = false;
+                }
+                if (currentProduct.inventoryInfo.defaultInventory) {
+                  currentProduct.inventoryInfo.defaultInventory.manageStock = false;
+                }
               }
             } else if (updatedProduct.variation) {
               currentProduct.variation = currentProduct.variation || undefined;
@@ -2608,7 +2659,10 @@ const schedulePickupFromOrderIntoDB = async (
       await session.commitTransaction();
       return result;
     } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to schedule pickup.");
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        result.message || "Failed to schedule pickup."
+      );
     }
   } catch (error) {
     await session.abortTransaction();
