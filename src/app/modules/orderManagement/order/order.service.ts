@@ -1545,12 +1545,13 @@ const updateOrderDetailsByAdminIntoDB = async (
       (updatedOrderedProducts as unknown as TOrderedProduct[])?.length > 0
     ) {
       for (const updatedProduct of updatedOrderedProducts || []) {
-        if (updatedProduct.id) {
-          const existingProductIndex = findOrder.orderedProducts.findIndex(
-            (product) =>
-              product?._id?.toString() === updatedProduct?.id?.toString()
-          );
+        const existingProductIndex = updatedProduct.id
+          ? findOrder.orderedProducts.findIndex(
+              (p) => p?._id?.toString() === updatedProduct.id?.toString()
+            )
+          : -1;
 
+        if (updatedProduct.id && existingProductIndex !== -1) {
           if (updatedProduct.isDelete) {
             const removedProduct = findOrder.orderedProducts.splice(
               existingProductIndex,
@@ -1571,6 +1572,51 @@ const updateOrderDetailsByAdminIntoDB = async (
                 await Warranty.deleteMany({
                   _id: { $in: warrantyIds },
                 }).session(session);
+              }
+
+              // Restore stock for each removed product
+              for (const removed of removedProduct) {
+                const qty = removed.quantity || 0;
+                if (qty <= 0) continue;
+
+                const varInv = removed?.inventoryInfo?.variationInventory;
+                const defInv = removed?.inventoryInfo?.defaultInventory;
+
+                if (varInv?.manageStock && varInv._id) {
+                  // Variable product: restore stock on the variation's inventory
+                  const restoredQty = Number(varInv.stockAvailable || 0) + qty;
+                  const newStatus = calculateStockStatus(
+                    restoredQty,
+                    varInv.lowStockWarning || 0
+                  );
+                  await InventoryModel.updateOne(
+                    { _id: varInv._id },
+                    {
+                      $set: {
+                        stockAvailable: restoredQty,
+                        stockStatus: newStatus,
+                      },
+                    },
+                    { session }
+                  );
+                } else if (defInv?.manageStock && defInv._id) {
+                  // Simple product: restore stock on the default inventory
+                  const restoredQty = Number(defInv.stockAvailable || 0) + qty;
+                  const newStatus = calculateStockStatus(
+                    restoredQty,
+                    defInv.lowStockWarning || 0
+                  );
+                  await InventoryModel.updateOne(
+                    { _id: defInv._id },
+                    {
+                      $set: {
+                        stockAvailable: restoredQty,
+                        stockStatus: newStatus,
+                      },
+                    },
+                    { session }
+                  );
+                }
               }
             }
           } else {
@@ -1688,6 +1734,12 @@ const updateOrderDetailsByAdminIntoDB = async (
               // 2. Decrease stock of the new variation
               const newInv = newVariation.inventory as TInventory;
               if (newInv?.manageStock) {
+                if (qty > Number(newInv.stockAvailable || 0)) {
+                  throw new ApiError(
+                    httpStatus.BAD_REQUEST,
+                    `Insufficient stock for the selected variation. Available: ${newInv.stockAvailable || 0}, requested: ${qty}.`
+                  );
+                }
                 const quantityCalculation =
                   Number(newInv.stockAvailable || 0) - qty;
                 const newStatus = calculateStockStatus(
@@ -1765,66 +1817,73 @@ const updateOrderDetailsByAdminIntoDB = async (
               }
             }
 
-            if (currentProduct.variation) {
-              if (
-                currentProduct?.inventoryInfo?.variationInventory?.variation
-              ) {
-                if (
-                  currentProduct?.inventoryInfo?.variationInventory
-                    ?.manageStock === true
-                ) {
-                  const quantityCalculation =
-                    Number(
-                      currentProduct?.inventoryInfo?.variationInventory
-                        ?.stockAvailable || 0
-                    ) +
-                    previousQuantity -
-                    updatedProduct.quantity;
+            const varObjIdStr = currentProduct.variation
+              ? currentProduct.variation.toString()
+              : undefined;
 
-                  const inventoryId =
-                    currentProduct?.inventoryInfo?.variationInventory?._id;
-                  const lowStockWarning =
-                    currentProduct?.inventoryInfo?.variationInventory
-                      ?.lowStockWarning || 0;
-                  const newStatus = calculateStockStatus(
-                    quantityCalculation,
-                    lowStockWarning
-                  );
+            if (
+              updatedProduct.variation &&
+              updatedProduct.variation !== varObjIdStr
+            ) {
+              // variation-change path already handled above (manageStock was set to false to prevent double calculation)
+            } else if (
+              currentProduct?.inventoryInfo?.variationInventory?.variation &&
+              currentProduct.inventoryInfo.variationInventory.manageStock ===
+                true
+            ) {
+              const inv = currentProduct.inventoryInfo.variationInventory;
+              const effectiveStock =
+                Number(inv.stockAvailable || 0) + previousQuantity;
 
-                  await InventoryModel.updateOne(
-                    {
-                      _id: inventoryId,
-                    },
-                    {
-                      $set: {
-                        stockAvailable: quantityCalculation,
-                        stockStatus: newStatus,
-                      },
-                    },
-                    { session }
-                  );
-                }
+              if (updatedProduct.quantity > effectiveStock) {
+                throw new ApiError(
+                  httpStatus.BAD_REQUEST,
+                  `Insufficient stock for '${currentProduct.productTitle}'. Available: ${effectiveStock}, requested: ${updatedProduct.quantity}.`
+                );
               }
-            } else {
+
+              const quantityCalculation =
+                effectiveStock - updatedProduct.quantity;
+              const inventoryId = inv._id;
+              const newStatus = calculateStockStatus(
+                quantityCalculation,
+                inv.lowStockWarning || 0
+              );
+
+              await InventoryModel.updateOne(
+                { _id: inventoryId },
+                {
+                  $set: {
+                    stockAvailable: quantityCalculation,
+                    stockStatus: newStatus,
+                  },
+                },
+                { session }
+              );
+            }
+            if (!currentProduct.variation) {
               if (
                 currentProduct?.inventoryInfo?.defaultInventory?.manageStock
               ) {
+                const inv = currentProduct.inventoryInfo.defaultInventory;
+                const effectiveStock =
+                  Number(inv.stockAvailable || 0) + previousQuantity;
+
+                if (updatedProduct.quantity > effectiveStock) {
+                  throw new ApiError(
+                    httpStatus.BAD_REQUEST,
+                    `Insufficient stock for '${currentProduct.productTitle}'. Available: ${effectiveStock}, requested: ${updatedProduct.quantity}.`
+                  );
+                }
+
                 const quantityCalculation =
-                  Number(
-                    currentProduct?.inventoryInfo?.defaultInventory
-                      ?.stockAvailable || 0
-                  ) +
-                  previousQuantity -
-                  updatedProduct.quantity;
-                const lowStockWarning =
-                  currentProduct?.inventoryInfo?.defaultInventory
-                    ?.lowStockWarning || 0;
+                  effectiveStock - updatedProduct.quantity;
                 const newStatus = calculateStockStatus(
                   quantityCalculation,
-                  lowStockWarning
+                  inv.lowStockWarning || 0
                 );
                 await InventoryModel.updateOne(
-                  { _id: currentProduct?.inventoryInfo?.defaultInventory?._id },
+                  { _id: inv._id },
                   {
                     $set: {
                       stockAvailable: quantityCalculation,
@@ -1884,6 +1943,20 @@ const updateOrderDetailsByAdminIntoDB = async (
                         preserveNullAndEmptyArrays: true,
                       },
                     },
+                    {
+                      $lookup: {
+                        from: "inventories",
+                        localField: "inventory",
+                        foreignField: "_id",
+                        as: "inventory",
+                      },
+                    },
+                    {
+                      $unwind: {
+                        path: "$inventory",
+                        preserveNullAndEmptyArrays: true,
+                      },
+                    },
                   ],
                   as: "variations",
                 },
@@ -1907,11 +1980,13 @@ const updateOrderDetailsByAdminIntoDB = async (
                   price: "$priceInfo",
                   inventory: 1,
                   variations: 1,
+                  title: 1,
                 },
               },
             ])
           )[0] as {
             _id: Types.ObjectId;
+            title: string;
             price: TPrice;
             inventory: TInventory;
             variations: TVariation[];
@@ -1973,21 +2048,60 @@ const updateOrderDetailsByAdminIntoDB = async (
             );
           }
           if (selectedVariation) {
-            if ((selectedVariation?.inventory as TInventory)?.manageStock) {
-              await VariationModel.updateOne(
-                { _id: selectedVariation?._id },
+            const varInv = selectedVariation?.inventory as TInventory;
+            if (varInv?.manageStock) {
+              if (
+                updatedProduct.quantity > Number(varInv.stockAvailable || 0)
+              ) {
+                throw new ApiError(
+                  httpStatus.BAD_REQUEST,
+                  `Insufficient stock for the selected variation. Available: ${varInv.stockAvailable || 0}, requested: ${updatedProduct.quantity}.`
+                );
+              }
+              const quantityCalculation =
+                Number(varInv.stockAvailable || 0) - updatedProduct.quantity;
+              const newStatus = calculateStockStatus(
+                quantityCalculation,
+                varInv.lowStockWarning || 0
+              );
+
+              await InventoryModel.updateOne(
+                { _id: varInv._id },
                 {
-                  $inc: {
-                    "inventory.stockAvailable": -updatedProduct.quantity,
+                  $set: {
+                    stockAvailable: quantityCalculation,
+                    stockStatus: newStatus,
                   },
-                }
-              ).session(session);
+                },
+                { session }
+              );
             }
           } else {
             if (productInfo.inventory.manageStock) {
+              if (
+                updatedProduct.quantity >
+                Number(productInfo.inventory.stockAvailable || 0)
+              ) {
+                throw new ApiError(
+                  httpStatus.BAD_REQUEST,
+                  `Insufficient stock for '${productInfo.title}'. Available: ${productInfo.inventory.stockAvailable || 0}, requested: ${updatedProduct.quantity}.`
+                );
+              }
+              const quantityCalculation =
+                Number(productInfo.inventory.stockAvailable || 0) -
+                updatedProduct.quantity;
+              const newStatus = calculateStockStatus(
+                quantityCalculation,
+                productInfo.inventory.lowStockWarning || 0
+              );
               await InventoryModel.updateOne(
                 { _id: productInfo?.inventory?._id },
-                { $inc: { stockAvailable: -updatedProduct.quantity } },
+                {
+                  $set: {
+                    stockAvailable: quantityCalculation,
+                    stockStatus: newStatus,
+                  },
+                },
                 { session }
               );
             }

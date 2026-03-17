@@ -91,6 +91,13 @@ export const updateStockOrderCancelDelete = async (
             item?.variationDetails?.inventory?.lowStockWarning;
           const newStock = currentStock + updateType;
 
+          if (newStock < 0) {
+            throw new ApiError(
+              httpStatus.BAD_REQUEST,
+              `Insufficient stock to restore order for '${item.title}'. Available: ${currentStock}, needed: ${item.quantity}.`
+            );
+          }
+
           const status = calculateStockStatus(newStock, lowStockWarning);
 
           await InventoryModel.updateOne(
@@ -115,6 +122,13 @@ export const updateStockOrderCancelDelete = async (
         const currentStock = item?.defaultInventory?.stockAvailable;
         const lowStockWarning = item?.defaultInventory?.lowStockWarning;
         const newStock = currentStock + updateType;
+
+        if (newStock < 0) {
+          throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            `Insufficient stock to restore order for '${item.title}'. Available: ${currentStock}, needed: ${item.quantity}.`
+          );
+        }
 
         const status = calculateStockStatus(newStock, lowStockWarning);
 
