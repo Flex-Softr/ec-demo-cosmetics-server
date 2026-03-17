@@ -1617,8 +1617,67 @@ const updateOrderDetailsByAdminIntoDB = async (
                 );
               }
             }
-            if (updatedProduct.variation)
+            if (
+              updatedProduct.variation &&
+              updatedProduct.variation !== currentProduct.variation?.toString()
+            ) {
+              const newVariationId = updatedProduct.variation;
+              const newVariation = await VariationModel.findById(newVariationId)
+                .populate("price inventory")
+                .session(session);
+
+              if (!newVariation) {
+                throw new ApiError(
+                  httpStatus.BAD_REQUEST,
+                  "Invalid variation selected"
+                );
+              }
+
+              // 1. Restore stock of the old variation
+              if (currentProduct.variation) {
+                if (
+                  currentProduct?.inventoryInfo?.variationInventory?.manageStock
+                ) {
+                  await InventoryModel.updateOne(
+                    {
+                      _id: currentProduct.inventoryInfo.variationInventory._id,
+                    },
+                    { $inc: { stockAvailable: previousQuantity } },
+                    { session }
+                  );
+                }
+              }
+
+              // 2. Decrease stock of the new variation
+              if ((newVariation.inventory as TInventory)?.manageStock) {
+                await InventoryModel.updateOne(
+                  { _id: (newVariation.inventory as TInventory)._id },
+                  { $inc: { stockAvailable: -updatedProduct.quantity } },
+                  { session }
+                );
+              }
+
+              // 3. Update currentProduct properties
+              currentProduct.variation = new Types.ObjectId(newVariationId);
+              currentProduct.attributes = newVariation.attributes;
+
+              const unitPrice =
+                (newVariation.price as TPrice)?.salePrice ||
+                (newVariation.price as TPrice)?.regularPrice ||
+                0;
+              currentProduct.unitPrice = unitPrice;
+              currentProduct.total = unitPrice * updatedProduct.quantity;
+
+              // Prevent double stock calculation below
+              if (
+                currentProduct.inventoryInfo &&
+                currentProduct.inventoryInfo.variationInventory
+              ) {
+                currentProduct.inventoryInfo.variationInventory.manageStock = false;
+              }
+            } else if (updatedProduct.variation) {
               currentProduct.variation = currentProduct.variation || undefined;
+            }
 
             if (
               currentProduct.isWarrantyClaim &&

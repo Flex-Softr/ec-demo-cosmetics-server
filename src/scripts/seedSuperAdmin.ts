@@ -187,11 +187,6 @@ const shippingMethodProviders = [
     ],
   },
   {
-    name: "Redx",
-    slug: "redx",
-    credentials: [{ key: "API-ACCESS-TOKEN", value: "" }],
-  },
-  {
     name: "Pathao",
     slug: "pathao",
     credentials: [
@@ -202,6 +197,11 @@ const shippingMethodProviders = [
       { key: "access_token", value: "", is_optional: true },
       { key: "access_token_expires_in", value: "", is_optional: true },
     ],
+  },
+  {
+    name: "Redx",
+    slug: "redx",
+    credentials: [{ key: "API-ACCESS-TOKEN", value: "" }],
   },
 ];
 
