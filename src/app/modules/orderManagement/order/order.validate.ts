@@ -174,6 +174,15 @@ const schedulePickup = z.object({
   }),
 });
 
+const bulkSchedulePickup = z.object({
+  body: z.object({
+    order_ids: z.string().array(),
+    shipping_method_id: z.string(),
+  }),
+});
+
+export type TSchedulePickup = z.infer<typeof schedulePickup>;
+
 export const OrderValidation = {
   createOrderValidation,
   getOrdersAdmin,
@@ -184,4 +193,5 @@ export const OrderValidation = {
   deleteOrders,
   updateQuantity,
   schedulePickup,
+  bulkSchedulePickup,
 };

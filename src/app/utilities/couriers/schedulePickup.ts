@@ -6,14 +6,14 @@ import {
 
 import { schedulePickOnPathao } from "./pathao";
 import { schedulePickOnRedx } from "./redx";
-import steadfast from "./steadfast";
+import { schedulePickOnSteadfast } from "./steadfast";
 
 export const schedulePickup = async (
   shippingMethod: TShippingMethod,
   payload: TSchedulePickRequestBody
 ): Promise<TSchedulePickResponse> => {
   if (shippingMethod.slug === "steadfast") {
-    const result = await steadfast(shippingMethod, payload);
+    const result = await schedulePickOnSteadfast(shippingMethod, payload);
     return result;
   } else if (shippingMethod.slug === "redx") {
     const result = await schedulePickOnRedx(shippingMethod, payload);

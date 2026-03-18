@@ -1,6 +1,9 @@
 import httpStatus from "http-status";
 import ApiError from "../../errorHandlers/ApiError";
-import { TShippingMethod } from "../../modules/courier/courier.interface";
+import {
+  TShippingMethod,
+  TShippingMethodCredential,
+} from "../../modules/courier/courier.interface";
 import {
   TSchedulePickRequestBody,
   TSchedulePickResponse,
@@ -10,20 +13,19 @@ import {
   TSteadfastResponse,
 } from "../../types/steadfast";
 
-const steadfastApi = async (config: {
-  credentials: TShippingMethod["credentials"];
+/**
+ * Generic Steadfast API wrapper that handles both single and bulk requests.
+ */
+export const steadfastApi = async (config: {
+  credentials: TShippingMethodCredential[];
   endpoints: string;
-  data?: Record<string, unknown>;
+  payload?: Record<string, unknown> | Record<string, unknown>[];
   method: "GET" | "POST";
 }) => {
-  const { credentials, endpoints, data, method } = config;
+  const { credentials, endpoints, payload, method } = config;
 
   const API_KEY = credentials?.find((cr) => cr.key === "Api-Key")?.value;
   const SECRET_KEY = credentials?.find((cr) => cr.key === "Secret-Key")?.value;
-
-  // ⭐ Update base URL if needed:
-  const url = `https://portal.packzy.com/api/v1${endpoints}`;
-  // const url = `https://portal.steadfast.com.bd/api/v1${endpoints}`;
 
   if (!API_KEY || !SECRET_KEY) {
     throw new ApiError(
@@ -31,6 +33,8 @@ const steadfastApi = async (config: {
       "Steadfast API credentials missing"
     );
   }
+
+  const url = `https://portal.packzy.com/api/v1${endpoints}`;
 
   try {
     const res = await fetch(url, {
@@ -40,7 +44,7 @@ const steadfastApi = async (config: {
         "Secret-Key": SECRET_KEY,
         "Content-Type": "application/json",
       },
-      body: data && method === "POST" ? JSON.stringify(data) : undefined,
+      body: payload && method === "POST" ? JSON.stringify(payload) : undefined,
     });
 
     const responseData = await res.json();
@@ -48,7 +52,7 @@ const steadfastApi = async (config: {
     if (!res.ok) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        responseData?.message || "Courier booking failed."
+        responseData?.message || "Steadfast API request failed."
       );
     }
 
@@ -65,7 +69,10 @@ const steadfastApi = async (config: {
   }
 };
 
-const steadfast = async (
+/**
+ * High-level pickup scheduling action for Steadfast.
+ */
+export const schedulePickOnSteadfast = async (
   shippingMethod: TShippingMethod,
   payload: TSchedulePickRequestBody
 ): Promise<TSchedulePickResponse> => {
@@ -75,14 +82,15 @@ const steadfast = async (
     recipient_address: payload.full_address,
     recipient_phone: payload.phone,
     cod_amount: Number(payload.cod_amount),
-    note: payload.note,
+    note: payload.note || "",
   };
 
   const data = (await steadfastApi({
-    credentials: shippingMethod?.credentials,
+    credentials: (shippingMethod?.credentials ||
+      []) as TShippingMethodCredential[],
     endpoints: "/create_order",
     method: "POST",
-    data: body,
+    payload: body,
   })) as TSteadfastResponse;
 
   return {
@@ -92,4 +100,4 @@ const steadfast = async (
   };
 };
 
-export default steadfast;
+export default schedulePickOnSteadfast;

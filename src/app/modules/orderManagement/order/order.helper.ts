@@ -880,6 +880,7 @@ const orderStatusUpdatingPipeline = (
       },
     },
   ] as PipelineStage[];
+
 const orderDetailsCustomerPipeline = (): PipelineStage[] => [
   {
     $lookup: {

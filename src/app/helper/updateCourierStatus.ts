@@ -5,8 +5,8 @@ import { OrderStatusHistory } from "../modules/orderManagement/orderStatusHistor
 import { TShipping } from "../modules/orderManagement/shipping/shipping.interface";
 import { TOrderSMSNotification } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.interface";
 import { OrderSMSNotification } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.model";
+import { steadfastApi } from "../utilities/couriers/steadfast";
 import { courierStatusUpdateError } from "../utilities/logger";
-import steedFastApi from "../utilities/steedfastApi";
 
 const batchSize = 20;
 
@@ -82,7 +82,7 @@ const updateCourierStatus = async () => {
 
           // for steedfast
           if (order?.courier?.slug === "steedfast") {
-            const data = await steedFastApi({
+            const data = await steadfastApi({
               credentials: order?.courier?.credentials,
               endpoints: `/status_by_invoice/${order.orderId}`,
               method: "GET",

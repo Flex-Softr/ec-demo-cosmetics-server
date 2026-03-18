@@ -4,12 +4,9 @@ import mongoose, { ClientSession, Types } from "mongoose";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
-import BdAddress from "../../../utilities/bdAddress/bdAddress";
 import lowStockWarningEmail from "../../../utilities/lowStockWarningEmail";
-import steedFastApi from "../../../utilities/steedfastApi";
 import { Cart } from "../../cartManagement/cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
-import { TCourier } from "../../courier/courier.interface";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";
 import { InventoryModel } from "../../productManagement/inventory/inventory.model";
@@ -20,11 +17,10 @@ import { TWarrantyClaimedOrderedProducts } from "../../warrantyManagement/warran
 import { TPaymentData } from "../orderPayment/orderPayment.interface";
 import { OrderPayment } from "../orderPayment/orderPayment.model";
 import { OrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.model";
-import { TShipping, TShippingData } from "../shipping/shipping.interface";
+import { TShippingData } from "../shipping/shipping.interface";
 import { Shipping } from "../shipping/shipping.model";
 import { OrderHelper } from "./order.helper";
 import {
-  TCourierResponse,
   TOrder,
   TOrderedProduct,
   TOrderSource,
@@ -504,50 +500,9 @@ export const createNewOrder = async (
   return orderRes;
 };
 
-type TOrderDataForCourier = {
+export type TOrderDataForCourier = {
   orderId: string;
-  shippingData: TShipping;
+  shippingData: TShippingData;
   total: number;
   courierNotes: string;
-};
-
-// create order on 'steed fast' courier
-export const createOrderOnSteedFast = async (
-  orders: Partial<TOrder[]>,
-  courier: TCourier
-) => {
-  const payload = (orders as unknown as TOrderDataForCourier[]).map(
-    ({ orderId, shippingData, total, courierNotes }) => ({
-      invoice: orderId,
-      recipient_name: shippingData.fullName,
-      recipient_address:
-        shippingData.fullAddress +
-        "" +
-        BdAddress.upazilaNameById(shippingData.upazila) +
-        "" +
-        BdAddress.districtNameById(shippingData.district),
-      recipient_phone: shippingData.phoneNumber,
-      cod_amount: total,
-      note: courierNotes || "",
-    })
-  );
-
-  const { data } = await steedFastApi({
-    credentials: courier?.credentials || [],
-    endpoints: "/create_order/bulk-order",
-    method: "POST",
-    payload: payload as unknown as Record<string, string>[],
-  });
-  const sanitizedData = (data as TCourierResponse[]).map(
-    ({ invoice, tracking_code, status }) => ({
-      orderId: invoice,
-      trackingId: tracking_code,
-      status,
-    })
-  );
-
-  return {
-    success: sanitizedData.filter((item) => item.status === "success"),
-    error: sanitizedData.filter((item) => item.status === "error"),
-  };
 };

@@ -190,6 +190,16 @@ router.post(
   OrderController.schedulePickupFromOrder
 );
 
+router.post(
+  "/admin/bulk-schedule-pickup",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
+  }),
+  validateRequest(OrderValidation.bulkSchedulePickup),
+  OrderController.bulkSchedulePickupFromOrder
+);
+
 router.get(
   "/get-courier-for-order",
   authGuard({

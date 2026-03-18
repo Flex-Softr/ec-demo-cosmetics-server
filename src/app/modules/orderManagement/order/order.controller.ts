@@ -319,6 +319,22 @@ const schedulePickupFromOrder = catchAsync(
   }
 );
 
+const bulkSchedulePickupFromOrder = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = req.user as TJwtPayload;
+    const result = await OrderServices.bulkSchedulePickupFromOrderIntoDB(
+      req.body,
+      user
+    );
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Multiple pickups processed",
+      data: result,
+    });
+  }
+);
+
 const getCourierForOrder = catchAsync(async (req: Request, res: Response) => {
   const result = await OrderServices.getCourierForOrder();
 
@@ -351,6 +367,7 @@ export const OrderController = {
   returnAndPartialManagement,
   getMobileNumbersForSendingSMS,
   schedulePickupFromOrder,
+  bulkSchedulePickupFromOrder,
   getCourierForOrder,
   getGuestOrderHistoryByPhone,
 };

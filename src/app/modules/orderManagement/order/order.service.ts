@@ -15,11 +15,12 @@ import { InventoryModel } from "../../productManagement/inventory/inventory.mode
 import { calculateStockStatus } from "../../productManagement/inventory/inventory.utils";
 import { TPrice } from "../../productManagement/price/price.interface";
 import ProductModel from "../../productManagement/product/product.model";
-import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { User } from "../../userManagement/user/user.model";
+import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { OrderPayment } from "../orderPayment/orderPayment.model";
+import { TOrderStatusHistoryData } from "../orderStatusHistory/orderStatusHistory.interface";
 import { OrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.model";
-import { TShipping } from "../shipping/shipping.interface";
+import { TShipping, TShippingData } from "../shipping/shipping.interface";
 import { Shipping } from "../shipping/shipping.model";
 import { TShippingCharge } from "../shippingCharge/shippingCharge.interface";
 import { ShippingCharge } from "../shippingCharge/shippingCharge.model";
@@ -33,21 +34,24 @@ import {
   TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
-// import steedFastApi from "../../../utilities/steedfastApi";
+// import config from "../../../config/config";
 import config from "../../../config/config";
 import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
+import { schedulePickOnSteadfastBulk } from "../../../utilities/couriers/steadfastBulk";
 import triggerRefundEvent from "../../../utilities/triggerRefundEvent";
-import { TShippingMethod } from "../../courier/courier.interface";
+import { TCourier } from "../../courier/courier.interface";
 import { TVariation } from "../../productManagement/variation/variation.interface";
 import VariationModel from "../../productManagement/variation/variation.model";
 import {
   createNewOrder,
-  createOrderOnSteedFast,
   deleteWarrantyFromOrder,
+  TOrderDataForCourier,
   TUpStOnCanDelProducts,
   updateStockOrderCancelDelete,
 } from "./order.utils";
+import { TSchedulePickup } from "./order.validate";
+import formatShippingAddress from "../../../utilities/formatShippingAddress";
 
 const maxOrderStatusChangeAtATime = 20;
 
@@ -1273,7 +1277,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
         );
       if (courier.slug === "steedfast") {
         const { success: successRequests, error: failedRequests } =
-          await createOrderOnSteedFast(orders, courier);
+          await schedulePickOnSteadfastBulk(orders, courier);
 
         successCourierOrders = successRequests;
         failedCourierOrders = failedRequests.map((item) => item.orderId);
@@ -2674,7 +2678,7 @@ const getMobileNumbersForSendingSMSFromDB = async (
           Schedule pickup from order
 ----------------------------------------- */
 const schedulePickupFromOrderIntoDB = async (
-  payload: Record<string, unknown>,
+  payload: TSchedulePickup["body"],
   user: TJwtPayload
 ) => {
   const session = await mongoose.startSession();
@@ -2717,7 +2721,7 @@ const schedulePickupFromOrderIntoDB = async (
       invoice_id: order.orderId,
       cod_amount: order.total.toString(),
       full_name: shippingData?.fullName ?? "N/A",
-      full_address: shippingData?.fullAddress ?? "N/A",
+      full_address: formatShippingAddress(shippingData as TShippingData),
       phone: shippingData?.phoneNumber ?? "N/A",
       note: order.courierNotes || undefined,
       delivery_area: payload.delivery_area as string,
@@ -2728,10 +2732,7 @@ const schedulePickupFromOrderIntoDB = async (
       store_id: payload.store_id as number,
     };
 
-    const result = await schedulePickup(
-      shippingMethod as unknown as TShippingMethod,
-      pickupInfo
-    );
+    const result = await schedulePickup(shippingMethod, pickupInfo);
 
     if (result.success) {
       await Order.updateOne(
@@ -2786,6 +2787,219 @@ const schedulePickupFromOrderIntoDB = async (
   }
 };
 
+const bulkSchedulePickupFromOrderIntoDB = async (
+  payload: {
+    order_ids: string[];
+    shipping_method_id: string;
+  },
+  user: TJwtPayload
+) => {
+  const session = await mongoose.startSession();
+
+  let orders: (TOrderDataForCourier & {
+    _id: Types.ObjectId;
+    statusHistory: Types.ObjectId;
+  })[] = [];
+  let shippingMethod: TCourier | null = null;
+
+  try {
+    // -------------------------------
+    // STEP 1: Validate & Fetch (TX-1)
+    // -------------------------------
+    await session.startTransaction();
+
+    shippingMethod = await Courier.findById(payload.shipping_method_id).session(
+      session
+    );
+
+    if (!shippingMethod) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Shipping method not found.");
+    }
+
+    if (!shippingMethod.isActive) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Shipping method is not active."
+      );
+    }
+
+    if (shippingMethod.slug !== "steadfast") {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Bulk pickup only supported for Steadfast."
+      );
+    }
+
+    const orderIds = payload.order_ids.map((id) => new Types.ObjectId(id));
+
+    const pipeline = OrderHelper.orderStatusUpdatingPipeline(orderIds, [
+      "processing done",
+    ]);
+
+    orders = await Order.aggregate(pipeline).session(session);
+
+    if (!orders.length) {
+      await session.abortTransaction();
+      return payload.order_ids.map((id) => ({
+        order_id: id,
+        success: false,
+        message: "No valid orders found with 'processing done' status.",
+      }));
+    }
+
+    await session.commitTransaction();
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+
+  // ---------------------------------------
+  // STEP 2: Call External API (NO TX)
+  // ---------------------------------------
+  const { success: successRequests, error: failedRequests } =
+    await schedulePickOnSteadfastBulk(orders, shippingMethod as TCourier);
+
+  // Map for O(1) lookup
+  const orderMap = new Map(orders.map((o) => [o.orderId, o]));
+
+  const results: {
+    order_id: string;
+    success: boolean;
+    message: string;
+    tracking_code?: string;
+  }[] = [];
+
+  const orderUpdateQuery: mongoose.AnyBulkWriteOperation<TOrder>[] = [];
+  const historyUpdateQuery: mongoose.AnyBulkWriteOperation<TOrderStatusHistoryData>[] =
+    [];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const smsPromises: Promise<any>[] = [];
+
+  // ---------------------------------------
+  // STEP 3: Prepare DB updates
+  // ---------------------------------------
+
+  for (const success of successRequests) {
+    const order = orderMap.get(success.orderId);
+
+    if (!order) continue;
+
+    orderUpdateQuery.push({
+      updateOne: {
+        filter: { _id: order._id },
+        update: {
+          status: "On courier",
+          courierDetails: {
+            courierProvider: shippingMethod._id,
+            trackingId: success.trackingId,
+          },
+          deliveryStatus: success.status,
+          statusFromShippingProvider: success.status,
+          messageFromShippingProvider: success.message,
+        },
+      },
+    });
+
+    historyUpdateQuery.push({
+      updateOne: {
+        filter: { _id: order.statusHistory },
+        update: {
+          $push: {
+            history: {
+              status: "On courier",
+              updatedBy: user.id,
+            },
+          },
+        },
+      },
+    });
+
+    // Queue SMS (parallel)
+    const shippingData = order.shippingData as TShippingData;
+
+    smsPromises.push(
+      OrderHelper.sendOrderSMSNotification(
+        {
+          fullName: shippingData.fullName || "",
+          phoneNumber: shippingData.phoneNumber || "",
+          email: shippingData.email || "",
+          orderId: order.orderId,
+          total: order.total?.toString() || "0",
+        },
+        "courier_assigned"
+      )
+    );
+
+    results.push({
+      order_id: order.orderId,
+      success: true,
+      message: "Pickup scheduled successfully",
+      tracking_code: success.trackingId,
+    });
+  }
+
+  for (const failed of failedRequests) {
+    const order = orderMap.get(failed.orderId);
+
+    results.push({
+      order_id: order?.orderId || failed.orderId,
+      success: false,
+      message:
+        failed.message || "Failed to schedule pickup via Steadfast bulk API",
+    });
+  }
+
+  // ---------------------------------------
+  // STEP 4: DB Update (TX-2)
+  // ---------------------------------------
+  const session2 = await mongoose.startSession();
+
+  try {
+    await session2.startTransaction();
+
+    if (orderUpdateQuery.length) {
+      await Order.bulkWrite(orderUpdateQuery, { session: session2 });
+    }
+
+    if (historyUpdateQuery.length) {
+      await OrderStatusHistory.bulkWrite(historyUpdateQuery, {
+        session: session2,
+      });
+    }
+
+    await session2.commitTransaction();
+  } catch (error) {
+    await session2.abortTransaction();
+    throw error;
+  } finally {
+    await session2.endSession();
+  }
+
+  // ---------------------------------------
+  // STEP 5: Send SMS (async, no blocking)
+  // ---------------------------------------
+  Promise.allSettled(smsPromises);
+
+  // ---------------------------------------
+  // STEP 6: Handle unprocessed orders
+  // ---------------------------------------
+  const processedIds = new Set(results.map((r) => r.order_id));
+
+  for (const id of payload.order_ids) {
+    if (!processedIds.has(id)) {
+      results.push({
+        order_id: id,
+        success: false,
+        message: "Order not eligible or not processed.",
+      });
+    }
+  }
+
+  return results;
+};
+
 const getCourierForOrder = async () => {
   const result = await Courier.find({
     isActive: true,
@@ -2820,6 +3034,7 @@ export const OrderServices = {
   returnAndPartialManagementIntoDB,
   getMobileNumbersForSendingSMSFromDB,
   schedulePickupFromOrderIntoDB,
+  bulkSchedulePickupFromOrderIntoDB,
   getCourierForOrder,
   getGuestOrderHistoryByPhoneFromDB,
 };
