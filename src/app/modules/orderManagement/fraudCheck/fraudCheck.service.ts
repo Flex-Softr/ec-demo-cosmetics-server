@@ -23,16 +23,27 @@ const fraudCheckDB = async (mobile: string) => {
   const hasRedX = config.redx.phoneNumber && config.redx.password;
   const hasPaperFly = config.paperfly.username && config.paperfly.password;
 
+  const getMissingCredentialResult = (courierName: string) => ({
+    ...emptyResult,
+    error: true,
+    errorFrom: courierName,
+    message: `${courierName} credentials are not configured.`,
+  });
+
   // Fetch all data concurrently
   const [steadFast, pathao, redX, paperFly] = await Promise.all([
     hasSteadfast
       ? formatSteadfastFraudData(mobile)
-      : Promise.resolve(emptyResult),
-    hasPathao ? formatPathaoFraudData(mobile) : Promise.resolve(emptyResult),
-    hasRedX ? formatRedXFraudData(mobile) : Promise.resolve(emptyResult),
+      : Promise.resolve(getMissingCredentialResult("Steadfast")),
+    hasPathao
+      ? formatPathaoFraudData(mobile)
+      : Promise.resolve(getMissingCredentialResult("Pathao")),
+    hasRedX
+      ? formatRedXFraudData(mobile)
+      : Promise.resolve(getMissingCredentialResult("RedX")),
     hasPaperFly
       ? formatPaperFlyFraudData(mobile)
-      : Promise.resolve(emptyResult),
+      : Promise.resolve(getMissingCredentialResult("PaperFly")),
   ]);
 
   const errors: Errors[] = [];
