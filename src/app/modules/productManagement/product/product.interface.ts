@@ -43,6 +43,7 @@ export type TTag = {
 };
 
 export type TProduct = {
+  _id: Types.ObjectId;
   id: string;
   title: string;
   type: TProductType;
@@ -76,7 +77,10 @@ export type TProduct = {
   updatedBy?: Types.ObjectId;
   deletedBy?: Types.ObjectId;
   isDeleted: boolean;
-} & Document;
+  __v?: number;
+};
+
+export type IProductDocument = TProduct & Document;
 
 export type TProductType = (typeof PRODUCT_TYPE)[keyof typeof PRODUCT_TYPE];
 

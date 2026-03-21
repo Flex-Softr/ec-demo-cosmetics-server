@@ -19,6 +19,7 @@ const limitRequest = (
         },
       ],
     },
+    skip: (req) => req.originalUrl.includes("/uploads/"),
   });
 
   return (req: Request, res: Response, next: NextFunction) =>

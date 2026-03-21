@@ -4,6 +4,7 @@ import { STOCK_STATUS } from "./inventory.const";
 export type TStockStatus = (typeof STOCK_STATUS)[keyof typeof STOCK_STATUS];
 
 export type TInventory = {
+  _id: Types.ObjectId;
   product: Types.ObjectId;
   stockStatus: TStockStatus;
   stockQuantity: number;
@@ -15,4 +16,7 @@ export type TInventory = {
   hideStock: boolean;
   createdBy: Types.ObjectId;
   isDeleted: boolean;
-} & Document;
+  __v?: number;
+};
+
+export type IInventoryDocument = TInventory & Document;

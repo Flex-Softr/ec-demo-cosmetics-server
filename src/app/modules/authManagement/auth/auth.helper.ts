@@ -3,7 +3,7 @@ import { Secret } from "jsonwebtoken";
 import mongoose from "mongoose";
 import config from "../../../config/config";
 import { jwtHelper } from "../../../helper/jwt.helper";
-import { Cart } from "../../cartManagement/cart/cart.model";
+import { Cart } from "../../cart/cart.model";
 import { ROLES } from "../../userManagement/user/user.const";
 import { TUser } from "../../userManagement/user/user.interface";
 import { TRefreshTokenData } from "../refreshToken/refreshToken.interface";
@@ -28,7 +28,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
         sessionId: previousSessionId,
       },
       { _id: 1 }
-    );
+    ).session(session);
     if (previousCarts.length) {
       await Cart.updateMany(
         {
@@ -36,7 +36,8 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
             $in: previousCarts.map(({ _id }) => _id),
           },
         },
-        { $set: { userId: user?._id, sessionId } }
+        { $set: { userId: user?._id, sessionId } },
+        { session }
       );
     }
 
@@ -68,7 +69,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
     );
 
     if (user?.role !== ROLES.CUSTOMER) {
-      await RefreshToken.deleteMany({ userId: user?._id });
+      await RefreshToken.deleteMany({ userId: user?._id }, { session });
     }
     const refreshTokenData: TRefreshTokenData = {
       userId: user?._id as mongoose.Types.ObjectId,
@@ -94,7 +95,7 @@ const loginUser = async (req: Request, user: Partial<TUser | null>) => {
             1000
       ),
     };
-    await RefreshToken.create(refreshTokenData);
+    await RefreshToken.create([refreshTokenData], { session });
 
     await session.commitTransaction();
     await session.endSession();

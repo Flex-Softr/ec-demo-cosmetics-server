@@ -8,28 +8,38 @@ import { User } from "../modules/userManagement/user/user.model";
 const optionalAuthGuard: RequestHandler = async (req, res, next) => {
   try {
     let token = req.headers.authorization;
-    let userInfo = undefined;
     if (token) {
       token = token?.split(" ")[1];
     } else {
       token = req?.cookies["__app.ec.at"];
     }
+
     if (token) {
-      const verifiedUser = jwtHelper.verifyToken<TJwtPayload>(
-        token,
-        config.token_data.access_token_secret as Secret
-      );
-      await User.isUserExist({ _id: verifiedUser.id });
-      userInfo = { isAuthenticated: true, ...verifiedUser };
+      try {
+        const verifiedUser = jwtHelper.verifyToken<TJwtPayload>(
+          token,
+          config.token_data.access_token_secret as Secret
+        );
+        await User.isUserExist({ _id: verifiedUser.id });
+        req.user = { isAuthenticated: true, ...verifiedUser };
+      } catch {
+        // Token is invalid, expired, or user no longer exists.
+        // Treat as unauthenticated guest — this is expected behavior for optional auth.
+        req.user = {
+          isAuthenticated: false,
+          sessionId: req.ecSID.id,
+        };
+      }
     } else {
-      userInfo = {
+      req.user = {
         isAuthenticated: false,
         sessionId: req.ecSID.id,
       };
     }
-    req.user = userInfo;
+
     next();
   } catch (error) {
+    // Only reaches here for truly unexpected errors (e.g., DB connection issues)
     next(error);
   }
 };

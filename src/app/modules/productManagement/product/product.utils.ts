@@ -1,14 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { CronJob } from "cron";
 import { PipelineStage } from "mongoose";
 import config from "../../../config/config";
 import { STOCK_STATUS } from "../inventory/inventory.const";
-import { InventoryModel } from "../inventory/inventory.model";
-import PriceModel from "../price/price.model";
-import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
-import ProductModel from "./product.model";
+import { PRODUCT_TYPE } from "./product.const";
 
-export const formatPriceUpdatePayload = (price: Record<string, any>) => {
+export const formatPriceUpdatePayload = (price: Record<string, unknown>) => {
   const updatePrice: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(price)) {
     updatePrice[key] = value;
@@ -24,35 +19,6 @@ export const calculateStockAvailable = (
   const diff = Number(newStockQuantity) - Number(oldStockQuantity);
   return (oldStockAvailable || 0) + diff;
 };
-
-// Cron job to run every day at midnight
-export const deleteDraftProducts = new CronJob(
-  "0 0 * * *", // Every day at midnight
-  async () => {
-    const currentDate = new Date();
-    // Find products where status is 'Draft' and created more than 30 days ago
-    const draftProducts = await ProductModel.find({
-      publishedStatus: PRODUCT_STATUS.DRAFT,
-      createdAt: {
-        $lte: new Date(currentDate.setDate(currentDate.getDate() - 30)),
-      },
-    });
-
-    if (draftProducts.length > 0) {
-      const ids = draftProducts.map((product) => product._id);
-      const priceIds = draftProducts.map((product) => product.price);
-      const inventoryIds = draftProducts.map((product) => product.inventory);
-
-      // Delete the products
-      await ProductModel.deleteMany({ _id: { $in: ids } });
-      await PriceModel.deleteMany({ _id: { $in: priceIds } });
-      await InventoryModel.deleteMany({ _id: { $in: inventoryIds } });
-    }
-  },
-  null, // No onComplete function needed
-  true, // Start the job immediately
-  "Asia/Dhaka" // Change this to your desired timezone
-);
 
 export const commonProductProjection = {
   _id: 1,
@@ -278,7 +244,7 @@ export const commonPipelineSingleProduct = (
             localField: "price",
             foreignField: "_id",
             as: "price",
-            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }],
           },
         },
         {
@@ -290,7 +256,7 @@ export const commonPipelineSingleProduct = (
             localField: "inventory",
             foreignField: "_id",
             as: "inventory",
-            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }],
           },
         },
         {
@@ -302,6 +268,7 @@ export const commonPipelineSingleProduct = (
             updatedAt: 0,
           },
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ] as any[],
     },
   },
@@ -490,7 +457,7 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
             localField: "price",
             foreignField: "_id",
             as: "price",
-            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }],
           },
         },
         {
@@ -502,7 +469,7 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
             localField: "inventory",
             foreignField: "_id",
             as: "inventory",
-            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }] as any[],
+            pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }],
           },
         },
         {
@@ -514,7 +481,7 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
             updatedAt: 0,
           },
         },
-      ] as any[],
+      ],
     },
   },
   {

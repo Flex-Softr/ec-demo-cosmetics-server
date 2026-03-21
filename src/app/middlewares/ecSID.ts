@@ -8,7 +8,6 @@ const generateNewId = () => {
   return objId.slice(10) + crypto.randomBytes(16).toString("base64");
 };
 
-// ecSID => Electro commerce session id
 export const ecSIDHandler = (
   req: Request,
   res: Response,

@@ -6,7 +6,7 @@ import { TOptionalAuthGuardPayload } from "../../../types/common";
 import { errorLogger } from "../../../utilities/logger";
 import sendMail from "../../../utilities/nodeMailerConfig";
 import sendSms from "../../../utilities/sendSms";
-import { Cart } from "../../cartManagement/cart/cart.model";
+import { Cart } from "../../cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
 import { TCategory } from "../../productManagement/category/category.interface";
 import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";

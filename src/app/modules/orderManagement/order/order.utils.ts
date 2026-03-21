@@ -5,7 +5,7 @@ import ApiError from "../../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
 import lowStockWarningEmail from "../../../utilities/lowStockWarningEmail";
-import { Cart } from "../../cartManagement/cart/cart.model";
+import { Cart } from "../../cart/cart.model";
 import { Coupon } from "../../coupon/coupon.model";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { STOCK_STATUS } from "../../productManagement/inventory/inventory.const";

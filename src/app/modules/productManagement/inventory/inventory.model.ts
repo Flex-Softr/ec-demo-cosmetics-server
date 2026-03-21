@@ -14,7 +14,6 @@ export const inventorySchema = new Schema<TInventory>(
   },
   {
     timestamps: true,
-    versionKey: false,
   }
 );
 

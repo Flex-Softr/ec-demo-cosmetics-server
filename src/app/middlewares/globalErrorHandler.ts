@@ -9,26 +9,8 @@ import handleMongooseCastError from "../errorHandlers/handleMongooseCastError";
 import handleMongooseDuplicateError from "../errorHandlers/handleMongooseDuplicateError";
 import handleMongooseValidationError from "../errorHandlers/handleMongooseValidationError";
 import { TErrorMessages, TIErrorResponse } from "../types/error";
-import { consoleLogger } from "../utilities/logger";
+import { errorLogger } from "../utilities/logger";
 
-/**
- * The function `globalErrorhandler` handles various types of errors and sends a formatted response
- * with appropriate status code and error message.
- * @param err - The `err` parameter in the `globalErrorhandler` function represents the error object
- * that is passed to the error handling middleware in an Express application. This object contains
- * information about the error that occurred during the request processing. Depending on the type of
- * error, different actions are taken within the error handler to
- * @param req - The `req` parameter in the `globalErrorhandler` function represents the HTTP request
- * object, which contains information about the incoming request such as headers, parameters, body,
- * etc. It is used to access and manipulate the request data within the error handling middleware.
- * @param res - The `res` parameter in the `globalErrorhandler` function is the response object in
- * Express.js. It is used to send a response back to the client making the request. In the provided
- * code snippet, `res` is used to set the HTTP status code, send a JSON response with error
- * @param next - The `next` parameter in the `globalErrorhandler` function is a callback function that
- * is used to pass control to the next middleware function in the stack. It is typically used in
- * Express.js middleware functions to pass an error to the next error-handling middleware. If an error
- * occurs in the current
- */
 const globalErrorhandler: ErrorRequestHandler = (
   err,
   req,
@@ -43,13 +25,10 @@ const globalErrorhandler: ErrorRequestHandler = (
   if (config.env === "development") {
     // eslint-disable-next-line no-console
     console.log(err);
-    consoleLogger.error(err);
   }
 
-  if (config.log_error === "true") {
-    // eslint-disable-next-line no-console
-    console.error(`❌ Error happened in ${req.method} ${req.originalUrl}`, err);
-  }
+  // Always log the error to the persistent error logger
+  errorLogger.error(`❌ Error in ${req.method} ${req.originalUrl}`, err);
 
   let errorMessages: TErrorMessages[] = [{ path: "", message }];
   if (err.name === "ValidationError") {
