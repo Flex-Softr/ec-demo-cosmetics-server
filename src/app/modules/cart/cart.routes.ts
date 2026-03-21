@@ -1,6 +1,6 @@
 import { Router } from "express";
-import optionalAuthGuard from "../../../middlewares/optionalAuthGuard";
-import validateRequest from "../../../middlewares/validateRequest";
+import optionalAuthGuard from "../../middlewares/optionalAuthGuard";
+import validateRequest from "../../middlewares/validateRequest";
 import { CartController } from "./cart.controller";
 import { CartValidation } from "./cart.validation";
 const router = Router();
@@ -9,7 +9,7 @@ router.get("/", optionalAuthGuard, CartController.getCartInfo);
 
 router.post(
   "/add-to-cart",
-  validateRequest(CartValidation.Cart),
+  validateRequest(CartValidation.addToCart),
   optionalAuthGuard,
   CartController.addToCart
 );

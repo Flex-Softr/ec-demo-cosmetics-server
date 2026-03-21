@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const Cart = z.object({
+const addToCart = z.object({
   body: z.object({
     product: z.string({ required_error: "Product id is required" }),
     quantity: z.number({ required_error: "Quantity is required" }),
@@ -21,4 +21,4 @@ const deleteCart = z.object({
   }),
 });
 
-export const CartValidation = { Cart, updateQuantity, deleteCart };
+export const CartValidation = { addToCart, updateQuantity, deleteCart };

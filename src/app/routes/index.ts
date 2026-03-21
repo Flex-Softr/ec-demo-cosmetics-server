@@ -1,15 +1,16 @@
 import express, { Router } from "express";
 import { AuthRouters } from "../modules/authManagement/auth/auth.routes";
 import { BannerSliderRoutes } from "../modules/bannerSlider/bannerSlider.routes";
-import { CartRoutes } from "../modules/cartManagement/cart/cart.routes";
+import { CartRoutes } from "../modules/cart/cart.routes";
+import { ContactMessageRoutes } from "../modules/contactMessage/contactMessage.routes";
 import { CouponRoutes } from "../modules/coupon/coupon.routes";
 import { CourierRoutes } from "../modules/courier/courier.routes";
 import { DistrictRoutes } from "../modules/district/district.routes";
 import { DivisionRoutes } from "../modules/division/division.routes";
 import { HomepageSectionRoutes } from "../modules/homepageSection/homepageSection.routes";
-import { ContactMessageRoutes } from "../modules/contactMessage/contactMessage.routes";
 import { ImageRoutes } from "../modules/image/image.routes";
 import { ImageToOrderRoutes } from "../modules/imageToOrder/imageToOrder.routes";
+import { MonitoringRoutes } from "../modules/monitoring/health.routes";
 import { FraudCheckRoutes } from "../modules/orderManagement/fraudCheck/fraudCheck.routes";
 import { OrderRoutes } from "../modules/orderManagement/order/order.routes";
 import { ShippingChargeRoutes } from "../modules/orderManagement/shippingCharge/shippingCharge.routes";
@@ -182,6 +183,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/webhook",
     route: WebhookRoutes,
+  },
+  {
+    path: "/health",
+    route: MonitoringRoutes,
   },
 ];
 
