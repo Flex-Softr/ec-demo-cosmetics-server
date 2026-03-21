@@ -11,10 +11,11 @@ import config from "./app/config/config";
 import "./app/crons";
 import { ecSIDHandler } from "./app/middlewares/ecSID";
 import enableCrossOriginResourcePolicy from "./app/middlewares/enableCrossOriginResourcePolicy";
-// import limitRequest from "./app/middlewares/requestLimitHandler";
 import globalErrorhandler from "./app/middlewares/globalErrorHandler";
 import { notFoundRoute } from "./app/middlewares/notFoundRoute";
+import limitRequest from "./app/middlewares/requestLimitHandler";
 import router from "./app/routes";
+import { requestLogger } from "./app/utilities/logger";
 
 const app: Application = express();
 
@@ -45,6 +46,21 @@ app.use(requestIp.mw());
 if (config.env === "development") {
   app.use(morgan("dev"));
 }
+
+// Custom request logger
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/uploads")) {
+    return next();
+  }
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    requestLogger.info(
+      `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`
+    );
+  });
+  next();
+});
 
 // handle custom session
 app.use(ecSIDHandler);
@@ -89,7 +105,7 @@ app.use(
 );
 
 //Global rate limiter
-// app.use("/api/v1", limitRequest(15, 100));
+app.use("/api/v1", limitRequest(15, 1000));
 
 // api endpoints
 app.use("/api/v1", router);

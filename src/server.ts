@@ -1,19 +1,16 @@
-import { consoleLogger, errorLogger, logger } from "./app/utilities/logger";
-
 process.on("uncaughtException", (error) => {
-  consoleLogger.error(
+  errorLogger.error(
     "❌ `Uncaught exception` happened, exiting the process and  closing the server.",
     error
   );
-  consoleLogger.error(error);
   process.exit(1);
 });
 
+import { consoleLogger, errorLogger, logger } from "./app/utilities/logger";
 import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app";
 import config from "./app/config/config";
-// import { deleteDraftProducts } from "./app/modules/productManagement/product/product.utils";
 
 let server: Server;
 /**
@@ -30,8 +27,6 @@ const bootstrap = async () => {
         `✅ The server is running on http://localhost:${config.port}`
       );
     });
-    // draft product deletion after 30 days
-    // deleteDraftProducts.start();
   } catch (error) {
     errorLogger.error(`❌ Can't connect to Database.`, error);
   }
@@ -45,8 +40,9 @@ const bootstrap = async () => {
       server.close(() => {
         process.exit(1);
       });
+    } else {
+      process.exit(1);
     }
-    process.exit(1);
   });
 };
 

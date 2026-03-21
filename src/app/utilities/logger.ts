@@ -1,8 +1,9 @@
 import path from "path";
-import { createLogger, format, transports } from "winston";
+import { createLogger, format, transport, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
+import config from "../config/config";
 
-const { combine, timestamp, label, printf } = format;
+const { combine, timestamp, label, printf, colorize } = format;
 
 // log format
 const myFormat = printf(({ level, message, label, timestamp }) => {
@@ -14,95 +15,92 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
   return `{${date.toDateString()} ${hour}:${minute}:${second}:${milliseconds}} [${label}] ${level}: ${message}`;
 });
 
-const logger = createLogger({
-  level: "info",
-  format: combine(label({ label: "Electro commerce" }), timestamp(), myFormat),
-  transports: [
-    new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(
-        process.cwd(),
-        "logs",
-        "winston",
-        "success",
-        "ec-%DATE%-success.log"
-      ),
-      datePattern: "YYYY-MM-DD-HH",
-      zippedArchive: true,
-      maxSize: "20m",
-      maxFiles: "14d",
-    }),
-  ],
-});
+/**
+ * Helper to create a Winston logger with standard rotation settings.
+ * @param category - Main folder (e.g., 'general', 'modules')
+ * @param subfolder - Subfolder for specific module/context
+ * @param fileNamePrefix - Prefix for the log file
+ * @param level - Logging level
+ */
+const createContextualLogger = (
+  category: string,
+  subfolder: string,
+  fileNamePrefix: string,
+  level: string = "info"
+) => {
+  const activeTransports: transport[] = [];
 
-const errorLogger = createLogger({
-  level: "error",
-  format: combine(label({ label: "Electro commerce" }), timestamp(), myFormat),
-  transports: [
-    new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(
-        process.cwd(),
-        "logs",
-        "winston",
-        "error",
-        "ec-%DATE%-error.log"
-      ),
-      datePattern: "YYYY-MM-DD-HH",
-      zippedArchive: true,
-      maxSize: "20m",
-      maxFiles: "14d",
-    }),
-  ],
-});
+  if (config.env === "development") {
+    // Development Mode: Colorized Console Only (No file spam)
+    activeTransports.push(
+      new transports.Console({
+        format: combine(colorize(), myFormat),
+      })
+    );
+  } else {
+    // Production Mode: Rotating File Logs ONLY (No terminal output)
+    activeTransports.push(
+      new DailyRotateFile({
+        filename: path.join(
+          process.cwd(),
+          "logs",
+          category,
+          subfolder,
+          `ec-%DATE%-${fileNamePrefix}.log`
+        ),
+        datePattern: "YYYY-MM-DD-HH",
+        zippedArchive: true,
+        maxSize: "20m",
+        maxFiles: "14d",
+      })
+    );
+  }
 
-const courierStatusUpdateError = createLogger({
-  level: "error",
-  format: combine(label({ label: "Electro commerce" }), timestamp(), myFormat),
-  transports: [
-    new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(
-        process.cwd(),
-        "logs",
-        "winston",
-        "courierStatusUpdateError",
-        "ec-%DATE%-error.log"
-      ),
-      datePattern: "YYYY-MM-DD-HH",
-      zippedArchive: true,
-      maxSize: "20m",
-      maxFiles: "14d",
-    }),
-  ],
-});
+  return createLogger({
+    level,
+    format: combine(
+      label({ label: "Siddikia Prokashoni" }),
+      timestamp(),
+      myFormat
+    ),
+    transports: activeTransports,
+  });
+};
 
-const lowStockWarningError = createLogger({
-  level: "error",
-  format: combine(label({ label: "Electro commerce" }), timestamp(), myFormat),
-  transports: [
-    new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(
-        process.cwd(),
-        "logs",
-        "winston",
-        "lowStockWarningFailedEmail",
-        "ec-%DATE%-error.log"
-      ),
-      datePattern: "YYYY-MM-DD-HH",
-      zippedArchive: true,
-      maxSize: "20m",
-      maxFiles: "14d",
-    }),
-  ],
-});
+// General Loggers
+const logger = createContextualLogger("general", "success", "success", "info");
+const errorLogger = createContextualLogger(
+  "general",
+  "error",
+  "error",
+  "error"
+);
+const consoleLogger = createContextualLogger(
+  "general",
+  "console",
+  "console",
+  "info"
+);
+const requestLogger = createContextualLogger(
+  "general",
+  "requests",
+  "request",
+  "info"
+);
 
-const consoleLogger = createLogger({
-  level: "info",
-  format: combine(label({ label: "Electro commerce" }), timestamp(), myFormat),
-  transports: [new transports.Console()],
-});
+// Module/Specific Loggers
+const courierStatusUpdateError = createContextualLogger(
+  "modules",
+  "courier",
+  "error",
+  "error"
+);
+const lowStockWarningError = createContextualLogger(
+  "modules",
+  "lowStock",
+  "error",
+  "error"
+);
 
 export {
   consoleLogger,
@@ -110,4 +108,5 @@ export {
   errorLogger,
   logger,
   lowStockWarningError,
+  requestLogger,
 };
