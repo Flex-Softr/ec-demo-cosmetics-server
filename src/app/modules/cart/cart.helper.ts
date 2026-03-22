@@ -38,7 +38,14 @@ const checkInventory = async (payload: {
   let manageStock = false;
   let stockStatus: TStockStatus | undefined = undefined;
   if (item?.variation) {
-    if (!productData) {
+    // If productData doesn't exist or variations are not populated/missing
+    if (
+      !productData ||
+      !productData.variations ||
+      productData.variations.length === 0 ||
+      typeof productData.variations[0] !== "object" ||
+      !("inventory" in (productData.variations[0] as TVariation))
+    ) {
       productData = await ProductModel.findOne(
         { _id: productId },
         { variations: 1, price: 1 }
@@ -53,20 +60,27 @@ const checkInventory = async (payload: {
         .lean();
     }
 
+    if (!productData) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "No product found");
+    }
+
     const specificVariation = productData?.variations?.find(
       (variation: unknown) =>
         (variation as TVariation)?._id?.toString() ===
         item?.variation?.toString()
     ) as unknown as TVariation;
 
-    if (!productData) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "No product found");
+    if (!specificVariation) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Specific variation not found"
+      );
     }
 
-    availableStock =
-      (specificVariation?.inventory as TInventory)?.stockAvailable || 0;
-    manageStock = (specificVariation?.inventory as TInventory)?.manageStock;
-    stockStatus = (specificVariation?.inventory as TInventory)?.stockStatus;
+    const inventory = specificVariation?.inventory as TInventory;
+    availableStock = inventory?.stockAvailable || 0;
+    manageStock = inventory?.manageStock;
+    stockStatus = inventory?.stockStatus;
   } else {
     if (!productData || !productData.inventory) {
       productData = await ProductModel.findById(productId, {
