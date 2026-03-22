@@ -420,9 +420,13 @@ const calculateCouponDiscount = async (
 ) => {
   const userQuery = optionalAuthUserQuery(user);
 
-  userQuery.userId = userQuery.userId
-    ? new Types.ObjectId(userQuery.userId)
-    : undefined;
+  if (user.id) {
+    userQuery.userId = new Types.ObjectId(user.id);
+  }
+
+  if (!userQuery.sessionId && user.sessionId) {
+    userQuery.sessionId = user.sessionId;
+  }
   const { shippingCharge, orderedProducts, salesPage, coupon } = body;
 
   if (!coupon)

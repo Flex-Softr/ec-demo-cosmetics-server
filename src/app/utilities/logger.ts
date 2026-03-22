@@ -3,16 +3,16 @@ import { createLogger, format, transport, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 import config from "../config/config";
 
-const { combine, timestamp, label, printf, colorize } = format;
+const { combine, timestamp, printf, colorize } = format;
 
 // log format
-const myFormat = printf(({ level, message, label, timestamp }) => {
+const myFormat = printf(({ level, message, timestamp }) => {
   const date = new Date(timestamp as string | number | Date);
   const hour = date.getHours();
   const minute = date.getMinutes();
   const second = date.getSeconds();
   const milliseconds = date.getMilliseconds();
-  return `{${date.toDateString()} ${hour}:${minute}:${second}:${milliseconds}} [${label}] ${level}: ${message}`;
+  return `{${date.toDateString()} ${hour}:${minute}:${second}:${milliseconds}} ${level}: ${message}`;
 });
 
 /**
@@ -58,11 +58,7 @@ const createContextualLogger = (
 
   return createLogger({
     level,
-    format: combine(
-      label({ label: "Siddikia Prokashoni" }),
-      timestamp(),
-      myFormat
-    ),
+    format: combine(timestamp(), myFormat),
     transports: activeTransports,
   });
 };

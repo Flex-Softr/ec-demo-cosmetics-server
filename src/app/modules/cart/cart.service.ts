@@ -1,5 +1,4 @@
 import httpStatus from "http-status";
-import moment from "moment";
 import mongoose, { Types } from "mongoose";
 import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
@@ -14,55 +13,19 @@ import { CartHelper } from "./cart.helper";
 import { TCart, TCartData } from "./cart.interface";
 import { Cart } from "./cart.model";
 
-/** Returns the expiry date for a cart item — 30 days from now. */
-const getCartExpireAt = (): Date => {
-  const expiresIn = config.cart_item_expires || "30d";
-  const days = parseInt(expiresIn) || 30;
-  return moment().add(days, "days").toDate();
-};
-
-const mergeGuestCartIntoUser = async (user: TOptionalAuthGuardPayload) => {
-  if (!user.id || !user.sessionId) return;
-
-  const guestCartItems = await Cart.find({
-    sessionId: user.sessionId,
-    userId: { $exists: false },
-  });
-
-  if (guestCartItems.length === 0) return;
-
-  for (const item of guestCartItems) {
-    const existingUserItem = await Cart.findOne({
-      userId: user.id,
-      product: item.product,
-      variation: item.variation,
-    });
-
-    if (existingUserItem) {
-      // Merge: update quantity of existing user item, delete guest item, extend TTL
-      existingUserItem.quantity += item.quantity;
-      existingUserItem.expireAt = getCartExpireAt();
-      await existingUserItem.save();
-      await Cart.deleteOne({ _id: item._id });
-    } else {
-      // Transfer: promote guest cart to user cart, extend TTL
-      item.userId = new Types.ObjectId(user.id);
-      item.expireAt = getCartExpireAt();
-      await item.save();
-    }
-  }
-};
-
 const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
   // Merge guest cart if user is logged in
   if (user.id) {
-    await mergeGuestCartIntoUser(user);
+    await CartHelper.mergeGuestCartIntoUser(user);
   }
 
-  const query = optionalAuthUserQuery(user);
-  if (query.userId) {
-    query.userId = new Types.ObjectId(query.userId);
-  }
+  const userQuery = optionalAuthUserQuery(user);
+  const query = {
+    ...(userQuery.userId && {
+      userId: new Types.ObjectId(userQuery.userId),
+    }),
+    ...(userQuery.sessionId && { sessionId: userQuery.sessionId }),
+  };
 
   const result = await Cart.find(query, {}).populate([
     {
@@ -175,13 +138,14 @@ const addToCartIntoDB = async (
     const cartData: TCartData = {
       userId: user.id,
       sessionId: user.sessionId,
-      expireAt: getCartExpireAt(), // 30 days for all carts
+      expireAt: CartHelper.getCartExpireAt(), // 30 days for all carts
       ...payload,
     };
 
-    const query = optionalAuthUserQuery(user);
+    const userQuery = optionalAuthUserQuery(user);
     const existingCart = await Cart.findOne({
-      ...query,
+      ...(userQuery.userId && { userId: userQuery.userId }),
+      ...(userQuery.sessionId && { sessionId: userQuery.sessionId }),
       product: payload.product,
       variation: payload.variation,
     }).session(session);
@@ -199,7 +163,12 @@ const addToCartIntoDB = async (
 
       await Cart.updateOne(
         { _id: existingCart._id },
-        { $set: { quantity: newQuantity, expireAt: getCartExpireAt() } },
+        {
+          $set: {
+            quantity: newQuantity,
+            expireAt: CartHelper.getCartExpireAt(),
+          },
+        },
         { session }
       );
     } else {
@@ -224,8 +193,12 @@ const updateQuantityIntoDB = async (
   try {
     session.startTransaction();
 
-    let query: Record<string, unknown> = optionalAuthUserQuery(user);
-    query = { ...query, _id: payload._id };
+    const userQuery = optionalAuthUserQuery(user);
+    const query = {
+      ...(userQuery.userId && { userId: userQuery.userId }),
+      ...(userQuery.sessionId && { sessionId: userQuery.sessionId }),
+      _id: payload._id,
+    };
     const cart = await Cart.findOne(query).populate("product").session(session);
 
     if (!cart) {
@@ -246,7 +219,7 @@ const updateQuantityIntoDB = async (
       {
         $set: {
           quantity: Number(payload.quantity) || 1,
-          expireAt: getCartExpireAt(),
+          expireAt: CartHelper.getCartExpireAt(),
         },
       },
       { session }
@@ -266,9 +239,11 @@ const deleteFromCartFromDB = async (
   user: TOptionalAuthGuardPayload,
   payload: { itemId: string }
 ) => {
+  const userQuery = optionalAuthUserQuery(user);
   await Cart.deleteOne({
     _id: payload.itemId,
-    ...optionalAuthUserQuery(user),
+    ...(userQuery.userId && { userId: userQuery.userId }),
+    ...(userQuery.sessionId && { sessionId: userQuery.sessionId }),
   });
   return await getCartFromDB(user);
 };

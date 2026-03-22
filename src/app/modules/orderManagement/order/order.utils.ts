@@ -19,6 +19,7 @@ import { OrderPayment } from "../orderPayment/orderPayment.model";
 import { OrderStatusHistory } from "../orderStatusHistory/orderStatusHistory.model";
 import { TShippingData } from "../shipping/shipping.interface";
 import { Shipping } from "../shipping/shipping.model";
+import { CartHelper } from "../../cart/cart.helper";
 import { OrderHelper } from "./order.helper";
 import {
   TOrder,
@@ -218,9 +219,13 @@ export const createNewOrder = async (
   const user = payload?.user as TOptionalAuthGuardPayload;
   const userQuery = optionalAuthUserQuery(user);
 
-  userQuery.userId = userQuery.userId
-    ? new Types.ObjectId(userQuery.userId)
-    : undefined;
+  if (user.id) {
+    userQuery.userId = new Types.ObjectId(user.id);
+  }
+
+  if (!userQuery.sessionId && user.sessionId) {
+    userQuery.sessionId = user.sessionId;
+  }
 
   let totalCost = 0;
 
@@ -259,6 +264,9 @@ export const createNewOrder = async (
     );
   } else {
     fromWebsite = true;
+    if (user.id) {
+      await CartHelper.mergeGuestCartIntoUser(user);
+    }
     const cart = await OrderHelper.sanitizeCartsForOrder(userQuery);
     orderedProductInfo = cart as unknown as TSanitizedOrProduct[];
   }

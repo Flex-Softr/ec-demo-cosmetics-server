@@ -45,11 +45,10 @@ export class QueryHelper<T> {
     return this;
   }
   paginate(): this {
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    if (this.query?.page || this.query?.limit) {
+    if (this.query?.page && this.query?.limit) {
+      const page = Number(this.query?.page);
+      const limit = Number(this.query?.limit);
+      const skip = (page - 1) * limit;
       this.model = this.model.skip(skip).limit(limit);
     }
     return this;
@@ -70,12 +69,14 @@ export class QueryHelper<T> {
   }> {
     const filter = this.model.getFilter();
     const total = await this.model.model.countDocuments(filter);
-    if (this.query?.page) {
-      const page = Number(this.query?.page) || 1;
-      const limit = Number(this.query?.limit) || 10;
+
+    if (this.query?.page && this.query?.limit) {
+      const page = Number(this.query?.page);
+      const limit = Number(this.query?.limit);
       const totalPage = Math.ceil(total / limit);
       return { page, limit, total, totalPage };
     }
+
     return { page: 1, limit: total, total, totalPage: 1 };
   }
 }
@@ -112,11 +113,10 @@ export class AggregateQueryHelper<T> {
     return this;
   }
   paginate(): this {
-    const page = Number(this.query?.page) || 1;
-    const limit = Number(this.query?.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    if (this.query?.page || this.query?.limit) {
+    if (this.query?.page && this.query?.limit) {
+      const page = Number(this.query?.page);
+      const limit = Number(this.query?.limit);
+      const skip = (page - 1) * limit;
       this.model = this.model.skip(skip).limit(limit);
     }
     return this;
@@ -133,12 +133,13 @@ export class AggregateQueryHelper<T> {
     return this;
   }
   metaData(total: number) {
-    if (this.query?.page) {
-      const page = Number(this.query?.page) || 1;
-      const limit = Number(this.query?.limit) || 10;
+    if (this.query?.page && this.query?.limit) {
+      const page = Number(this.query?.page);
+      const limit = Number(this.query?.limit);
       const totalPage = Math.ceil(total / limit);
       return { page, limit, total, totalPage };
     }
+
     return { page: 1, limit: total, total, totalPage: 1 };
   }
 }
@@ -212,9 +213,9 @@ export class AggregateQueryHelperFacet<T> {
     return this;
   }
   paginate(): this {
-    if (this.query?.page || this.query?.limit) {
-      const page = Number(this.query?.page) || 1;
-      const limit = Number(this.query?.limit) || 10;
+    if (this.query?.page && this.query?.limit) {
+      const page = Number(this.query?.page);
+      const limit = Number(this.query?.limit);
       const skip = (page - 1) * limit;
       const facetStageIndex = this.pipeline.findIndex(
         (stage) => stage.$facet !== undefined
@@ -267,9 +268,9 @@ export class AggregateQueryHelperFacet<T> {
     const result = await this.model.aggregate(this.pipeline);
     const { data = [], total = 0 } = result[0] || {};
     let meta;
-    if (this.query?.page) {
-      const page = Number(this.query?.page) || 1;
-      const limit = Number(this.query?.limit) || 10;
+    if (this.query?.page && this.query?.limit) {
+      const page = Number(this.query?.page);
+      const limit = Number(this.query?.limit);
       const totalPage = Math.ceil(total / limit);
       meta = { page, limit, total, totalPage };
     } else {

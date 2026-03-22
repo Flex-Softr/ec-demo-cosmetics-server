@@ -1,6 +1,10 @@
 import httpStatus from "http-status";
+import moment from "moment";
 import { ClientSession, Types } from "mongoose";
+import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
+import { TOptionalAuthGuardPayload } from "../../types/common";
+import { Cart } from "./cart.model";
 import { STOCK_STATUS } from "../productManagement/inventory/inventory.const";
 import {
   TInventory,
@@ -105,6 +109,47 @@ const checkInventory = async (payload: {
   };
 };
 
+/** Returns the expiry date for a cart item — 30 days from now. */
+const getCartExpireAt = (): Date => {
+  const expiresIn = config.cart_item_expires || "30d";
+  const days = parseInt(expiresIn) || 30;
+  return moment().add(days, "days").toDate();
+};
+
+const mergeGuestCartIntoUser = async (user: TOptionalAuthGuardPayload) => {
+  if (!user.id || !user.sessionId) return;
+
+  const guestCartItems = await Cart.find({
+    sessionId: user.sessionId,
+    userId: { $exists: false },
+  });
+
+  if (guestCartItems.length === 0) return;
+
+  for (const item of guestCartItems) {
+    const existingUserItem = await Cart.findOne({
+      userId: user.id,
+      product: item.product,
+      variation: item.variation,
+    });
+
+    if (existingUserItem) {
+      // Merge: update quantity of existing user item, delete guest item, extend TTL
+      existingUserItem.quantity += item.quantity;
+      existingUserItem.expireAt = getCartExpireAt();
+      await existingUserItem.save();
+      await Cart.deleteOne({ _id: item._id });
+    } else {
+      // Transfer: promote guest cart to user cart, extend TTL
+      item.userId = new Types.ObjectId(user.id);
+      item.expireAt = getCartExpireAt();
+      await item.save();
+    }
+  }
+};
+
 export const CartHelper = {
   checkInventory,
+  getCartExpireAt,
+  mergeGuestCartIntoUser,
 };

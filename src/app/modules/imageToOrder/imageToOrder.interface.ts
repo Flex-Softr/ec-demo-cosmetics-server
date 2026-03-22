@@ -18,7 +18,7 @@ export type TImageToOrderStatus =
 
 export type TImageToOrderData = {
   reqId: string;
-  userId: Types.ObjectId | TUser;
+  userId?: Types.ObjectId | TUser;
   sessionId: string;
   shipping: TShippingData;
   images: TImageToOrderImage[];

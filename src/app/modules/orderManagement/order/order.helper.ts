@@ -1103,7 +1103,13 @@ const sanitizeCartsForOrder = async (userQuery: {
   userId?: Types.ObjectId;
   sessionId?: string;
 }) => {
-  const result = await Cart.find(userQuery, {}).populate([
+  const result = await Cart.find(
+    {
+      ...(userQuery.userId && { userId: userQuery.userId }),
+      ...(userQuery.sessionId && { sessionId: userQuery.sessionId }),
+    },
+    {}
+  ).populate([
     {
       path: "product",
       select: "_id title price isDeleted category inventory publishedStatus",
