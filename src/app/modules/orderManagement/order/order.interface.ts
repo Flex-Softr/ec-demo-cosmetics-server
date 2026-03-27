@@ -30,7 +30,7 @@ export type TOrderStatus =
   | "warranty processing"
   | "processing done"
   | "warranty added"
-  | "On courier"
+  | "on courier"
   | "returned"
   | "partial completed"
   | "completed"
@@ -42,6 +42,7 @@ export type TOrderSourceName =
   | "Landing Page"
   | "App"
   | "Phone Call"
+  | "WhatsApp"
   | "Social Media"
   | "From Office"
   | "Warranty Claimed"
@@ -109,6 +110,7 @@ export type TOrderData = {
   reasonNotes?: string;
   courierDetails?: TCourierDetails;
   deliveryStatus?: string;
+  deliveryMessage?: string;
   messageFromShippingProvider?: string;
   orderSource: TOrderSource;
   userIp?: string;
