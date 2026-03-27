@@ -97,6 +97,7 @@ export const schedulePickOnSteadfast = async (
     success: !!data?.consignment?.consignment_id,
     tracking_code: data?.consignment?.consignment_id?.toString(),
     message: data?.status === 200 ? "Success" : data?.message,
+    status: data?.consignment?.status,
   };
 };
 

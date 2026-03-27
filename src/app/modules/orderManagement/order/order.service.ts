@@ -2739,6 +2739,8 @@ const schedulePickupFromOrderIntoDB = async (
         { _id: order._id },
         {
           status: "On courier",
+          // deliveryStatus: result.status,
+          statusFromShippingProvider: result.status,
           courierDetails: {
             courierProvider: shippingMethod._id,
             trackingId: result.tracking_code,
@@ -2895,9 +2897,8 @@ const bulkSchedulePickupFromOrderIntoDB = async (
             courierProvider: shippingMethod._id,
             trackingId: success.trackingId,
           },
-          deliveryStatus: success.status,
+          // deliveryStatus: success.status,
           statusFromShippingProvider: success.status,
-          messageFromShippingProvider: success.message,
         },
       },
     });

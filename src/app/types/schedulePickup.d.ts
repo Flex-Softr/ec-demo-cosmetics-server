@@ -17,4 +17,5 @@ export type TSchedulePickResponse = {
   success: boolean;
   tracking_code?: string;
   message?: string;
+  status?: string;
 };

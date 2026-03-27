@@ -124,6 +124,9 @@ export const schedulePickOnRedx = async (
   return {
     success: !!data.tracking_id,
     tracking_code: data.tracking_id,
-    message: data.tracking_id ? "Success" : "Failed to get tracking ID",
+    message: data.tracking_id
+      ? "Courier booked successfully"
+      : "Failed to book courier",
+    status: data.tracking_id ? "pickup-pending" : "",
   };
 };

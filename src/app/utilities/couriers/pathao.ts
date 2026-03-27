@@ -228,7 +228,8 @@ export const schedulePickOnPathao = async (
     success: !!result?.data?.consignment_id,
     tracking_code: result?.data?.consignment_id,
     message: result?.data?.consignment_id
-      ? "Success"
-      : "Failed to get consignment ID",
+      ? "Courier booked successfully"
+      : "Failed to book courier",
+    status: result?.data?.order_status,
   };
 };

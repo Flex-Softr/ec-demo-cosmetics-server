@@ -21,9 +21,13 @@ export type TRedXRequestBody = {
 
 export type TRedxResponse = {
   tracking_id: string;
+  status: string;
+  message: string;
+  success: boolean;
 };
 
 export type TRedXParcelStatus =
+  | "pickup-pending"
   | "ready-for-delivery"
   | "delivery-in-progress"
   | "delivered"
