@@ -21,7 +21,7 @@ router.post(
 router.get("/customer/:id", OrderController.getOrderDetailsForCustomer);
 
 router.get(
-  "/admin/order-id/:id",
+  "/admin/:id",
   authGuard({
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     //    requiredPermission: PERMISSIONS.SUPER_ADMIN,
@@ -45,6 +45,23 @@ router.get(
   OrderController.getAllOrdersForAdmin
 );
 
+router.patch(
+  "/update-order-status",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_ORDER,
+  }),
+  validateRequest(OrderValidation.updateOrderStatus),
+  OrderController.updateOrderStatus
+);
+
+router.patch(
+  "/update-order/:id",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
+  validateRequest(OrderValidation.updateOrderDetails),
+  OrderController.updateOrderDetails
+);
+
 router.get(
   "/admin/processing-orders",
   validateRequest(OrderValidation.getOrdersAdmin),
@@ -55,47 +72,8 @@ router.get(
   OrderController.getProcessingOrdersForAdmin
 );
 
-router.get(
-  "/admin/processing-done-on-courier-orders",
-  validateRequest(OrderValidation.getOrdersAdmin),
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
-  }),
-  OrderController.getCourierShipmentOrdersForAdmin
-);
-
-router.get(
-  "/admin/completed-returned",
-  validateRequest(OrderValidation.getOrdersAdmin),
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-  }),
-  OrderController.getCompletedOrdersForAdmin
-);
-
-router.get(
-  "/admin/order-deliver-status",
-  validateRequest(OrderValidation.getOrdersAdmin),
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    // requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
-  }),
-  OrderController.getMonitorDeliveryOrdersForAdmin
-);
-
 router.patch(
-  "/update-status",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.MANAGE_ORDER,
-  }),
-  validateRequest(OrderValidation.updateOrderStatus),
-  OrderController.updateOrderStatus
-);
-
-router.patch(
-  "/update-processing-status",
+  "/update-processing-order-status",
   authGuard({
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_PROCESSING_ORDER,
@@ -104,80 +82,14 @@ router.patch(
   OrderController.updateProcessingOrderStatus
 );
 
-router.patch(
-  "/book-courier-and-update-status",
+router.get(
+  "/admin/courier-shipment-orders",
+  validateRequest(OrderValidation.getOrdersAdmin),
   authGuard({
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
   }),
-  validateRequest(OrderValidation.bookCourierAndUpdateStatus),
-  OrderController.bookCourierAndUpdateStatus
-);
-
-router.patch(
-  "/update-order/:id",
-  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
-  validateRequest(OrderValidation.updateOrderDetails),
-  OrderController.updateOrderDetails
-);
-
-router.delete(
-  "/delete-many",
-  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
-  validateRequest(OrderValidation.deleteOrders),
-  OrderController.deleteOrders
-);
-
-router.get(
-  "/orders-count-by-status",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.SUPER_ADMIN,
-  }),
-  OrderController.getOrderCountsByStatus
-);
-
-router.post(
-  "/update-order-delivery-status",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
-  }),
-  OrderController.syncDeliveryStatus
-);
-
-router.get(
-  "/get-customer-order-count/:phoneNumber",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    // requiredPermission: PERMISSIONS.ORDER.MANAGE,
-  }),
-  OrderController.getCustomerOrderCountByPhone
-);
-
-router.get(
-  "/guest-order-history/:phoneNumber",
-  OrderController.getGuestOrdersByPhone
-);
-
-router.get("/track/:orderId", OrderController.getOrderTrackingInfo);
-
-router.patch(
-  "/manage-return-partial",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.MANAGE_PROCESSING_ORDER,
-  }),
-  OrderController.manageReturnAndPartialOrders
-);
-
-router.get(
-  "/get-phone-numbers",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    requiredPermission: PERMISSIONS.MANAGE_SMS,
-  }),
-  OrderController.getPhoneNumbersForSMS
+  OrderController.getCourierShipmentOrdersForAdmin
 );
 
 router.post(
@@ -198,6 +110,75 @@ router.post(
   }),
   validateRequest(OrderValidation.bulkSchedulePickupForOrders),
   OrderController.bulkSchedulePickupForOrders
+);
+
+router.get(
+  "/admin/monitor-delivery-orders",
+  validateRequest(OrderValidation.getOrdersAdmin),
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    // requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
+  }),
+  OrderController.getMonitorDeliveryOrdersForAdmin
+);
+
+router.patch(
+  "/update-monitor-delivery-status",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_PROCESSING_ORDER,
+  }),
+  OrderController.updateMonitorDeliveryOrderStatus
+);
+
+router.get(
+  "/admin/completed-orders",
+  validateRequest(OrderValidation.getOrdersAdmin),
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+  }),
+  OrderController.getCompletedOrdersForAdmin
+);
+
+router.delete(
+  "/delete-many",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
+  validateRequest(OrderValidation.deleteOrders),
+  OrderController.deleteOrders
+);
+
+router.get(
+  "/orders-count-by-status",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.SUPER_ADMIN,
+  }),
+  OrderController.getOrderCountsByStatus
+);
+
+router.get(
+  "/get-customer-order-count/:phoneNumber",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    // requiredPermission: PERMISSIONS.ORDER.MANAGE,
+  }),
+  OrderController.getCustomerOrderCountByPhone
+);
+
+router.get(
+  "/guest-order-history/:phoneNumber",
+  OrderController.getGuestOrdersByPhone
+);
+
+router.get("/track/:orderId", OrderController.getOrderTrackingInfo);
+
+router.get(
+  "/get-phone-numbers",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_SMS,
+  }),
+  OrderController.getPhoneNumbersForSMS
 );
 
 router.get(

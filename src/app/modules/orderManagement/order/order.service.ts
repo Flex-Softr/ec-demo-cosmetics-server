@@ -1,9 +1,8 @@
-﻿import { Request } from "express";
+import { Request } from "express";
 import httpStatus from "http-status";
 import mongoose, { PipelineStage, Types } from "mongoose";
 import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
-import updateCourierStatus from "../../../helper/updateCourierStatus";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
 import { convertIso } from "../../../utilities/ISOConverter";
@@ -458,20 +457,6 @@ const getCourierShipmentOrders = async (query: Record<string, string>) => {
 ----------------------------------------- */
 const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
   const matchQuery: Record<string, unknown> = {};
-  // const acceptableStatus: TOrderDeliveryStatus[] = [
-  //   "in_review",
-  //   "pending",
-  //   "hold",
-  //   "delivered_approval_pending",
-  //   "cancelled_approval_pending",
-  //   "partial_delivered_approval_pending",
-  //   "unknown_approval_pending",
-  //   "delivered",
-  //   "cancelled",
-  //   "partial_delivered",
-  //   "unknown",
-  // ];
-
   if (query.deliveryStatus) {
     matchQuery.deliveryStatus = query?.deliveryStatus as string;
   }
@@ -491,15 +476,6 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
       $lte: endTime,
     };
   }
-
-  // if (
-  //   (!query.deliveryStatus || query.deliveryStatus === "all") &&
-  //   !query.search
-  // ) {
-  //   matchQuery.deliveryStatus = {
-  //     $in: acceptableStatus,
-  //   };
-  // }
 
   const pipeline = OrderHelper.orderDetailsPipeline();
 
@@ -532,25 +508,11 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
     ]))![0]?.total || 0;
   const meta = orderQuery.metaData(total);
 
-  // Orders counts
-  const statusMap = {
-    in_review: 0,
-    pending: 0,
-    hold: 0,
-    delivered_approval_pending: 0,
-    cancelled_approval_pending: 0,
-    partial_delivered_approval_pending: 0,
-    unknown_approval_pending: 0,
-    delivered: 0,
-    cancelled: 0,
-    partial_delivered: 0,
-  };
+  // generate dynamically by delivery status value
   const countRes = await Order.aggregate([
     {
       $match: {
-        deliveryStatus: {
-          $in: Object.keys(statusMap),
-        },
+        deliveryStatus: { $exists: true, $ne: null },
         status: "On courier",
       },
     },
@@ -561,9 +523,12 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
       },
     },
   ]);
+
+  const statusMap: Record<string, number> = {};
   countRes.forEach(({ _id, total }) => {
-    statusMap[_id as keyof typeof statusMap] = total;
+    if (_id) statusMap[_id] = total;
   });
+
   const formattedCount = Object.entries(statusMap).map(([name, total]) => ({
     name,
     total,
@@ -1216,239 +1181,6 @@ const updateProcessingOrderStatus = async (
     await session.endSession();
     throw error;
   }
-};
-
-/* -----------------------------------------
-                Book courier
--------------------------------------------- */
-const bookCourierAndUpdateStatus = async (
-  orderIds: mongoose.Types.ObjectId[],
-  status: Partial<TOrderStatus>,
-  courierProvider: Types.ObjectId,
-  user: TJwtPayload
-) => {
-  if (!["On courier", "canceled", "completed"].includes(status)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, `Can't change to ${status}`);
-  }
-  if (orderIds.length > maxOrderStatusChangeAtATime) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      `Can't update more than ${maxOrderStatusChangeAtATime} orders at a time`
-    );
-  }
-
-  let successCourierOrders: {
-    orderId?: string;
-    trackingId?: string;
-    status?: string;
-  }[] = [];
-  let failedCourierOrders: string[] = [];
-
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-    const pipeline = OrderHelper.orderStatusUpdatingPipeline(orderIds, [
-      "processing done",
-    ]);
-    const orders = await Order.aggregate(pipeline).session(session);
-
-    // courier booking request
-    //Steed fast
-    if (status === "On courier") {
-      const courier = await Courier.findById(courierProvider, {
-        name: 1,
-        slug: 1,
-        credentials: 1,
-        isActive: 1,
-      });
-
-      if (!courier)
-        throw new ApiError(httpStatus.BAD_REQUEST, "No courier data found");
-      if (!courier.isActive)
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          `Courier '${courier.name}' is not active`
-        );
-      if (courier.slug === "steedfast") {
-        const { success: successRequests, error: failedRequests } =
-          await schedulePickOnSteadfastBulk(orders, courier);
-
-        successCourierOrders = successRequests;
-        failedCourierOrders = failedRequests.map((item) => item.orderId);
-      }
-    }
-
-    let ordersForUpdateIntoDB = orders;
-    if (failedCourierOrders.length) {
-      const courierOrdersOrderId = successCourierOrders.map(
-        (item) => item.orderId
-      );
-      ordersForUpdateIntoDB = orders.filter((item) =>
-        courierOrdersOrderId.includes(item?.orderId)
-      );
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const orderUpdateQuery: any[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const historyUpdateQuery: any[] = [];
-    ordersForUpdateIntoDB.forEach((order) => {
-      if (status === "On courier") {
-        const trackingId = successCourierOrders.find(
-          (item) => item.orderId === order?.orderId
-        )?.trackingId;
-        orderUpdateQuery.push({
-          updateOne: {
-            filter: { _id: order?._id },
-            update: {
-              status,
-              courierDetails: { courierProvider, trackingId },
-              deliveryStatus: "in_review",
-            },
-          },
-        });
-      }
-      historyUpdateQuery.push({
-        updateOne: {
-          filter: { _id: order?.statusHistory },
-          update: {
-            $push: {
-              history: {
-                status,
-                updatedBy: user.id,
-              },
-            },
-          },
-        },
-      });
-    });
-
-    // Update status on our DB
-    if (status === "canceled") {
-      await Order.updateMany(
-        { _id: orders.map((item) => new Types.ObjectId(item?._id)) },
-        { $set: { status: "canceled" } },
-        { session }
-      );
-
-      for (const order of orders) {
-        triggerRefundEvent({
-          ph: (order as unknown as { shippingData: TShipping })?.shippingData
-            ?.phoneNumber,
-          em: (order as unknown as { shippingData: TShipping })?.shippingData
-            ?.email,
-          value: Number(order?.total ?? 0),
-          contents: (
-            order?.orderedProducts as {
-              productId: string;
-              title: string;
-              quantity: number;
-              unitPrice: number;
-            }[]
-          ).map((product) => ({
-            id: (
-              product as unknown as { productId: string }
-            )?.productId?.toString(),
-            name: (product as unknown as { title: string })?.title,
-            quantity: product?.quantity,
-            price: product?.unitPrice,
-          })),
-          orderId: order?.orderId,
-        });
-
-        await updateStockOrderCancelDelete(
-          order?.orderedProducts as unknown as TUpStOnCanDelProducts[],
-          session
-        );
-        if (
-          (order?.orderedProducts as TOrderedProduct[]).map(
-            (item) => item.warranty
-          ).length
-        ) {
-          await deleteWarrantyFromOrder(
-            (order?.orderedProducts as TOrderedProduct[]) || [],
-            order?._id,
-            session
-          );
-        }
-      }
-    } else if (status === "On courier") {
-      await Order.bulkWrite(orderUpdateQuery, { session });
-    } else if (status === "completed") {
-      await Order.updateMany(
-        { _id: orders.map((item) => new Types.ObjectId(item?._id)) },
-        { $set: { status: "completed" } },
-        { session }
-      );
-    }
-    await OrderStatusHistory.bulkWrite(historyUpdateQuery, { session });
-
-    let SMSReviverInformations: TSMSReceiverInfo[] = [];
-
-    if (status === "On courier") {
-      SMSReviverInformations = successCourierOrders.map((order) => {
-        const currentOrder = orders.find(
-          (item) => item.orderId === order.orderId
-        );
-        const shipping = currentOrder?.shippingData as TShipping;
-
-        return {
-          fullName: shipping.fullName || "",
-          phoneNumber: shipping.phoneNumber || "",
-          email: shipping.email || "",
-          orderId: currentOrder.orderId || "",
-          trackingId: order.trackingId || "",
-          total: currentOrder.total.toString() || "0",
-        };
-      });
-    }
-
-    if (status === "canceled") {
-      SMSReviverInformations = orders.map((order) => {
-        const shipping = (order as unknown as { shippingData: TShipping })
-          ?.shippingData;
-
-        return {
-          fullName: shipping.fullName || "",
-          phoneNumber: shipping.phoneNumber || "",
-          email: shipping.email || "",
-          orderId: order?.orderId || "",
-          total: order?.total.toString() || "0",
-        };
-      });
-    }
-
-    if (SMSReviverInformations.length) {
-      SMSReviverInformations.forEach(async (receiver) => {
-        await OrderHelper.sendOrderSMSNotification(
-          receiver,
-          status === "On courier"
-            ? "courier_assigned"
-            : status === "canceled"
-              ? "order_canceled"
-              : undefined
-        );
-      });
-    }
-
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-
-  const message = status === "canceled" ? "Canceled successfully." : undefined;
-
-  return {
-    success: status === "On courier" ? successCourierOrders?.length : undefined,
-    error: status === "On courier" ? failedCourierOrders?.length : undefined,
-    message:
-      status === "On courier" && failedCourierOrders.length > 0
-        ? `Finished with ${failedCourierOrders.length} failed orders: ${failedCourierOrders.join(", ")}`
-        : message,
-  };
 };
 
 /* -----------------------------------------
@@ -2294,13 +2026,6 @@ const getOrderCountsByStatus = async () => {
 };
 
 /* -----------------------------------------
-          Update order delivery status
--------------------------------------------- */
-const syncDeliveryStatus = async () => {
-  await updateCourierStatus();
-};
-
-/* -----------------------------------------
         Get a customers orders counts
 -------------------------------------------- */
 const getCustomerOrderCountByPhone = async (phoneNumber: string) => {
@@ -2498,7 +2223,7 @@ const getOrderTrackingInfo = async (orderId: string) => {
 /* -----------------------------------------
     Manage return and partial return orders
 -------------------------------------------- */
-const manageReturnAndPartialOrders = async (
+const updateMonitorDeliveryOrderStatus = async (
   orderIds: mongoose.Types.ObjectId[],
   status: Partial<TOrderStatus>,
   user: TJwtPayload
@@ -3006,7 +2731,6 @@ export const OrderServices = {
   createOrder,
   updateOrderStatus,
   updateProcessingOrderStatus,
-  bookCourierAndUpdateStatus,
   getAllOrdersForCustomer,
   getOrderDetailsForCustomer,
   getOrderDetailsForAdmin,
@@ -3015,13 +2739,12 @@ export const OrderServices = {
   updateOrderDetails,
   deleteOrders,
   getOrderCountsByStatus,
-  syncDeliveryStatus,
   getProcessingOrders,
   getCourierShipmentOrders,
   getCustomerOrderCountByPhone,
   getOrderTrackingInfo,
   getMonitorDeliveryOrders,
-  manageReturnAndPartialOrders,
+  updateMonitorDeliveryOrderStatus,
   getPhoneNumbersForSMS,
   schedulePickupForAOrder,
   bulkSchedulePickupForOrders,

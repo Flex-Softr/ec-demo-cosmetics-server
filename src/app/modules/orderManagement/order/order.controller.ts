@@ -1,7 +1,6 @@
 ﻿import { Request, Response } from "express";
 import httpStatus from "http-status";
-import mongoose, { Types } from "mongoose";
-import config from "../../../config/config";
+import mongoose from "mongoose";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import catchAsync from "../../../utilities/catchAsync";
 import successResponse from "../../../utilities/successResponse";
@@ -179,25 +178,6 @@ const updateProcessingOrderStatus = catchAsync(
   }
 );
 
-const bookCourierAndUpdateStatus = catchAsync(
-  async (req: Request, res: Response) => {
-    const { status, orderIds } = req.body;
-    const courierProvider = new Types.ObjectId(config.courier_provider_id);
-    const { message, ...result } =
-      await OrderServices.bookCourierAndUpdateStatus(
-        orderIds,
-        status,
-        courierProvider,
-        req.user as TJwtPayload
-      );
-    successResponse(res, {
-      statusCode: httpStatus.OK,
-      message: message || "Courier booked successfully",
-      data: result,
-    });
-  }
-);
-
 const updateOrderDetails = catchAsync(async (req: Request, res: Response) => {
   await OrderServices.updateOrderDetails(
     req.params.id as unknown as mongoose.Types.ObjectId,
@@ -229,14 +209,6 @@ const getOrderCountsByStatus = catchAsync(
     });
   }
 );
-
-const syncDeliveryStatus = catchAsync(async (req: Request, res: Response) => {
-  await OrderServices.syncDeliveryStatus();
-  successResponse(res, {
-    statusCode: httpStatus.OK,
-    message: "Order delivery status updated successfully",
-  });
-});
 
 const getCustomerOrderCountByPhone = catchAsync(
   async (req: Request, res: Response) => {
@@ -274,10 +246,10 @@ const getOrderTrackingInfo = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const manageReturnAndPartialOrders = catchAsync(
+const updateMonitorDeliveryOrderStatus = catchAsync(
   async (req: Request, res: Response) => {
     const { orderIds, status } = req.body;
-    await OrderServices.manageReturnAndPartialOrders(
+    await OrderServices.updateMonitorDeliveryOrderStatus(
       orderIds,
       status,
       req.user as TJwtPayload
@@ -353,14 +325,12 @@ export const OrderController = {
   updateOrderDetails,
   deleteOrders,
   getOrderCountsByStatus,
-  syncDeliveryStatus,
   updateProcessingOrderStatus,
-  bookCourierAndUpdateStatus,
   getCourierShipmentOrdersForAdmin,
   getCustomerOrderCountByPhone,
   getOrderTrackingInfo,
   getMonitorDeliveryOrdersForAdmin,
-  manageReturnAndPartialOrders,
+  updateMonitorDeliveryOrderStatus,
   getPhoneNumbersForSMS,
   schedulePickupForAOrder,
   bulkSchedulePickupForOrders,
