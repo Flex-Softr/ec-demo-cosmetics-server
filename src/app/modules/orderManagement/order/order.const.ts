@@ -13,7 +13,7 @@ export const orderStatus: TOrderStatus[] = [
   "follow up",
   "processing done",
   "warranty added",
-  "On courier",
+  "on courier",
   "canceled",
   "returned",
   "partial completed",
@@ -26,6 +26,7 @@ export const orderSources: TOrderSourceName[] = [
   "Landing Page",
   "App",
   "Phone Call",
+  "WhatsApp",
   "Social Media",
   "From Office",
   "Warranty Claimed",
@@ -83,7 +84,7 @@ export const orderStatusWithDesc: TOrderStatusWithDesc[] = [
     },
   },
   {
-    status: "On courier",
+    status: "on courier",
     description: {
       bn: "আপনার অর্ডারটি কুরিয়ারের মাধ্যমে প্রেরণ করা হয়েছে এবং শীঘ্রই পৌঁছে যাবে।",
       en: "Your order has been dispatched via courier and will arrive soon.",

@@ -94,7 +94,7 @@ const getAllOrdersForAdmin = async (query: Record<string, string>) => {
       "warranty processing",
       "processing done",
       "warranty added",
-      "On courier",
+      "on courier",
       "canceled",
       "returned",
       "partial completed",
@@ -231,7 +231,7 @@ const getProcessingOrders = async (query: Record<string, string>) => {
       "pending",
       "confirmed",
       "follow up",
-      "On courier",
+      "on courier",
       "canceled",
       "returned",
       "partial completed",
@@ -341,7 +341,7 @@ const getProcessingOrders = async (query: Record<string, string>) => {
 ----------------------------------------- */
 const getCourierShipmentOrders = async (query: Record<string, string>) => {
   const matchQuery: Record<string, unknown> = {};
-  const acceptableStatus: TOrderStatus[] = ["processing done", "On courier"];
+  const acceptableStatus: TOrderStatus[] = ["processing done", "on courier"];
 
   if (query.search) {
     acceptableStatus.push(
@@ -424,7 +424,7 @@ const getCourierShipmentOrders = async (query: Record<string, string>) => {
   // Orders counts
   const statusMap = {
     "processing done": 0,
-    "On courier": 0,
+    "on courier": 0,
   };
   const countRes = await Order.aggregate([
     {
@@ -480,7 +480,7 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
   const pipeline = OrderHelper.orderDetailsPipeline();
 
   pipeline.unshift({
-    $match: { status: "On courier", ...matchQuery },
+    $match: { status: "on courier", ...matchQuery },
   });
 
   if (query.search) {
@@ -503,7 +503,7 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
   const data = await orderQuery.model;
   const total =
     (await Order.aggregate([
-      { $match: { status: "On courier" } },
+      { $match: { status: "on courier" } },
       { $count: "total" },
     ]))![0]?.total || 0;
   const meta = orderQuery.metaData(total);
@@ -513,7 +513,7 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
     {
       $match: {
         deliveryStatus: { $exists: true, $ne: null },
-        status: "On courier",
+        status: "on courier",
       },
     },
     {
@@ -524,9 +524,13 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
     },
   ]);
 
-  const statusMap: Record<string, number> = {};
+  const statusMap: Record<string, number> = {
+    all: 0,
+  };
+
   countRes.forEach(({ _id, total }) => {
     if (_id) statusMap[_id] = total;
+    statusMap.all += total;
   });
 
   const formattedCount = Object.entries(statusMap).map(([name, total]) => ({
@@ -564,7 +568,7 @@ const getCompletedOrders = async (query: Record<string, string>) => {
       "pending",
       "confirmed",
       "follow up",
-      "On courier",
+      "on courier",
       "canceled",
       "deleted",
       "processing",
@@ -2061,7 +2065,7 @@ const getCustomerOrderCountByPhone = async (phoneNumber: string) => {
     "follow up": 0,
     "processing done": 0,
     "warranty added": 0,
-    "On courier": 0,
+    "on courier": 0,
     canceled: 0,
     returned: 0,
     "partly returned": 0,
@@ -2228,7 +2232,7 @@ const updateMonitorDeliveryOrderStatus = async (
   status: Partial<TOrderStatus>,
   user: TJwtPayload
 ) => {
-  const changeableStatus: Partial<TOrderStatus[]> = ["On courier"];
+  const changeableStatus: Partial<TOrderStatus[]> = ["on courier"];
   const acceptableStatus = ["completed", "partial completed", "returned"];
   if (![...acceptableStatus].includes(status)) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Can't change to ${status}`);
@@ -2455,7 +2459,7 @@ const schedulePickupForAOrder = async (
       await Order.updateOne(
         { _id: order._id },
         {
-          status: "On courier",
+          status: "on courier",
           courierDetails: {
             courierProvider: shippingMethod._id,
             trackingId: result.tracking_code,
@@ -2469,7 +2473,7 @@ const schedulePickupForAOrder = async (
         {
           $push: {
             history: {
-              status: "On courier",
+              status: "on courier",
               updatedBy: user.id,
             },
           },
@@ -2607,7 +2611,7 @@ const bulkSchedulePickupForOrders = async (
       updateOne: {
         filter: { _id: order._id },
         update: {
-          status: "On courier",
+          status: "on courier",
           courierDetails: {
             courierProvider: shippingMethod._id,
             trackingId: success.trackingId,
@@ -2623,7 +2627,7 @@ const bulkSchedulePickupForOrders = async (
         update: {
           $push: {
             history: {
-              status: "On courier",
+              status: "on courier",
               updatedBy: user.id,
             },
           },

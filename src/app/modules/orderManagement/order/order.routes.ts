@@ -1,4 +1,4 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { PERMISSIONS } from "../../../const/permission.const";
 import authGuard from "../../../middlewares/authGuard";
 import optionalAuthGuard from "../../../middlewares/optionalAuthGuard";
@@ -19,15 +19,6 @@ router.post(
 );
 
 router.get("/customer/:id", OrderController.getOrderDetailsForCustomer);
-
-router.get(
-  "/admin/:id",
-  authGuard({
-    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
-    //    requiredPermission: PERMISSIONS.SUPER_ADMIN,
-  }),
-  OrderController.getOrderDetailsForAdmin
-);
 
 router.get(
   "/customer",
@@ -140,6 +131,15 @@ router.get(
   OrderController.getCompletedOrdersForAdmin
 );
 
+// Must be declared AFTER all specific /admin/... routes to avoid wildcard conflict
+router.get(
+  "/admin/:id",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    //    requiredPermission: PERMISSIONS.SUPER_ADMIN,
+  }),
+  OrderController.getOrderDetailsForAdmin
+);
 router.delete(
   "/delete-many",
   authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
