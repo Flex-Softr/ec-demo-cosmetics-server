@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+﻿import { Request, Response } from "express";
 import httpStatus from "http-status";
 import mongoose, { Types } from "mongoose";
 import config from "../../../config/config";
@@ -11,7 +11,7 @@ import { TOrder } from "./order.interface";
 import { OrderServices } from "./order.service";
 
 const createOrder = catchAsync(async (req: Request, res: Response) => {
-  const result = await OrderServices.createOrderIntoDB(req as Request);
+  const result = await OrderServices.createOrder(req as Request);
 
   successResponse<TOrder>(res, {
     statusCode: httpStatus.CREATED,
@@ -20,11 +20,11 @@ const createOrder = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getOrderInfoByOrderIdCustomer = catchAsync(
+const getOrderDetailsForCustomer = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const result = await OrderServices.getOrderInfoByOrderIdCustomerFromDB(id);
+    const result = await OrderServices.getOrderDetailsForCustomer(id);
 
     successResponse(res, {
       statusCode: httpStatus.OK,
@@ -34,11 +34,11 @@ const getOrderInfoByOrderIdCustomer = catchAsync(
   }
 );
 
-const getOrderInfoByOrderIdAdmin = catchAsync(
+const getOrderDetailsForAdmin = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const result = await OrderServices.getOrderInfoByOrderIdAdminFromDB(
+    const result = await OrderServices.getOrderDetailsForAdmin(
       id as unknown as mongoose.Types.ObjectId
     );
 
@@ -50,21 +50,23 @@ const getOrderInfoByOrderIdAdmin = catchAsync(
   }
 );
 
-const getAllOrdersCustomer = catchAsync(async (req: Request, res: Response) => {
-  const result = await OrderServices.getAllOrdersCustomerFromDB(
-    req.user as TOptionalAuthGuardPayload
-  );
+const getAllOrdersForCustomer = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await OrderServices.getAllOrdersForCustomer(
+      req.user as TOptionalAuthGuardPayload
+    );
 
-  successResponse(res, {
-    statusCode: httpStatus.OK,
-    message: "Customers orders info retrieved successfully",
-    data: result,
-  });
-});
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Customers orders info retrieved successfully",
+      data: result,
+    });
+  }
+);
 
-const getAllOrdersAdmin = catchAsync(async (req: Request, res: Response) => {
+const getAllOrdersForAdmin = catchAsync(async (req: Request, res: Response) => {
   const { meta, data, countsByStatus } =
-    await OrderServices.getAllOrdersAdminFromDB(
+    await OrderServices.getAllOrdersForAdmin(
       req.query as unknown as Record<string, string>
     );
   successResponse(res, {
@@ -78,10 +80,10 @@ const getAllOrdersAdmin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getProcessingOrdersAdmin = catchAsync(
+const getProcessingOrdersForAdmin = catchAsync(
   async (req: Request, res: Response) => {
     const { countsByStatus, meta, data } =
-      await OrderServices.getProcessingOrdersAdminFromDB(
+      await OrderServices.getProcessingOrders(
         req.query as unknown as Record<string, string>
       );
     successResponse(res, {
@@ -96,10 +98,10 @@ const getProcessingOrdersAdmin = catchAsync(
   }
 );
 
-const getCompletedOrdersAdmin = catchAsync(
+const getCompletedOrdersForAdmin = catchAsync(
   async (req: Request, res: Response) => {
     const { countsByStatus, meta, data } =
-      await OrderServices.getCompletedOrdersAdminFromDB(
+      await OrderServices.getCompletedOrders(
         req.query as unknown as Record<string, string>
       );
     successResponse(res, {
@@ -114,10 +116,10 @@ const getCompletedOrdersAdmin = catchAsync(
   }
 );
 
-const getProcessingDoneCourierOrdersAdmin = catchAsync(
+const getCourierShipmentOrdersForAdmin = catchAsync(
   async (req: Request, res: Response) => {
     const { countsByStatus, meta, data } =
-      await OrderServices.getProcessingDoneCourierOrdersAdminFromDB(
+      await OrderServices.getCourierShipmentOrders(
         req.query as unknown as Record<string, string>
       );
     successResponse(res, {
@@ -132,10 +134,10 @@ const getProcessingDoneCourierOrdersAdmin = catchAsync(
   }
 );
 
-const getOrdersByDeliveryStatus = catchAsync(
+const getMonitorDeliveryOrdersForAdmin = catchAsync(
   async (req: Request, res: Response) => {
     const { countsByStatus, meta, data } =
-      await OrderServices.getOrdersByDeliveryStatusFromDB(
+      await OrderServices.getMonitorDeliveryOrders(
         req.query as unknown as Record<string, string>
       );
     successResponse(res, {
@@ -150,10 +152,10 @@ const getOrdersByDeliveryStatus = catchAsync(
   }
 );
 
-const updateStatus = catchAsync(async (req: Request, res: Response) => {
+const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
 
-  await OrderServices.updateOrderStatusIntoDB(user as TJwtPayload, req.body);
+  await OrderServices.updateOrderStatus(user as TJwtPayload, req.body);
 
   successResponse<TOrderStatusHistory>(res, {
     statusCode: httpStatus.OK,
@@ -161,10 +163,10 @@ const updateStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateProcessingStatus = catchAsync(
+const updateProcessingOrderStatus = catchAsync(
   async (req: Request, res: Response) => {
     const { orderIds, status } = req.body;
-    await OrderServices.updateProcessingStatusIntoDB(
+    await OrderServices.updateProcessingOrderStatus(
       orderIds,
       status,
       req.user as TJwtPayload
@@ -182,7 +184,7 @@ const bookCourierAndUpdateStatus = catchAsync(
     const { status, orderIds } = req.body;
     const courierProvider = new Types.ObjectId(config.courier_provider_id);
     const { message, ...result } =
-      await OrderServices.bookCourierAndUpdateStatusIntoDB(
+      await OrderServices.bookCourierAndUpdateStatus(
         orderIds,
         status,
         courierProvider,
@@ -196,53 +198,51 @@ const bookCourierAndUpdateStatus = catchAsync(
   }
 );
 
-const updateOrderDetailsByAdmin = catchAsync(
-  async (req: Request, res: Response) => {
-    await OrderServices.updateOrderDetailsByAdminIntoDB(
-      req.params.id as unknown as mongoose.Types.ObjectId,
-      req.body
-    );
+const updateOrderDetails = catchAsync(async (req: Request, res: Response) => {
+  await OrderServices.updateOrderDetails(
+    req.params.id as unknown as mongoose.Types.ObjectId,
+    req.body
+  );
 
-    successResponse(res, {
-      statusCode: httpStatus.OK,
-      message: "Order details updated successfully.",
-    });
-  }
-);
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Order details updated successfully.",
+  });
+});
 
-const deleteOrdersById = catchAsync(async (req: Request, res: Response) => {
+const deleteOrders = catchAsync(async (req: Request, res: Response) => {
   const { orderIds } = req.body;
-  await OrderServices.deleteOrdersByIdFromBD(orderIds);
+  await OrderServices.deleteOrders(orderIds);
   successResponse(res, {
     statusCode: httpStatus.OK,
     message: "Order deleted successfully.",
   });
 });
 
-const orderCountsByStatus = catchAsync(async (req: Request, res: Response) => {
-  const result = await OrderServices.orderCountsByStatusFromBD();
-  successResponse(res, {
-    statusCode: httpStatus.OK,
-    message: "Orders count by status",
-    data: result,
-  });
-});
-
-const updateOrdersDeliveryStatus = catchAsync(
+const getOrderCountsByStatus = catchAsync(
   async (req: Request, res: Response) => {
-    await OrderServices.updateOrdersDeliveryStatusIntoDB();
+    const result = await OrderServices.getOrderCountsByStatus();
     successResponse(res, {
       statusCode: httpStatus.OK,
-      message: "Order delivery status updated successfully",
+      message: "Orders count by status",
+      data: result,
     });
   }
 );
 
-const getCustomersOrdersCountByPhone = catchAsync(
+const syncDeliveryStatus = catchAsync(async (req: Request, res: Response) => {
+  await OrderServices.syncDeliveryStatus();
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Order delivery status updated successfully",
+  });
+});
+
+const getCustomerOrderCountByPhone = catchAsync(
   async (req: Request, res: Response) => {
     const { phoneNumber } = req.params;
     const result =
-      await OrderServices.getCustomersOrdersCountByPhoneFromDB(phoneNumber);
+      await OrderServices.getCustomerOrderCountByPhone(phoneNumber);
     successResponse(res, {
       statusCode: httpStatus.OK,
       message: "Order delivery status updated successfully",
@@ -251,11 +251,10 @@ const getCustomersOrdersCountByPhone = catchAsync(
   }
 );
 
-const getGuestOrderHistoryByPhone = catchAsync(
+const getGuestOrdersByPhone = catchAsync(
   async (req: Request, res: Response) => {
     const { phoneNumber } = req.params;
-    const result =
-      await OrderServices.getGuestOrderHistoryByPhoneFromDB(phoneNumber);
+    const result = await OrderServices.getGuestOrdersByPhone(phoneNumber);
 
     successResponse(res, {
       statusCode: httpStatus.OK,
@@ -275,10 +274,10 @@ const getOrderTrackingInfo = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const returnAndPartialManagement = catchAsync(
+const manageReturnAndPartialOrders = catchAsync(
   async (req: Request, res: Response) => {
     const { orderIds, status } = req.body;
-    await OrderServices.returnAndPartialManagementIntoDB(
+    await OrderServices.manageReturnAndPartialOrders(
       orderIds,
       status,
       req.user as TJwtPayload
@@ -290,9 +289,9 @@ const returnAndPartialManagement = catchAsync(
   }
 );
 
-const getMobileNumbersForSendingSMS = catchAsync(
+const getPhoneNumbersForSMS = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await OrderServices.getMobileNumbersForSendingSMSFromDB(
+    const result = await OrderServices.getPhoneNumbersForSMS(
       req.query as unknown as Record<string, string>
     );
     successResponse(res, {
@@ -303,13 +302,10 @@ const getMobileNumbersForSendingSMS = catchAsync(
   }
 );
 
-const schedulePickupFromOrder = catchAsync(
+const schedulePickupForAOrder = catchAsync(
   async (req: Request, res: Response) => {
     const user = req.user as TJwtPayload;
-    const result = await OrderServices.schedulePickupFromOrderIntoDB(
-      req.body,
-      user
-    );
+    const result = await OrderServices.schedulePickupForAOrder(req.body, user);
 
     successResponse(res, {
       statusCode: httpStatus.OK,
@@ -319,10 +315,10 @@ const schedulePickupFromOrder = catchAsync(
   }
 );
 
-const bulkSchedulePickupFromOrder = catchAsync(
+const bulkSchedulePickupForOrders = catchAsync(
   async (req: Request, res: Response) => {
     const user = req.user as TJwtPayload;
-    const result = await OrderServices.bulkSchedulePickupFromOrderIntoDB(
+    const result = await OrderServices.bulkSchedulePickupForOrders(
       req.body,
       user
     );
@@ -347,27 +343,27 @@ const getCourierForOrder = catchAsync(async (req: Request, res: Response) => {
 
 export const OrderController = {
   createOrder,
-  getOrderInfoByOrderIdCustomer,
-  getOrderInfoByOrderIdAdmin,
-  getAllOrdersCustomer,
-  updateStatus,
-  getAllOrdersAdmin,
-  getCompletedOrdersAdmin,
-  getProcessingOrdersAdmin,
-  updateOrderDetailsByAdmin,
-  deleteOrdersById,
-  orderCountsByStatus,
-  updateOrdersDeliveryStatus,
-  updateProcessingStatus,
+  getOrderDetailsForCustomer,
+  getOrderDetailsForAdmin,
+  getAllOrdersForCustomer,
+  updateOrderStatus,
+  getAllOrdersForAdmin,
+  getCompletedOrdersForAdmin,
+  getProcessingOrdersForAdmin,
+  updateOrderDetails,
+  deleteOrders,
+  getOrderCountsByStatus,
+  syncDeliveryStatus,
+  updateProcessingOrderStatus,
   bookCourierAndUpdateStatus,
-  getProcessingDoneCourierOrdersAdmin,
-  getCustomersOrdersCountByPhone,
+  getCourierShipmentOrdersForAdmin,
+  getCustomerOrderCountByPhone,
   getOrderTrackingInfo,
-  getOrdersByDeliveryStatus,
-  returnAndPartialManagement,
-  getMobileNumbersForSendingSMS,
-  schedulePickupFromOrder,
-  bulkSchedulePickupFromOrder,
+  getMonitorDeliveryOrdersForAdmin,
+  manageReturnAndPartialOrders,
+  getPhoneNumbersForSMS,
+  schedulePickupForAOrder,
+  bulkSchedulePickupForOrders,
   getCourierForOrder,
-  getGuestOrderHistoryByPhone,
+  getGuestOrdersByPhone,
 };

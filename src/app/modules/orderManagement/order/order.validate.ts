@@ -121,7 +121,7 @@ const orderedProductsSchema = () =>
       .optional(),
   });
 
-const updateOrderDetailsByAdmin = z.object({
+const updateOrderDetails = z.object({
   body: z.object({
     discount: z.number().min(0).optional(),
     advance: z.number().min(0).optional(),
@@ -159,7 +159,7 @@ const updateQuantity = z.object({
   }),
 });
 
-const schedulePickup = z.object({
+const schedulePickupForAOrder = z.object({
   body: z.object({
     order_id: z.string({ required_error: "Order id is required" }),
     shipping_method_id: z.string({
@@ -174,14 +174,14 @@ const schedulePickup = z.object({
   }),
 });
 
-const bulkSchedulePickup = z.object({
+const bulkSchedulePickupForOrders = z.object({
   body: z.object({
     order_ids: z.string().array(),
     shipping_method_id: z.string(),
   }),
 });
 
-export type TSchedulePickup = z.infer<typeof schedulePickup>;
+export type TSchedulePickup = z.infer<typeof schedulePickupForAOrder>;
 
 export const OrderValidation = {
   createOrderValidation,
@@ -189,9 +189,9 @@ export const OrderValidation = {
   updateOrderStatus,
   updateProcessingStatus,
   bookCourierAndUpdateStatus,
-  updateOrderDetailsByAdmin,
+  updateOrderDetails,
   deleteOrders,
   updateQuantity,
-  schedulePickup,
-  bulkSchedulePickup,
+  schedulePickupForAOrder,
+  bulkSchedulePickupForOrders,
 };

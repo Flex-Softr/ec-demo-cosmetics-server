@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { PERMISSIONS } from "../../../const/permission.const";
 import authGuard from "../../../middlewares/authGuard";
 import optionalAuthGuard from "../../../middlewares/optionalAuthGuard";
@@ -18,7 +18,7 @@ router.post(
   OrderController.createOrder
 );
 
-router.get("/customer/:id", OrderController.getOrderInfoByOrderIdCustomer);
+router.get("/customer/:id", OrderController.getOrderDetailsForCustomer);
 
 router.get(
   "/admin/order-id/:id",
@@ -26,13 +26,13 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     //    requiredPermission: PERMISSIONS.SUPER_ADMIN,
   }),
-  OrderController.getOrderInfoByOrderIdAdmin
+  OrderController.getOrderDetailsForAdmin
 );
 
 router.get(
   "/customer",
   authGuard({ requiredRoles: [ROLES.CUSTOMER, ROLES.SUPER_ADMIN] }),
-  OrderController.getAllOrdersCustomer
+  OrderController.getAllOrdersForCustomer
 );
 
 router.get(
@@ -42,7 +42,7 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_ORDER,
   }),
-  OrderController.getAllOrdersAdmin
+  OrderController.getAllOrdersForAdmin
 );
 
 router.get(
@@ -52,7 +52,7 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_PROCESSING_ORDER,
   }),
-  OrderController.getProcessingOrdersAdmin
+  OrderController.getProcessingOrdersForAdmin
 );
 
 router.get(
@@ -62,7 +62,7 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
   }),
-  OrderController.getProcessingDoneCourierOrdersAdmin
+  OrderController.getCourierShipmentOrdersForAdmin
 );
 
 router.get(
@@ -71,7 +71,7 @@ router.get(
   authGuard({
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
   }),
-  OrderController.getCompletedOrdersAdmin
+  OrderController.getCompletedOrdersForAdmin
 );
 
 router.get(
@@ -81,7 +81,7 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     // requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
   }),
-  OrderController.getOrdersByDeliveryStatus
+  OrderController.getMonitorDeliveryOrdersForAdmin
 );
 
 router.patch(
@@ -91,7 +91,7 @@ router.patch(
     requiredPermission: PERMISSIONS.MANAGE_ORDER,
   }),
   validateRequest(OrderValidation.updateOrderStatus),
-  OrderController.updateStatus
+  OrderController.updateOrderStatus
 );
 
 router.patch(
@@ -101,7 +101,7 @@ router.patch(
     requiredPermission: PERMISSIONS.MANAGE_PROCESSING_ORDER,
   }),
   validateRequest(OrderValidation.updateProcessingStatus),
-  OrderController.updateProcessingStatus
+  OrderController.updateProcessingOrderStatus
 );
 
 router.patch(
@@ -117,15 +117,15 @@ router.patch(
 router.patch(
   "/update-order/:id",
   authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
-  validateRequest(OrderValidation.updateOrderDetailsByAdmin),
-  OrderController.updateOrderDetailsByAdmin
+  validateRequest(OrderValidation.updateOrderDetails),
+  OrderController.updateOrderDetails
 );
 
 router.delete(
   "/delete-many",
   authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
   validateRequest(OrderValidation.deleteOrders),
-  OrderController.deleteOrdersById
+  OrderController.deleteOrders
 );
 
 router.get(
@@ -134,7 +134,7 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.SUPER_ADMIN,
   }),
-  OrderController.orderCountsByStatus
+  OrderController.getOrderCountsByStatus
 );
 
 router.post(
@@ -143,7 +143,7 @@ router.post(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
   }),
-  OrderController.updateOrdersDeliveryStatus
+  OrderController.syncDeliveryStatus
 );
 
 router.get(
@@ -152,12 +152,12 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     // requiredPermission: PERMISSIONS.ORDER.MANAGE,
   }),
-  OrderController.getCustomersOrdersCountByPhone
+  OrderController.getCustomerOrderCountByPhone
 );
 
 router.get(
   "/guest-order-history/:phoneNumber",
-  OrderController.getGuestOrderHistoryByPhone
+  OrderController.getGuestOrdersByPhone
 );
 
 router.get("/track/:orderId", OrderController.getOrderTrackingInfo);
@@ -168,7 +168,7 @@ router.patch(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_PROCESSING_ORDER,
   }),
-  OrderController.returnAndPartialManagement
+  OrderController.manageReturnAndPartialOrders
 );
 
 router.get(
@@ -177,7 +177,7 @@ router.get(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_SMS,
   }),
-  OrderController.getMobileNumbersForSendingSMS
+  OrderController.getPhoneNumbersForSMS
 );
 
 router.post(
@@ -186,8 +186,8 @@ router.post(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
   }),
-  validateRequest(OrderValidation.schedulePickup),
-  OrderController.schedulePickupFromOrder
+  validateRequest(OrderValidation.schedulePickupForAOrder),
+  OrderController.schedulePickupForAOrder
 );
 
 router.post(
@@ -196,8 +196,8 @@ router.post(
     requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
     requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
   }),
-  validateRequest(OrderValidation.bulkSchedulePickup),
-  OrderController.bulkSchedulePickupFromOrder
+  validateRequest(OrderValidation.bulkSchedulePickupForOrders),
+  OrderController.bulkSchedulePickupForOrders
 );
 
 router.get(

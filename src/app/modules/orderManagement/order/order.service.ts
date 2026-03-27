@@ -1,4 +1,4 @@
-import { Request } from "express";
+﻿import { Request } from "express";
 import httpStatus from "http-status";
 import mongoose, { PipelineStage, Types } from "mongoose";
 import ApiError from "../../../errorHandlers/ApiError";
@@ -58,7 +58,7 @@ const maxOrderStatusChangeAtATime = 20;
 /* -----------------------------------------
           Create order
 ----------------------------------------- */
-const createOrderIntoDB = async (req: Request) => {
+const createOrder = async (req: Request) => {
   let response;
   const session = await mongoose.startSession();
 
@@ -82,7 +82,7 @@ const createOrderIntoDB = async (req: Request) => {
 /* -----------------------------------------
           Get pending orders
 ----------------------------------------- */
-const getAllOrdersAdminFromDB = async (query: Record<string, string>) => {
+const getAllOrdersForAdmin = async (query: Record<string, string>) => {
   const matchQuery: Record<string, unknown> = {};
   const acceptableStatus: TOrderStatus[] = [
     "pending",
@@ -218,9 +218,7 @@ const getAllOrdersAdminFromDB = async (query: Record<string, string>) => {
 /* -----------------------------------------
           Get processing orders
 ----------------------------------------- */
-const getProcessingOrdersAdminFromDB = async (
-  query: Record<string, string>
-) => {
+const getProcessingOrders = async (query: Record<string, string>) => {
   const matchQuery: Record<string, unknown> = {};
   const acceptableStatus: TOrderStatus[] = [
     "processing",
@@ -342,9 +340,7 @@ const getProcessingOrdersAdminFromDB = async (
 /* -----------------------------------------
   Get processing done and on courier orders
 ----------------------------------------- */
-const getProcessingDoneCourierOrdersAdminFromDB = async (
-  query: Record<string, string>
-) => {
+const getCourierShipmentOrders = async (query: Record<string, string>) => {
   const matchQuery: Record<string, unknown> = {};
   const acceptableStatus: TOrderStatus[] = ["processing done", "On courier"];
 
@@ -458,11 +454,9 @@ const getProcessingDoneCourierOrdersAdminFromDB = async (
 };
 
 /* -----------------------------------------
-        Get delivery details
+        Get monitoring orders
 ----------------------------------------- */
-const getOrdersByDeliveryStatusFromDB = async (
-  query: Record<string, string>
-) => {
+const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
   const matchQuery: Record<string, unknown> = {};
   // const acceptableStatus: TOrderDeliveryStatus[] = [
   //   "in_review",
@@ -581,7 +575,7 @@ const getOrdersByDeliveryStatusFromDB = async (
 /* -----------------------------------------
           Get completed orders
 ----------------------------------------- */
-const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
+const getCompletedOrders = async (query: Record<string, string>) => {
   let queryProducts: string[] = [];
   const orderedTimes: string | undefined = query.orderedTimes;
 
@@ -813,7 +807,7 @@ const getCompletedOrdersAdminFromDB = async (query: Record<string, string>) => {
 /* -----------------------------------------
           Get single orders data
 ----------------------------------------- */
-const getOrderInfoByOrderIdAdminFromDB = async (
+const getOrderDetailsForAdmin = async (
   id: mongoose.Types.ObjectId
 ): Promise<TOrder | null> => {
   const pipeline: PipelineStage[] = OrderHelper.orderDetailsPipeline();
@@ -831,7 +825,7 @@ const getOrderInfoByOrderIdAdminFromDB = async (
 /* -----------------------------------------
       Get all orders for customers
 ----------------------------------------- */
-const getAllOrdersCustomerFromDB = async (user: TOptionalAuthGuardPayload) => {
+const getAllOrdersForCustomer = async (user: TOptionalAuthGuardPayload) => {
   const userQuery = optionalAuthUserQuery(user);
 
   const pipeline: PipelineStage[] = [
@@ -892,7 +886,7 @@ const getAllOrdersCustomerFromDB = async (user: TOptionalAuthGuardPayload) => {
 /* -----------------------------------------
     Get single order info for customers
 -------------------------------------------- */
-const getOrderInfoByOrderIdCustomerFromDB = async (id: string) => {
+const getOrderDetailsForCustomer = async (id: string) => {
   const isObjectId = mongoose.Types.ObjectId.isValid(id);
 
   const matchQuery: Record<string, unknown> = {};
@@ -915,7 +909,7 @@ const getOrderInfoByOrderIdCustomerFromDB = async (id: string) => {
 /* -----------------------------------------
         Update order initial status
 -------------------------------------------- */
-const updateOrderStatusIntoDB = async (
+const updateOrderStatus = async (
   user: TJwtPayload,
   payload: {
     status: TOrderStatus;
@@ -1107,7 +1101,7 @@ const updateOrderStatusIntoDB = async (
 /* -----------------------------------------
           Update processing status
 -------------------------------------------- */
-const updateProcessingStatusIntoDB = async (
+const updateProcessingOrderStatus = async (
   orderIds: mongoose.Types.ObjectId[],
   status: Partial<TOrderStatus>,
   user: TJwtPayload
@@ -1227,7 +1221,7 @@ const updateProcessingStatusIntoDB = async (
 /* -----------------------------------------
                 Book courier
 -------------------------------------------- */
-const bookCourierAndUpdateStatusIntoDB = async (
+const bookCourierAndUpdateStatus = async (
   orderIds: mongoose.Types.ObjectId[],
   status: Partial<TOrderStatus>,
   courierProvider: Types.ObjectId,
@@ -1460,7 +1454,7 @@ const bookCourierAndUpdateStatusIntoDB = async (
 /* -----------------------------------------
     Update order details by admin
 -------------------------------------------- */
-const updateOrderDetailsByAdminIntoDB = async (
+const updateOrderDetails = async (
   id: mongoose.Types.ObjectId,
   payload: Record<string, unknown>
 ) => {
@@ -2220,7 +2214,7 @@ const updateOrderDetailsByAdminIntoDB = async (
 /* -----------------------------------------
               Delete order 
 -------------------------------------------- */
-const deleteOrdersByIdFromBD = async (orderIds: string[]) => {
+const deleteOrders = async (orderIds: string[]) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -2256,7 +2250,7 @@ const deleteOrdersByIdFromBD = async (orderIds: string[]) => {
 /* -----------------------------------------
               Get orders counts
 -------------------------------------------- */
-const orderCountsByStatusFromBD = async () => {
+const getOrderCountsByStatus = async () => {
   const statusMap = {
     all: 0,
     pending: 0,
@@ -2302,14 +2296,14 @@ const orderCountsByStatusFromBD = async () => {
 /* -----------------------------------------
           Update order delivery status
 -------------------------------------------- */
-const updateOrdersDeliveryStatusIntoDB = async () => {
+const syncDeliveryStatus = async () => {
   await updateCourierStatus();
 };
 
 /* -----------------------------------------
         Get a customers orders counts
 -------------------------------------------- */
-const getCustomersOrdersCountByPhoneFromDB = async (phoneNumber: string) => {
+const getCustomerOrderCountByPhone = async (phoneNumber: string) => {
   const orders = await Order.aggregate([
     {
       $lookup: {
@@ -2363,7 +2357,7 @@ const getCustomersOrdersCountByPhoneFromDB = async (phoneNumber: string) => {
 /* -----------------------------------------
       Get a guest customers order history
 -------------------------------------------- */
-const getGuestOrderHistoryByPhoneFromDB = async (phoneNumber: string) => {
+const getGuestOrdersByPhone = async (phoneNumber: string) => {
   const pipeline = [
     {
       $lookup: {
@@ -2504,7 +2498,7 @@ const getOrderTrackingInfo = async (orderId: string) => {
 /* -----------------------------------------
     Manage return and partial return orders
 -------------------------------------------- */
-const returnAndPartialManagementIntoDB = async (
+const manageReturnAndPartialOrders = async (
   orderIds: mongoose.Types.ObjectId[],
   status: Partial<TOrderStatus>,
   user: TJwtPayload
@@ -2569,9 +2563,7 @@ const returnAndPartialManagementIntoDB = async (
    Get mobile numbers for sending SMS
 -------------------------------------------- */
 
-const getMobileNumbersForSendingSMSFromDB = async (
-  query: Record<string, unknown>
-) => {
+const getPhoneNumbersForSMS = async (query: Record<string, unknown>) => {
   const matchQuery: Record<string, unknown> = {};
   const matchShippingQuery: Record<string, unknown> = {};
 
@@ -2677,7 +2669,7 @@ const getMobileNumbersForSendingSMSFromDB = async (
 /* -----------------------------------------
           Schedule pickup from order
 ----------------------------------------- */
-const schedulePickupFromOrderIntoDB = async (
+const schedulePickupForAOrder = async (
   payload: TSchedulePickup["body"],
   user: TJwtPayload
 ) => {
@@ -2787,7 +2779,7 @@ const schedulePickupFromOrderIntoDB = async (
   }
 };
 
-const bulkSchedulePickupFromOrderIntoDB = async (
+const bulkSchedulePickupForOrders = async (
   payload: {
     order_ids: string[];
     shipping_method_id: string;
@@ -3011,28 +3003,28 @@ const getCourierForOrder = async () => {
 };
 
 export const OrderServices = {
-  createOrderIntoDB,
-  updateOrderStatusIntoDB,
-  updateProcessingStatusIntoDB,
-  bookCourierAndUpdateStatusIntoDB,
-  getAllOrdersCustomerFromDB,
-  getOrderInfoByOrderIdCustomerFromDB,
-  getOrderInfoByOrderIdAdminFromDB,
-  getAllOrdersAdminFromDB,
-  getCompletedOrdersAdminFromDB,
-  updateOrderDetailsByAdminIntoDB,
-  deleteOrdersByIdFromBD,
-  orderCountsByStatusFromBD,
-  updateOrdersDeliveryStatusIntoDB,
-  getProcessingOrdersAdminFromDB,
-  getProcessingDoneCourierOrdersAdminFromDB,
-  getCustomersOrdersCountByPhoneFromDB,
+  createOrder,
+  updateOrderStatus,
+  updateProcessingOrderStatus,
+  bookCourierAndUpdateStatus,
+  getAllOrdersForCustomer,
+  getOrderDetailsForCustomer,
+  getOrderDetailsForAdmin,
+  getAllOrdersForAdmin,
+  getCompletedOrders,
+  updateOrderDetails,
+  deleteOrders,
+  getOrderCountsByStatus,
+  syncDeliveryStatus,
+  getProcessingOrders,
+  getCourierShipmentOrders,
+  getCustomerOrderCountByPhone,
   getOrderTrackingInfo,
-  getOrdersByDeliveryStatusFromDB,
-  returnAndPartialManagementIntoDB,
-  getMobileNumbersForSendingSMSFromDB,
-  schedulePickupFromOrderIntoDB,
-  bulkSchedulePickupFromOrderIntoDB,
+  getMonitorDeliveryOrders,
+  manageReturnAndPartialOrders,
+  getPhoneNumbersForSMS,
+  schedulePickupForAOrder,
+  bulkSchedulePickupForOrders,
   getCourierForOrder,
-  getGuestOrderHistoryByPhoneFromDB,
+  getGuestOrdersByPhone,
 };
