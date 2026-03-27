@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { TOptionalAuthGuardPayload } from "./common";
-import { ROLES } from "../modules/userManagement/user/user.const";
 
 const optionalAuthUserQuery = (user: TOptionalAuthGuardPayload) => {
   const query: {
@@ -9,11 +8,9 @@ const optionalAuthUserQuery = (user: TOptionalAuthGuardPayload) => {
     phoneNumber?: string;
   } = {};
 
-  // If the user is an admin or superAdmin, we don't want to filter by userId
-  // so they can view any order.
-  if (user.role === ROLES.SUPER_ADMIN || user.role === ROLES.ADMIN) {
-    return query;
-  }
+  // Note: Even for admins, we want to filter by userId or sessionId when using this helper,
+  // as it is typically used for personal context (like Carts).
+  // Admin-specific operations (like viewing all orders) handle their own queries.
 
   if (user.id || user.isAuthenticated) {
     query.userId = user.id;

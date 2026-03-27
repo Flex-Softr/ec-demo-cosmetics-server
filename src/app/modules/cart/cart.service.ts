@@ -27,6 +27,12 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
     ...(userQuery.sessionId && { sessionId: userQuery.sessionId }),
   };
 
+  // Security safety check: If both userId and sessionId are somehow missing,
+  // return empty result instead of matching everything.
+  if (!query.userId && !query.sessionId) {
+    return [];
+  }
+
   const result = await Cart.find(query, {}).populate([
     {
       path: "product",
