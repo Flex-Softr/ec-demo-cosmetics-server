@@ -39,6 +39,7 @@ import config from "../../../config/config";
 import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
 import { schedulePickOnSteadfastBulk } from "../../../utilities/couriers/steadfastBulk";
+import formatShippingAddress from "../../../utilities/formatShippingAddress";
 import triggerRefundEvent from "../../../utilities/triggerRefundEvent";
 import { TCourier } from "../../courier/courier.interface";
 import { TVariation } from "../../productManagement/variation/variation.interface";
@@ -51,7 +52,6 @@ import {
   updateStockOrderCancelDelete,
 } from "./order.utils";
 import { TSchedulePickup } from "./order.validate";
-import formatShippingAddress from "../../../utilities/formatShippingAddress";
 
 const maxOrderStatusChangeAtATime = 20;
 
@@ -2739,8 +2739,6 @@ const schedulePickupFromOrderIntoDB = async (
         { _id: order._id },
         {
           status: "On courier",
-          // deliveryStatus: result.status,
-          statusFromShippingProvider: result.status,
           courierDetails: {
             courierProvider: shippingMethod._id,
             trackingId: result.tracking_code,
@@ -2897,8 +2895,7 @@ const bulkSchedulePickupFromOrderIntoDB = async (
             courierProvider: shippingMethod._id,
             trackingId: success.trackingId,
           },
-          // deliveryStatus: success.status,
-          statusFromShippingProvider: success.status,
+          deliveryStatus: success.status,
         },
       },
     });

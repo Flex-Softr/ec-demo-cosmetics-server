@@ -95,7 +95,6 @@ export type TOrderData = {
   total: number;
   payment: Types.ObjectId;
   status: TOrderStatus;
-  deliveryStatus: string;
   monitoringStatus: string;
   trackingStatus: string;
   followUpDate?: string;
@@ -109,7 +108,7 @@ export type TOrderData = {
   monitoringNotes?: string;
   reasonNotes?: string;
   courierDetails?: TCourierDetails;
-  statusFromShippingProvider?: string;
+  deliveryStatus?: string;
   messageFromShippingProvider?: string;
   orderSource: TOrderSource;
   userIp?: string;
