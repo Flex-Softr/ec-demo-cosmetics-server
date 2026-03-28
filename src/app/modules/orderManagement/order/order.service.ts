@@ -33,8 +33,6 @@ import {
   TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
-// import config from "../../../config/config";
-import config from "../../../config/config";
 import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
 import { schedulePickOnSteadfastBulk } from "../../../utilities/couriers/steadfastBulk";
@@ -1869,17 +1867,7 @@ const updateOrderDetails = async (
           "Failed to find shipping charge"
         );
       }
-      const totalNumberOfItems = (
-        updatedDoc?.orderedProducts as TOrderedProduct[]
-      )?.reduce((acc, item) => {
-        return acc + item?.quantity;
-      }, 0);
-
-      const shippingCostExceptFirstItem =
-        (totalNumberOfItems - 1) * config.per_item_shipping_cost;
-
-      const shippingCostTotal =
-        Number(shippingCost?.amount) + shippingCostExceptFirstItem;
+      const shippingCostTotal = Number(shippingCost?.amount);
 
       updatedDoc.shippingCharge = shippingCost?._id;
       increments += Number(shippingCostTotal);

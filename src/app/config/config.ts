@@ -73,7 +73,6 @@ export default {
     bill_msisdn: env.BL_BILL_MSISDN,
   },
   order_tracking_url: env.ORDER_TRACKING_URL || "",
-  per_item_shipping_cost: 0,
   webhook_secret: env.WEBHOOK_SECRET,
   refund_event_secret: env.REFUND_EVENT_SECRET,
   tracking_server_base_url: env.TRACKING_SERVER_BASE_URL,

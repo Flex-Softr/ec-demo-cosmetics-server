@@ -1283,10 +1283,6 @@ const orderCostAfterCoupon = async (
     user: TOptionalAuthGuardPayload;
   }
 ) => {
-  const totalNumberOfItems = orderedProductInfo?.reduce((acc, item) => {
-    return acc + item?.quantity;
-  }, 0);
-
   // Find shipping change
   const shippingCharges = await ShippingCharge.findOne({
     _id: shippingCharge,
@@ -1548,11 +1544,7 @@ const orderCostAfterCoupon = async (
   /********************************
    * Coupon calculation ends here
    *********************************/
-  const shippingCostExceptFirstItem =
-    (totalNumberOfItems - 1) * config.per_item_shipping_cost;
-
-  const shippingCostTotal =
-    Number(shippingCharges?.amount) + shippingCostExceptFirstItem;
+  const shippingCostTotal = Number(shippingCharges?.amount);
 
   const totalCostAfterCoupon =
     productCosts + shippingCostTotal - couponDiscount;
