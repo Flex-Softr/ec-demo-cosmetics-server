@@ -85,6 +85,7 @@ export type IProductDocument = TProduct & Document;
 export type TProductType = (typeof PRODUCT_TYPE)[keyof typeof PRODUCT_TYPE];
 
 export type TProductPayload = {
+  id: string;
   title: string;
   slug: string;
   type: TProductType;
@@ -157,6 +158,7 @@ export type TProductPayload = {
 
 export type IAdminProduct = {
   _id: string;
+  id: string;
   title: string;
   stockStatus: string;
   stockAvailable: number;

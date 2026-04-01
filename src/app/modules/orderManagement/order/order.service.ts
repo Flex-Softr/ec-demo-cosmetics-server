@@ -1712,12 +1712,14 @@ const updateOrderDetails = async (
                   price: "$priceInfo",
                   inventory: 1,
                   variations: 1,
+                  id: 1,
                   title: 1,
                 },
               },
             ])
           )[0] as {
             _id: Types.ObjectId;
+            id: string;
             title: string;
             price: TPrice;
             inventory: TInventory;

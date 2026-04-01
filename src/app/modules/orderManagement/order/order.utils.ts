@@ -43,6 +43,7 @@ export const createOrderId = () => {
 
 export type TUpStOnCanDelProducts = {
   _id: Types.ObjectId;
+  id: string;
   productId: Types.ObjectId;
   title: string;
   unitPrice: number;

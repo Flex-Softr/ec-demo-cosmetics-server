@@ -22,6 +22,7 @@ export const calculateStockAvailable = (
 
 export const commonProductProjection = {
   _id: 1,
+  id: 1,
   title: 1,
   slug: 1,
   type: 1,

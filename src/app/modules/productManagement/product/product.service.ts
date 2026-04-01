@@ -387,6 +387,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
         data: [
           {
             $project: {
+              id: 1,
               title: 1,
               slug: 1,
               type: 1,
@@ -655,6 +656,7 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
     {
       $addFields: {
         _id: "$product._id",
+        id: "$product.id",
         title: "$product.title",
         slug: "$product.slug",
         type: "$product.type",

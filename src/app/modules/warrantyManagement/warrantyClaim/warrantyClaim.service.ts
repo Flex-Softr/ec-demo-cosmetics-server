@@ -96,6 +96,9 @@ const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
             _id: {
               $arrayElemAt: ["$productInfo._id", 0],
             },
+            id: {
+              $arrayElemAt: ["$productInfo.id", 0],
+            },
             title: {
               $arrayElemAt: ["$productInfo.title", 0],
             },
@@ -435,6 +438,9 @@ const updateClaimProductVariationIntoDB = async (
             product: {
               _id: {
                 $arrayElemAt: ["$productInfo._id", 0],
+              },
+              id: {
+                $arrayElemAt: ["$productInfo.id", 0],
               },
               title: {
                 $arrayElemAt: ["$productInfo.title", 0],

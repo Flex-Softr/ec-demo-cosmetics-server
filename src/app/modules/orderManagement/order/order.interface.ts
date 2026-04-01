@@ -123,6 +123,7 @@ export type TOrder = TOrderData & Document;
 export type TSanitizedOrProduct = {
   product: {
     _id: mongoose.Types.ObjectId;
+    id: string;
     title: string;
     price?: TPrice;
     isDeleted: boolean;
@@ -174,6 +175,7 @@ export type TFindOrderForUpdatingOrder = {
   _id: Types.ObjectId;
   orderedProducts: {
     _id: Types.ObjectId;
+    id: string;
     product: Types.ObjectId;
     productTitle: string;
     attributes: Record<string, string>;

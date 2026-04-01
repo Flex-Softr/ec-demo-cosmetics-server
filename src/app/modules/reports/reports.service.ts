@@ -9,6 +9,7 @@ import { Order } from "../orderManagement/order/order.model";
 import { OrderStatusHistory } from "../orderManagement/orderStatusHistory/orderStatusHistory.model";
 import { ReportsHelper } from "./reports.helper";
 import { TReportsQuery } from "./reports.interface";
+import { PRODUCT_STATUS } from "../productManagement/product/product.const";
 
 export type TOrdersCountQuery = TReportsQuery & { zone: string };
 const getOrdersCountsFromDB = async (query: TOrdersCountQuery) => {
@@ -295,6 +296,12 @@ const getBestSellingProductsFromDB = async () => {
     },
     {
       $unwind: "$product",
+    },
+    {
+      $match: {
+        "product.isDeleted": false,
+        "product.publishedStatus": PRODUCT_STATUS.PUBLISHED,
+      },
     },
     {
       $lookup: {

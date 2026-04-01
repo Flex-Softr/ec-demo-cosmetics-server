@@ -112,6 +112,7 @@ const getWarrantyData = async (
         shipping: 1,
         product: {
           _id: "$orderedProducts._id",
+          id: "$productInfo.id",
           productId: "$productInfo._id",
           title: "$productInfo.title",
           type: "$productInfo.type",

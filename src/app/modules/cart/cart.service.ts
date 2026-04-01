@@ -72,6 +72,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
     const data = {
       product: {
         _id: product?._id,
+        id: product?.id,
         title: product?.title,
         image: {
           src: `${config.image_base_url}/${image?.src}`,

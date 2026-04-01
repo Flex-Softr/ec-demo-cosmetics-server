@@ -50,6 +50,7 @@ export const findOrderWithWarrantyPipeline = (
         _id: "$orderedProducts._id",
         product: {
           _id: "$productInfo._id",
+          id: "$productInfo.id",
           title: "$productInfo.title",
           warranty: "$productInfo.warranty",
           warrantyInfo: "$productInfo.warrantyInfo",

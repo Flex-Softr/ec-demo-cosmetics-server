@@ -23,6 +23,7 @@ export type TCartData = {
 export type TCartResponse = {
   product: {
     _id: Types.ObjectId;
+    id: string;
     title: string;
     image: { src: string; alt: string };
     slug: string;

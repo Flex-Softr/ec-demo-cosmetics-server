@@ -45,7 +45,9 @@ const sanitizeOrderedProducts = async (
         _id: new mongoose.Types.ObjectId(String(item.product)),
       },
       {
+        id: 1,
         title: 1,
+        slug: 1,
         price: 1,
         inventory: 1,
         variations: 1,
@@ -279,6 +281,7 @@ const findOrderForUpdatingOrder = async (
                 { $ifNull: ["$orderedProducts.product", false] },
                 {
                   _id: "$orderedProducts._id",
+                  id: "$orderedProducts.productInfo.id",
                   product: "$orderedProducts.product",
                   productTitle: "$orderedProducts.productInfo.title",
                   image: {
@@ -607,6 +610,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
           if: { $not: ["$orderedProducts"] },
           then: null,
           else: {
+            id: "$productInfo.id",
             _id: "$orderedProducts._id",
             productId: "$productInfo._id",
             title: "$productInfo.title",
@@ -811,6 +815,7 @@ const orderStatusUpdatingPipeline = (
             then: null,
             else: {
               _id: "$orderedProducts._id",
+              id: "$productInfo.id",
               productId: "$productInfo._id",
               title: "$productInfo.title",
               image: {
@@ -1018,6 +1023,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
           else: {
             _id: "$orderedProducts._id",
             productId: "$productInfo._id",
+            id: "$productInfo.id",
             title: "$productInfo.title",
             slug: "$productInfo.slug",
             image: {
@@ -1150,6 +1156,7 @@ const sanitizeCartsForOrder = async (userQuery: {
     const data = {
       product: {
         _id: product?._id,
+        id: product?.id,
         title: product?.title,
         price: {
           regularPrice: (variation?.price as TPrice)?.regularPrice
