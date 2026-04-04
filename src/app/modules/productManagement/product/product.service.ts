@@ -409,6 +409,7 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
               // productCollection: "$productCollection",
               publishedStatus: 1,
               createdAt: 1,
+              updatedAt: 1,
               // Calculated active price for sorting
               price: {
                 $cond: {
