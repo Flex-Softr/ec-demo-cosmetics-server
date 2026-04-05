@@ -78,6 +78,7 @@ export const productSchema = new Schema<TProduct>(
     shortDescription: { type: String },
     additionalInfo: { type: String },
     // usageGuidelines: { type: String },
+    previewLink: { type: String },
     featured: { type: Boolean, default: false },
     // review: { type: Boolean, default: false },
     price: {

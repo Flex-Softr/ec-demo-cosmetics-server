@@ -67,6 +67,10 @@ const product = z.object({
       shortDescription: z.string().optional(),
       additionalInfo: z.string().optional(),
       usageGuidelines: z.string().optional(),
+      previewLink: z
+        .string()
+        .url({ message: "previewLink must be a valid URL" })
+        .optional(),
       image: imageSchema,
       price: priceSchema.optional(),
       inventory: InventoryValidation.inventorySchema.optional(),
@@ -144,6 +148,10 @@ const updateProduct = z.object({
     shortDescription: z.string().trim().optional(),
     additionalInfo: z.string().trim().optional(),
     usageGuidelines: z.string().trim().optional(),
+    previewLink: z
+      .string()
+      .url({ message: "previewLink must be a valid URL" })
+      .optional(),
     image: imageSchema.partial().optional(),
     price: priceSchema.partial().optional(),
     inventory: InventoryValidation.inventorySchema.optional(),

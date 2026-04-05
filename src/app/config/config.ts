@@ -35,6 +35,8 @@ export default {
   upload_video_size: env.UPLOAD_VIDEO_SIZE,
   upload_image_maxCount: env.UPLOAD_IMAGE_MAX_COUNT,
   upload_image_format: env.UPLOAD_IMAGE_FORMAT,
+  upload_pdf_size: env.UPLOAD_PDF_SIZE,
+  upload_pdf_maxCount: env.UPLOAD_PDF_MAX_COUNT,
   twilio: {
     sid: env.TWILIO_ACCOUNT_SID,
     auth_token: env.TWILIO_AUTH_TOKEN,

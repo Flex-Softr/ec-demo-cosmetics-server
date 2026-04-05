@@ -9,6 +9,7 @@ import { DistrictRoutes } from "../modules/district/district.routes";
 import { DivisionRoutes } from "../modules/division/division.routes";
 import { HomepageSectionRoutes } from "../modules/homepageSection/homepageSection.routes";
 import { ImageRoutes } from "../modules/image/image.routes";
+import { BookPreviewRoutes } from "../modules/bookPreview/bookPreview.routes";
 import { ImageToOrderRoutes } from "../modules/imageToOrder/imageToOrder.routes";
 import { MonitoringRoutes } from "../modules/monitoring/health.routes";
 import { FraudCheckRoutes } from "../modules/orderManagement/fraudCheck/fraudCheck.routes";
@@ -79,6 +80,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/images",
     route: ImageRoutes,
+  },
+  {
+    path: "/book-previews",
+    route: BookPreviewRoutes,
   },
   {
     path: "/categories",
@@ -192,7 +197,9 @@ const moduleRoutes: TModuleTypes[] = [
 
 moduleRoutes.forEach((route) => {
   const isLargePayload =
-    route.path === "/images" || route.path === "/image-to-order";
+    route.path === "/images" ||
+    route.path === "/image-to-order" ||
+    route.path === "/book-previews";
   const limitSize = isLargePayload ? "25mb" : "1mb";
 
   router.use(

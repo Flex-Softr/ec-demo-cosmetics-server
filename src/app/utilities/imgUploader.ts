@@ -11,8 +11,11 @@ const storage = (dirName: string) =>
       cb(null, getUploadFolder(dirName));
     },
     filename: function (req, file, cb) {
-      const fileExt = path.extname(file.originalname);
-      const filename = file.originalname
+      const decodedName = Buffer.from(file.originalname, "latin1").toString(
+        "utf8"
+      );
+      const fileExt = path.extname(decodedName);
+      const filename = decodedName
         .replace(fileExt, "")
         .toLowerCase()
         .split(" ")

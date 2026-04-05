@@ -52,6 +52,7 @@ export type TProduct = {
   shortDescription?: string;
   additionalInfo?: string;
   usageGuidelines?: string;
+  previewLink?: string;
   featured?: boolean;
   review?: boolean;
   price?: Types.ObjectId | TPrice;
@@ -88,6 +89,7 @@ export type TProductPayload = {
   id: string;
   title: string;
   slug: string;
+  previewLink?: string;
   type: TProductType;
   description: string;
   shortDescription?: string;

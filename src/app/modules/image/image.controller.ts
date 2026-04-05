@@ -16,7 +16,8 @@ const createImage = catchAsync(async (req, res) => {
 
   const files = req.files as Express.Multer.File[];
   const images = files?.map(({ path, originalname }: Express.Multer.File) => {
-    return { src: path, alt: originalname, uploadedBy };
+    const decodedName = Buffer.from(originalname, "latin1").toString("utf8");
+    return { src: path, alt: decodedName, uploadedBy };
   });
   const result = await ImageServices.createImageIntoDB(images);
   successResponse(res, {
