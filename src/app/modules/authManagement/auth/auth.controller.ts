@@ -36,9 +36,9 @@ const login = catchAsync(async (req: Request, res: Response) => {
     maxAge: Number(config.token_data.access_token_cookie_expires),
   };
 
-  res.cookie("__app.ec.at", accessToken, cookieOption);
+  res.cookie("_app.ec.at", accessToken, cookieOption);
   cookieOption.maxAge = Number(refreshExpires);
-  res.cookie("__app.ec.rt", refreshToken, cookieOption);
+  res.cookie("_app.ec.rt", refreshToken, cookieOption);
 
   successResponse(res, {
     statusCode: httpStatus.OK,
@@ -48,7 +48,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
-  const refreshToken = req.headers.authorization || req.cookies["__app.ec.rt"];
+  const refreshToken = req.headers.authorization || req.cookies["_app.ec.rt"];
   const { accessToken } = await AuthServices.refreshToken(
     req.clientIp as string,
     req.ecSID.id,
@@ -63,9 +63,9 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
     sameSite: "lax",
     maxAge: Number(config.token_data.access_token_cookie_expires),
   };
-  // res.cookie("__app.ec.at", "", { expires: new Date(0) });
-  // console.log("__app.ec.at", accessToken, Date.now())
-  res.cookie("__app.ec.at", accessToken, cookieOption);
+  // res.cookie("_app.ec.at", "", { expires: new Date(0) });
+  // console.log("_app.ec.at", accessToken, Date.now())
+  res.cookie("_app.ec.at", accessToken, cookieOption);
   successResponse<TRefreshTokenResponse>(res, {
     statusCode: httpStatus.OK,
     message: "Access token retrieved successfully!",
@@ -94,8 +94,8 @@ const logoutUser = catchAsync(async (req: Request, res: Response) => {
     sameSite: "lax",
     expires: new Date(0),
   };
-  res.cookie("__app.ec.rt", "", cookieOption);
-  res.cookie("__app.ec.at", "", cookieOption);
+  res.cookie("_app.ec.rt", "", cookieOption);
+  res.cookie("_app.ec.at", "", cookieOption);
 
   successResponse(res, {
     statusCode: httpStatus.OK,

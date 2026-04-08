@@ -38,7 +38,7 @@ const authGuard =
       if (token) {
         token = token?.split(" ")[1];
       } else {
-        token = req?.cookies["__app.ec.at"];
+        token = req?.cookies["_app.ec.at"];
       }
       if (!token) {
         throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized request");
@@ -96,7 +96,7 @@ const authGuard =
             maxAge: Number(config.token_data.access_token_cookie_expires),
           };
 
-          res.cookie("__app.ec.at", accessToken, cookieOption);
+          res.cookie("_app.ec.at", accessToken, cookieOption);
         }
         // if (!isEqual) {
         //   const domain =
@@ -104,11 +104,11 @@ const authGuard =
         //       ? `.${config.main_domain}`
         //       : "localhost";
 
-        //   res.clearCookie("__app.ec.at", {
+        //   res.clearCookie("_app.ec.at", {
         //     path: "/",
         //     domain,
         //   });
-        //   res.clearCookie("__app.ec.rt", {
+        //   res.clearCookie("_app.ec.rt", {
         //     path: "/",
         //     domain,
         //   });

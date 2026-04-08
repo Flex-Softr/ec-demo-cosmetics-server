@@ -13,7 +13,7 @@ export const ecSIDHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  let ecSID = req?.cookies["__app.ec.sid"];
+  let ecSID = req?.cookies["_app.ec.sid"];
   const cookieOption: CookieOptions = {
     domain:
       config.env === "production" ? `.${config.main_domain}` : "localhost",
@@ -24,14 +24,14 @@ export const ecSIDHandler = (
   };
   if (!ecSID) {
     ecSID = generateNewId();
-    res.cookie("__app.ec.sid", ecSID, cookieOption);
+    res.cookie("_app.ec.sid", ecSID, cookieOption);
   }
 
   const ecSIDData = {
     id: ecSID,
     newId: function () {
       const newId = generateNewId();
-      res.cookie("__app.ec.sid", newId, cookieOption);
+      res.cookie("_app.ec.sid", newId, cookieOption);
       this.id = newId;
     },
   };

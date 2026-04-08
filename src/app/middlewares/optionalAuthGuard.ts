@@ -11,7 +11,7 @@ const optionalAuthGuard: RequestHandler = async (req, res, next) => {
     if (token) {
       token = token?.split(" ")[1];
     } else {
-      token = req?.cookies["__app.ec.at"];
+      token = req?.cookies["_app.ec.at"];
     }
 
     if (token) {
