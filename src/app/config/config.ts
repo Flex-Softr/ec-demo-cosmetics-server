@@ -77,5 +77,5 @@ export default {
   order_tracking_url: env.ORDER_TRACKING_URL || "",
   webhook_secret: env.WEBHOOK_SECRET,
   refund_event_secret: env.REFUND_EVENT_SECRET,
-  tracking_server_base_url: env.TRACKING_SERVER_BASE_URL,
+  tracking_server_api_url: env.TRACKING_SERVER_API_URL,
 };

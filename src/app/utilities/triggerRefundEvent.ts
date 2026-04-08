@@ -27,16 +27,16 @@ const triggerRefundEvent = (data: {
   };
 
   const secret = config.refund_event_secret;
-  const trackingBaseUrl = config.tracking_server_base_url;
+  const trackingBaseUrl = config.tracking_server_api_url;
 
   if (!secret || !trackingBaseUrl) {
     logger.error(
-      "REFUND_EVENT_SECRET or TRACKING_SERVER_BASE_URL is not defined"
+      "REFUND_EVENT_SECRET or TRACKING_SERVER_API_URL is not defined"
     );
     return;
   }
 
-  fetch(`${trackingBaseUrl}/track`, {
+  fetch(`${trackingBaseUrl}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
