@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { TShippingData } from "./shipping.interface";
 
 export const ShippingSchema = new Schema<TShippingData>(
@@ -21,17 +21,9 @@ export const ShippingSchema = new Schema<TShippingData>(
       type: String,
       required: true,
     },
-    city: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "City",
-    },
-    state: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "State",
-    },
-    country: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Country",
+    upazila: {
+      type: String,
+      // ref: "Division",
     },
     district: {
       type: String,
@@ -41,10 +33,18 @@ export const ShippingSchema = new Schema<TShippingData>(
       type: String,
       // ref: "Division",
     },
-    upazila: {
-      type: String,
-      // ref: "Division",
-    },
+    // city: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "City",
+    // },
+    // state: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "State",
+    // },
+    // country: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Country",
+    // },
   },
   { timestamps: true }
 );

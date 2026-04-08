@@ -116,6 +116,7 @@ export type TOrderData = {
   userIp?: string;
   division?: string;
   district?: string;
+  upazila?: string;
 };
 
 export type TOrder = TOrderData & Document;
