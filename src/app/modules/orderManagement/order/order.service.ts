@@ -37,7 +37,7 @@ import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
 import { schedulePickOnSteadfastBulk } from "../../../utilities/couriers/steadfastBulk";
 import formatShippingAddress from "../../../utilities/formatShippingAddress";
-import triggerRefundEvent from "../../../utilities/triggerRefundEvent";
+import triggerCancelEvent from "../../../utilities/triggerCancelEvent";
 import { TCourier } from "../../courier/courier.interface";
 import { TVariation } from "../../productManagement/variation/variation.interface";
 import VariationModel from "../../productManagement/variation/variation.model";
@@ -1007,22 +1007,7 @@ const updateOrderStatus = async (
           !["canceled", "deleted"].includes(orderPreviousStatus || "") &&
           ["canceled", "deleted"].includes(payload.status)
         ) {
-          triggerRefundEvent({
-            ph: (order as unknown as { shippingData: TShipping })?.shippingData
-              ?.phoneNumber,
-            em: (order as unknown as { shippingData: TShipping })?.shippingData
-              ?.email,
-            value: Number(order?.total ?? 0),
-            contents: order?.orderedProducts?.map((product) => ({
-              id: (
-                product as unknown as { productId: string }
-              )?.productId?.toString(),
-              name: (product as unknown as { title: string })?.title,
-              quantity: product?.quantity,
-              price: product?.unitPrice,
-            })),
-            orderId: order?.orderId,
-          });
+          triggerCancelEvent(order?.orderId || "");
           await updateStockOrderCancelDelete(orderedProducts, session);
         }
       }
@@ -1138,30 +1123,7 @@ const updateProcessingOrderStatus = async (
       );
 
       if (status === "canceled") {
-        triggerRefundEvent({
-          ph: (order as unknown as { shippingData: TShipping })?.shippingData
-            ?.phoneNumber,
-          em: (order as unknown as { shippingData: TShipping })?.shippingData
-            ?.email,
-          value: Number(order?.total ?? 0),
-          contents: (
-            order?.orderedProducts as {
-              productId: string;
-              title: string;
-              quantity: number;
-              unitPrice: number;
-            }[]
-          )?.map((product) => ({
-            id: (
-              product as unknown as { productId: string }
-            )?.productId?.toString(),
-            name: (product as unknown as { title: string })?.title,
-            quantity: product?.quantity,
-            price: product?.unitPrice,
-          })),
-          orderId: order?.orderId,
-        });
-
+        triggerCancelEvent(order?.orderId || "");
         await Promise.all([
           updateStockOrderCancelDelete(
             order.orderedProducts as unknown as TUpStOnCanDelProducts[],

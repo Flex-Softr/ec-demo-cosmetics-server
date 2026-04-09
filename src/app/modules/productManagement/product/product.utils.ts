@@ -3,12 +3,31 @@ import config from "../../../config/config";
 import { STOCK_STATUS } from "../inventory/inventory.const";
 import { PRODUCT_TYPE } from "./product.const";
 
-export const formatPriceUpdatePayload = (price: Record<string, unknown>) => {
-  const updatePrice: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(price)) {
-    updatePrice[key] = value;
+export const formatPriceUpdatePayload = (
+  price: Record<string, unknown>
+): { setFields: Record<string, unknown>; unsetFields: string[] } => {
+  const regularPrice = Number(price.regularPrice) || 0;
+  const rawSalePrice = price.salePrice;
+  const salePrice =
+    rawSalePrice !== undefined && rawSalePrice !== null && rawSalePrice !== ""
+      ? Number(rawSalePrice)
+      : 0;
+
+  const setFields: Record<string, unknown> = { regularPrice };
+  const unsetFields: string[] = [];
+
+  if (salePrice > 0 && salePrice < regularPrice) {
+    setFields.salePrice = salePrice;
+    setFields.discountPercent = Math.round(
+      ((regularPrice - salePrice) / regularPrice) * 100
+    );
+    setFields.priceSave = regularPrice - salePrice;
+  } else {
+    // No valid sale price — clear all derived sale fields
+    unsetFields.push("salePrice", "discountPercent", "priceSave");
   }
-  return updatePrice;
+
+  return { setFields, unsetFields };
 };
 
 export const calculateStockAvailable = (

@@ -910,10 +910,18 @@ const updateProductIntoDB = async (
     // --- Simple Product Logic ---
     if (productType === PRODUCT_TYPE.SIMPLE) {
       if (price && Object.keys(price).length) {
-        const updatePrice = formatPriceUpdatePayload(price);
+        const { setFields, unsetFields } = formatPriceUpdatePayload(price);
+        const priceUpdateOp: Record<string, unknown> = {
+          $set: { ...setFields, updatedBy },
+        };
+        if (unsetFields.length > 0) {
+          priceUpdateOp.$unset = Object.fromEntries(
+            unsetFields.map((f) => [f, ""])
+          );
+        }
         await PriceModel.findByIdAndUpdate(
           isProductExist.price,
-          { $set: { ...updatePrice, updatedBy } },
+          priceUpdateOp,
           { session }
         );
       }
@@ -1029,11 +1037,20 @@ const updateProductIntoDB = async (
           if (existingVariation) {
             // Update existing variation
             if (variationPrice) {
-              const updatePrice = formatPriceUpdatePayload(variationPrice);
+              const { setFields, unsetFields } =
+                formatPriceUpdatePayload(variationPrice);
+              const variationPriceOp: Record<string, unknown> = {
+                $set: setFields,
+              };
+              if (unsetFields.length > 0) {
+                variationPriceOp.$unset = Object.fromEntries(
+                  unsetFields.map((f) => [f, ""])
+                );
+              }
               priceBulkOps.push({
                 updateOne: {
                   filter: { _id: existingVariation.price },
-                  update: { $set: updatePrice },
+                  update: variationPriceOp,
                 },
               });
             }
