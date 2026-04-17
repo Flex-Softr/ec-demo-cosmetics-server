@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  passwordZodSchema,
-  phoneNumberValidationZodSchema,
-} from "../../userManagement/user/user.validation";
+import { passwordZodSchema } from "../../userManagement/user/user.validation";
 
 const login = z.object({
   body: z.object({
@@ -30,13 +27,17 @@ const changePassword = z.object({
 
 const forgetPassword = z.object({
   body: z.object({
-    phoneNumber: z.string({ required_error: "Phone number is required." }),
+    email: z
+      .string({ required_error: "Email is required." })
+      .email("Invalid email address."),
   }),
 });
 
 const resetPassword = z.object({
   body: z.object({
-    phoneNumber: phoneNumberValidationZodSchema(),
+    email: z
+      .string({ required_error: "Email is required." })
+      .email("Invalid email address."),
     otp: z.string({ required_error: "Otp is must required." }),
     newPassword: z.string({ required_error: "New password is required" }),
   }),

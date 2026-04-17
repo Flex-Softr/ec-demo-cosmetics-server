@@ -1,3 +1,4 @@
+import path from "path";
 import { Request } from "express";
 import fsEx from "fs-extra";
 import httpStatus from "http-status";
@@ -25,8 +26,7 @@ import {
   createSwitchField,
   isEmailOrNumberTaken,
 } from "./user.util";
-
-import path from "path";
+import formatShippingAddress from "../../../utilities/formatShippingAddress";
 
 const getAllAdminAndStaffFromDB = async (
   query: Record<string, string>,
@@ -127,6 +127,9 @@ const getAllAdminAndStaffFromDB = async (
         permissions: 1,
         address: {
           fullAddress: "$address.fullAddress",
+          upazila: "$address.upazila",
+          district: "$address.district",
+          division: "$address.division",
         },
         createdAt: 1,
       },
@@ -159,7 +162,17 @@ const getAllAdminAndStaffFromDB = async (
   const usersQuery = new AggregateQueryHelper(User.aggregate(pipeline), query)
     .sort()
     .paginate();
-  const data = await usersQuery.model;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = (await usersQuery.model).map((user: any) => {
+    if (user.address) {
+      user.address.fullAddress = formatShippingAddress(
+        user.address,
+        undefined,
+        true
+      );
+    }
+    return user;
+  });
   const total =
     (await User.aggregate([{ $match: matchQuery }, { $count: "total" }]))![0]
       ?.total || 0;
@@ -174,7 +187,12 @@ const createCustomerIntoDB = async (
   userInfo: TUser,
   req: Request
 ) => {
-  // check that the phone number is already registered
+  // Extract email from personalInfo if it's not at the top level
+  if (personalInfo.email && !userInfo.email) {
+    userInfo.email = personalInfo.email;
+  }
+
+  // check that the phone number or email is already registered
   await isEmailOrNumberTaken({
     phoneNumber: userInfo.phoneNumber,
     email: userInfo.email,
@@ -237,7 +255,12 @@ const createAdminOrStaffIntoDB = async (
   address: TAddressData,
   userInfo: TUser
 ): Promise<TUser | null> => {
-  // check that the phone number is already registered
+  // Extract email from personalInfo if it's not at the top level
+  if (personalInfo.email && !userInfo.email) {
+    userInfo.email = personalInfo.email;
+  }
+
+  // check that the phone number or email is already registered
   await isEmailOrNumberTaken({
     phoneNumber: userInfo.phoneNumber,
     email: userInfo.email,
@@ -308,6 +331,11 @@ const updateAdminOrStaffIntDB = async (
   try {
     session.startTransaction();
     const updatedUserData: Record<string, unknown> = {};
+    // Extract email from personalInfo if it's not at the top level
+    if (personalInfo?.email && !userInfo?.email) {
+      userInfo = { ...userInfo, email: personalInfo.email } as TUser;
+    }
+
     if (userInfo?.phoneNumber || userInfo?.email) {
       await isEmailOrNumberTaken({
         phoneNumber: userInfo.phoneNumber,
@@ -468,11 +496,23 @@ const geUserProfileFromDB = async (id: Types.ObjectId) => {
           permissions: 1,
           address: {
             fullAddress: "$address.fullAddress",
+            upazila: "$address.upazila",
+            district: "$address.district",
+            division: "$address.division",
           },
         },
       },
     ])
   )[0];
+
+  if (result && result.address) {
+    result.address.fullAddress = formatShippingAddress(
+      result.address,
+      undefined,
+      true
+    );
+  }
+
   return result;
 };
 

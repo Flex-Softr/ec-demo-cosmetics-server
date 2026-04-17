@@ -78,36 +78,35 @@ export const isEmailOrNumberTaken = async (data: {
   const { phoneNumber, email } = data;
   const searchQuery: Record<string, unknown>[] = [];
 
-  if (phoneNumber) {
-    searchQuery.push({ phoneNumber });
+  if (phoneNumber && phoneNumber.trim() !== "") {
+    searchQuery.push({ phoneNumber: phoneNumber.trim() });
   }
 
-  if (email) {
-    searchQuery.push({ email });
+  if (email && email.trim() !== "") {
+    searchQuery.push({
+      email: { $regex: new RegExp(`^${email.trim()}$`, "i") },
+    });
   }
-  const query = {
+
+  if (searchQuery.length === 0) return;
+
+  const isExist = await User.findOne({
     $or: searchQuery,
-  };
+  });
 
-  const isExist = await User.find(query);
-
-  if (isExist.length) {
-    if (phoneNumber) {
-      if (isExist.filter((item) => item.phoneNumber === phoneNumber).length) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          "This 'Phone number' is already taken"
-        );
-      }
+  if (isExist) {
+    if (phoneNumber && isExist.phoneNumber?.trim() === phoneNumber.trim()) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "This 'Phone number' is already taken"
+      );
     }
 
-    if (email) {
-      if (isExist.filter((item) => item.email === email).length) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          "This 'Email' is already taken"
-        );
-      }
+    if (email && isExist.email?.toLowerCase() === email.trim().toLowerCase()) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "This 'Email' is already taken"
+      );
     }
   }
 

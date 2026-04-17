@@ -5,7 +5,7 @@ import { phoneNumberValidationZodSchema } from "../user/user.validation";
 const updateUser = z.object({
   body: z.object({
     fullName: z.string().optional(),
-    address: shippingValidationZodSchema(true),
+    address: shippingValidationZodSchema(true).optional(),
     phoneNumber: phoneNumberValidationZodSchema(true),
     email: z.string().email().optional(),
   }),

@@ -33,9 +33,9 @@ const createAddressSchema = (fullAddressRequired = false) =>
     fullAddress: fullAddressRequired
       ? z.string({ required_error: "Full address is required" })
       : z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    country: z.string().optional(),
+    division: z.string().optional(),
+    district: z.string().optional(),
+    upazila: z.string().optional(),
   });
 
 const createCustomer = z.object({
@@ -46,6 +46,7 @@ const createCustomer = z.object({
     address: createAddressSchema(),
     personalInfo: z.object({
       fullName: z.string().optional(),
+      email: z.string().email().optional(),
     }),
   }),
 });

@@ -7,7 +7,7 @@ const PasswordResetOtpSchema = new Schema<TPasswordResetOtp>(
       type: Schema.Types.ObjectId,
       required: true,
     },
-    phoneNumber: {
+    email: {
       type: String,
       required: true,
     },

@@ -117,7 +117,7 @@ const forgetPassword = catchAsync(async (req: Request, res: Response) => {
   await AuthServices.forgetPassword(req);
   successResponse(res, {
     statusCode: httpStatus.OK,
-    message: "Password reset SMS sent successfully.",
+    message: "Password reset OTP has been sent to your email.",
   });
 });
 

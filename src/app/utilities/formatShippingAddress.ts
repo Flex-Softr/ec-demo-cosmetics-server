@@ -18,7 +18,8 @@ const cleanJoin = (values: (string | undefined | null)[]) => {
 
 const formatShippingAddress = (
   shippingData: TShippingData,
-  langOverride?: Lang
+  langOverride?: Lang,
+  includeDivision: boolean = false
 ) => {
   const lang: Lang = langOverride || detectLanguage(shippingData.fullAddress);
 
@@ -31,7 +32,11 @@ const formatShippingAddress = (
     lang
   )?.name;
 
-  return cleanJoin([fullAddress, upazila, district]);
+  const division = includeDivision
+    ? BdAddress.divisionNameById(shippingData.division, lang)?.name
+    : undefined;
+
+  return cleanJoin([fullAddress, upazila, district, division]);
 };
 
 export default formatShippingAddress;

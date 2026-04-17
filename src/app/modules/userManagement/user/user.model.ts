@@ -27,6 +27,7 @@ const UserSchema = new Schema<TUser, TUserModel>(
     email: {
       type: String,
       unique: true,
+      sparse: true,
     },
     password: {
       type: String,

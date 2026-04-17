@@ -27,6 +27,15 @@ const AddressSchema = new Schema<TAddress>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Country",
     },
+    division: {
+      type: String,
+    },
+    district: {
+      type: String,
+    },
+    upazila: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
