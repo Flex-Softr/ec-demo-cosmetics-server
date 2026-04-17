@@ -39,7 +39,7 @@ const sendMail = async ({ to, subject, text, html }: TMailConfig) => {
       );
     }
     const res = await transporter.sendMail({
-      from: `${config.company_name} ${config.admin_email}`,
+      from: `${config.companyInfo?.name} ${config.companyInfo?.email}`,
       to: to.join(","),
       subject,
       text,

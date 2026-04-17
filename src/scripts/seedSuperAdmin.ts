@@ -81,7 +81,7 @@ const createSuperAdmin = async () => {
         [
           {
             uid: userId,
-            fullName: config.fullName,
+            fullName: config.superAdmin?.fullName,
           },
         ],
         { session }
@@ -90,7 +90,7 @@ const createSuperAdmin = async () => {
         [
           {
             uid: userId,
-            fullAddress: config.fullAddress,
+            fullAddress: config.superAdmin?.fullAddress,
           },
         ],
         { session }
@@ -101,9 +101,9 @@ const createSuperAdmin = async () => {
       [
         {
           uid: userId,
-          phoneNumber: config.phoneNumber,
-          email: config.email,
-          password: config.password,
+          phoneNumber: config.superAdmin?.phoneNumber as string,
+          email: config.superAdmin?.email as string,
+          password: config.superAdmin?.password as string,
           role: ROLES.SUPER_ADMIN,
           admin: admin._id,
           address: address._id,

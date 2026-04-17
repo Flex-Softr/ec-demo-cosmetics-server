@@ -1280,7 +1280,7 @@ const generateFacebookCatalogXML = async () => {
 
   root
     .ele("title")
-    .txt(config.company_name || "Store")
+    .txt(config.companyInfo?.name || "Store")
     .up();
   root.ele("link").txt(`https://${config.main_domain}`).up();
   root.ele("description").txt("Facebook Product Feed").up();

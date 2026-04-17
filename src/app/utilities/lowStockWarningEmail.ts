@@ -34,7 +34,7 @@ const lowStockWarningEmail = async ({
   try {
     const res = await sendMail({
       subject: `Low Stock Alert: Action Needed for ${productName}`,
-      to: [String(config?.admin_email)],
+      to: [String(config?.companyInfo?.email)],
       html,
     });
     return res;
