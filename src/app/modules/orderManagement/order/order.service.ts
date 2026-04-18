@@ -35,6 +35,8 @@ import {
 import { Order } from "./order.model";
 import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
+import { getSteadfastStatusByInvoice } from "../../../utilities/couriers/steadfast";
+import { getPathaoStatusByConsignmentId } from "../../../utilities/couriers/pathao";
 import { schedulePickOnSteadfastBulk } from "../../../utilities/couriers/steadfastBulk";
 import formatShippingAddress from "../../../utilities/formatShippingAddress";
 import triggerCancelEvent from "../../../utilities/triggerCancelEvent";
@@ -2430,6 +2432,7 @@ const schedulePickupForAOrder = async (
             courierProvider: shippingMethod._id,
             trackingId: result.tracking_code,
           },
+          deliveryStatus: result.status,
         },
         { session }
       );
@@ -2697,6 +2700,99 @@ const getCourierForOrder = async () => {
   return result;
 };
 
+const syncOrderCourierStatus = async (id: string) => {
+  const isObjectId = mongoose.Types.ObjectId.isValid(id);
+  const query: Record<string, unknown> = {};
+
+  if (isObjectId) {
+    query._id = new mongoose.Types.ObjectId(id);
+  } else {
+    query.orderId = id;
+  }
+
+  const order = await Order.findOne(query).populate(
+    "courierDetails.courierProvider"
+  );
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Order not found");
+  }
+
+  const courierDetails = order.courierDetails;
+  if (!courierDetails?.courierProvider) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "No courier assigned to this order"
+    );
+  }
+
+  const courier = courierDetails.courierProvider as unknown as TCourier;
+  const updatedData: Record<string, string> = {};
+
+  if (courier.slug === "steadfast") {
+    const result = await getSteadfastStatusByInvoice(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      courier as any,
+      order.orderId
+    );
+
+    if (result.status === 200) {
+      updatedData.deliveryStatus = result.delivery_status;
+
+      const lowerStatus = result.delivery_status?.toLowerCase();
+      if (lowerStatus === "delivered") {
+        updatedData.status = "completed";
+      } else if (lowerStatus === "cancelled") {
+        updatedData.status = "returned";
+      } else if (lowerStatus === "partial_delivered") {
+        updatedData.status = "partial completed";
+      }
+    }
+  } else if (courier.slug === "pathao") {
+    if (!courierDetails.trackingId) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Tracking ID (Consignment ID) missing for Pathao order"
+      );
+    }
+    const result = await getPathaoStatusByConsignmentId(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      courier as any,
+      courierDetails.trackingId
+    );
+
+    if (result.order_status) {
+      const lowerStatus = result.order_status.toLowerCase();
+      updatedData.deliveryStatus = lowerStatus.replace(/[_-]/g, " ");
+
+      if (lowerStatus === "delivered") {
+        updatedData.status = "completed";
+      } else if (
+        lowerStatus === "returned" ||
+        lowerStatus === "delivery-failed"
+      ) {
+        updatedData.status = "returned";
+      } else if (lowerStatus === "partial-delivery") {
+        updatedData.status = "partial completed";
+      }
+    }
+  } else {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Courier status sync is not supported for ${courier.name}`
+    );
+  }
+
+  if (Object.keys(updatedData).length > 0) {
+    await Order.updateOne({ _id: order._id }, { $set: updatedData });
+    return { ...updatedData, orderId: order.orderId };
+  } else {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Failed to fetch valid status from courier"
+    );
+  }
+};
+
 export const OrderServices = {
   createOrder,
   updateOrderStatus,
@@ -2720,4 +2816,5 @@ export const OrderServices = {
   bulkSchedulePickupForOrders,
   getCourierForOrder,
   getGuestOrdersByPhone,
+  syncOrderCourierStatus,
 };

@@ -8,10 +8,7 @@ import {
   TSchedulePickRequestBody,
   TSchedulePickResponse,
 } from "../../types/schedulePickup";
-import {
-  TSteadfastRequestBody,
-  TSteadfastResponse,
-} from "../../types/steadfast";
+import { TSteadfastRequestBody } from "../../types/steadfast";
 
 /**
  * Generic Steadfast API wrapper that handles both single and bulk requests.
@@ -85,19 +82,47 @@ export const schedulePickOnSteadfast = async (
     note: payload.note || "",
   };
 
-  const data = (await steadfastApi({
+  const response = (await steadfastApi({
     credentials: (shippingMethod?.credentials ||
       []) as TShippingMethodCredential[],
     endpoints: "/create_order",
     method: "POST",
     payload: body,
-  })) as TSteadfastResponse;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  })) as any;
+
+  // Handle both wrapped { data: { ... } } and unwrapped { ... } responses
+  const data = response?.data || response;
+  const consignment = data?.consignment || data;
 
   return {
-    success: !!data?.consignment?.consignment_id,
-    tracking_code: data?.consignment?.consignment_id?.toString(),
+    success: !!consignment?.consignment_id,
+    tracking_code: consignment?.consignment_id?.toString(),
     message: data?.status === 200 ? "Success" : data?.message,
-    status: data?.consignment?.status,
+    status: consignment?.status,
+  };
+};
+
+/**
+ * Fetch current delivery status from Steadfast using invoice ID.
+ */
+export const getSteadfastStatusByInvoice = async (
+  shippingMethod: TShippingMethod,
+  invoiceId: string
+): Promise<{ status: number; delivery_status: string }> => {
+  const result = (await steadfastApi({
+    credentials: (shippingMethod?.credentials ||
+      []) as TShippingMethodCredential[],
+    endpoints: `/status_by_invoice/${invoiceId}`,
+    method: "GET",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  })) as any;
+
+  const data = result?.data || result;
+
+  return {
+    status: data?.status || result?.status,
+    delivery_status: data?.delivery_status,
   };
 };
 

@@ -41,32 +41,55 @@ const parcelStatusHandler = async (req: Request) => {
   if (provider === "steadfast") {
     token = req.headers["authorization"]?.split("Bearer ")[1];
     const data = payload as TSteadfastWebhookResponse;
-    // query = { orderId: data?.invoice };
-    query = { "courierDetails.trackingId": data?.consignment_id?.toString() };
+    query = { orderId: data?.invoice };
     updatedData.tracking_id = data?.consignment_id?.toString();
-    updatedData.status = data?.status === "delivered" ? "completed" : undefined;
-    updatedData.deliveryStatus = data?.status?.replace(/-/g, " ");
+
+    const lowerStatus = data?.status?.toLowerCase();
+    if (lowerStatus === "delivered") {
+      updatedData.status = "completed";
+    } else if (lowerStatus === "cancelled") {
+      updatedData.status = "returned";
+    } else if (lowerStatus === "partial_delivered") {
+      updatedData.status = "partial completed";
+    }
+
+    updatedData.deliveryStatus = lowerStatus?.replace(/[_-]/g, " ");
     updatedData.message = data?.tracking_message;
   } else if (provider === "redx") {
     token = (
       Array.isArray(req.query?.token) ? req.query?.token[0] : req.query?.token
     )?.toString();
     const data = payload as TRedXWebhookResponse;
+    query = { "courierDetails.trackingId": data?.tracking_number };
     updatedData.tracking_id = data?.tracking_number;
-    updatedData.status = data?.status === "delivered" ? "completed" : undefined;
-    updatedData.deliveryStatus = data?.status?.replace(/-/g, " ");
 
+    const lowerStatus = data?.status?.toLowerCase();
+    if (lowerStatus === "delivered") {
+      updatedData.status = "completed";
+    } else if (lowerStatus === "returned") {
+      updatedData.status = "returned";
+    }
+
+    updatedData.deliveryStatus = lowerStatus?.replace(/[_-]/g, " ");
     updatedData.message = data?.message_bn;
   } else if (provider === "pathao") {
     statusCode = httpStatus.ACCEPTED;
     const tokenHeader = req.headers["x-pathao-signature"];
     token = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
     const data = payload as TPathaoWebhookResponse;
-    query = { "courierDetails.trackingId": data?.consignment_id };
-    const event = data?.event?.split(".")[1];
+    query = { orderId: data?.merchant_order_id };
+
+    const event = data?.event?.split(".")?.[1]?.toLowerCase();
+    if (event === "delivered") {
+      updatedData.status = "completed";
+    } else if (event === "returned" || event === "delivery-failed") {
+      updatedData.status = "returned";
+    } else if (event === "partial-delivery") {
+      updatedData.status = "partial completed";
+    }
+
     updatedData.tracking_id = data?.consignment_id;
-    updatedData.status = event === "delivered" ? "completed" : undefined;
-    updatedData.deliveryStatus = event?.replace(/-/g, " ");
+    updatedData.deliveryStatus = event?.replace(/[_-]/g, " ");
     updatedData.message = data?.reason;
   }
 
@@ -84,11 +107,15 @@ const parcelStatusHandler = async (req: Request) => {
   }
 
   if (Object.keys(query)?.length) {
-    await Order.updateMany(query, {
-      status: updatedData.status,
-      deliveryStatus: updatedData.deliveryStatus,
-      deliveryMessage: updatedData.message,
-    });
+    const updateDoc: Record<string, string> = {};
+    if (updatedData.status) updateDoc.status = updatedData.status;
+    if (updatedData.deliveryStatus)
+      updateDoc.deliveryStatus = updatedData.deliveryStatus;
+    if (updatedData.message) updateDoc.deliveryMessage = updatedData.message;
+
+    if (Object.keys(updateDoc).length > 0) {
+      await Order.updateMany(query, updateDoc);
+    }
   }
 
   return {

@@ -190,4 +190,13 @@ router.get(
   OrderController.getCourierForOrder
 );
 
+router.patch(
+  "/sync-courier-status/:id",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_SHIPMENT_ORDER,
+  }),
+  OrderController.syncOrderCourierStatus
+);
+
 export const OrderRoutes = router;

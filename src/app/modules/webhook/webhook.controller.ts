@@ -15,6 +15,13 @@ const parcelStatusHandler = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
+  if (provider === "steadfast") {
+    return res.status(result.statusCode).json({
+      status: result.status,
+      message: result.message,
+    });
+  }
+
   successResponse(res, {
     statusCode: result.statusCode,
     success: true,

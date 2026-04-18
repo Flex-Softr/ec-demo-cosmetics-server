@@ -233,3 +233,21 @@ export const schedulePickOnPathao = async (
     status: result?.data?.order_status,
   };
 };
+
+/**
+ * Fetch current delivery status from Pathao using consignment ID.
+ */
+export const getPathaoStatusByConsignmentId = async (
+  shippingMethod: TShippingMethod,
+  consignmentId: string
+): Promise<{ order_status: string }> => {
+  const result = await pathaoApi({
+    credentials: shippingMethod.credentials,
+    endpoints: `/orders/${consignmentId}`,
+    method: "GET",
+  });
+
+  return {
+    order_status: result?.data?.order_status,
+  };
+};

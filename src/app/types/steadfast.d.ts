@@ -46,9 +46,9 @@ export type TSteadfastWebhookResponse = {
   notification_type: TSteadfastWebhookNotificationType;
   consignment_id: number;
   invoice: string;
-  cod_amount: number;
-  status: TSteadfastParcelStatus;
-  delivery_charge: number;
+  cod_amount?: number;
+  status?: TSteadfastParcelStatus | string;
+  delivery_charge?: number;
   tracking_message: string;
   updated_at: string;
 };

@@ -5,6 +5,7 @@ import { steadfastApi } from "./steadfast";
 
 export type TCourierResponse = {
   invoice: string;
+  consignment_id: number;
   tracking_code: string;
   status: string;
   message?: string;
@@ -28,17 +29,20 @@ export const schedulePickOnSteadfastBulk = async (
     })
   );
 
-  const { data } = await steadfastApi({
+  const response = await steadfastApi({
     credentials: courier?.credentials || [],
     endpoints: "/create_order/bulk-order",
     method: "POST",
     payload: payload,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = (response as any)?.data || response;
+
   const sanitizedData = (data as TCourierResponse[]).map(
-    ({ invoice, tracking_code, status, message }) => ({
+    ({ invoice, consignment_id, status, message }) => ({
       orderId: invoice,
-      trackingId: tracking_code,
+      trackingId: consignment_id?.toString(),
       status,
       message,
     })

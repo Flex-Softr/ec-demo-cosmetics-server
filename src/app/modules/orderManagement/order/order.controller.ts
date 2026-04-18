@@ -1,4 +1,4 @@
-﻿import { Request, Response } from "express";
+import { Request, Response } from "express";
 import httpStatus from "http-status";
 import mongoose from "mongoose";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
@@ -313,6 +313,19 @@ const getCourierForOrder = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const syncOrderCourierStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await OrderServices.syncOrderCourierStatus(id);
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Order status synchronized successfully",
+      data: result,
+    });
+  }
+);
+
 export const OrderController = {
   createOrder,
   getOrderDetailsForCustomer,
@@ -336,4 +349,5 @@ export const OrderController = {
   bulkSchedulePickupForOrders,
   getCourierForOrder,
   getGuestOrdersByPhone,
+  syncOrderCourierStatus,
 };
