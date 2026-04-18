@@ -7,7 +7,6 @@ import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { jwtHelper } from "../../../helper/jwt.helper";
 import { sendEmail } from "../../../utilities/sendEmail";
-import { ROLES } from "../../userManagement/user/user.const";
 import { User } from "../../userManagement/user/user.model";
 import { TPasswordResetOtpData } from "../passwordResetOtp/passwordResetOtp.interface";
 import { PasswordResetOtp } from "../passwordResetOtp/passwordResetOtp.model";
@@ -38,7 +37,7 @@ const login = async (
   if (!(await User.isPasswordMatch(password, user?.password as string))) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "Invalid phone number or password!"
+      "Invalid email/phone number or password!"
     );
   }
 
@@ -138,7 +137,7 @@ const forgetPassword = async (req: Request): Promise<void> => {
   const { email } = req.body;
 
   const user = await User.findOne({ email }).select("_id role");
-  if (!user || user.role !== ROLES.CUSTOMER) {
+  if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "No user found with this email");
   }
 
@@ -156,7 +155,7 @@ const forgetPassword = async (req: Request): Promise<void> => {
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px;">
           <h2 style="color: #111827; margin-bottom: 8px;">Password Reset</h2>
           <p style="color: #6b7280;">Use the OTP below to reset your password. It is valid for <strong>10 minutes</strong>.</p>
-          <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #4f46e5; text-align: center; padding: 16px 0;">${otp}</div>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #0F5C3D; text-align: center; padding: 16px 0;">${otp}</div>
           <p style="color: #6b7280; font-size: 13px;">Do not share this code with anyone.</p>
         </div>
       `,
