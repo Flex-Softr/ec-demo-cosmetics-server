@@ -15,7 +15,6 @@ const StaffSchema = new Schema<TStaff>(
     },
     emergencyContact: {
       type: String,
-      required: true,
     },
     NIDNo: {
       type: String,

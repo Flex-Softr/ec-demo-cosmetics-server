@@ -22,12 +22,9 @@ const UserSchema = new Schema<TUser, TUserModel>(
     phoneNumber: {
       type: String,
       required: true,
-      unique: true,
     },
     email: {
       type: String,
-      unique: true,
-      sparse: true,
     },
     password: {
       type: String,
@@ -88,10 +85,13 @@ UserSchema.statics.isUserExist = async (field) => {
     status: 1,
     permissions: 1,
   }).populate("permissions");
-  if (!user || user.status === "deleted") {
+
+  if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "No user found");
   } else if (user.status === "banned") {
     throw new ApiError(httpStatus.BAD_REQUEST, "You have been banned");
+  } else if (user.status === "deleted") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "This account has been deleted");
   }
   return user;
 };

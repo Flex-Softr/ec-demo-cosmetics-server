@@ -98,10 +98,19 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteUser = catchAsync(async (req: Request, res: Response) => {
+  await UserServices.deleteUserFromDB(new Types.ObjectId(req.params.id));
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "User deleted successfully",
+  });
+});
+
 export const UserControllers = {
   updateAdminOrStaff,
   getAllAdminAndStaff,
   createCustomer,
   createAdminOrStaff,
   getUserProfile,
+  deleteUser,
 };

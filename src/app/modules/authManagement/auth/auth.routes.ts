@@ -65,4 +65,17 @@ route.post(
   AuthControllers.resetPassword
 );
 
+route.delete(
+  "/delete-account",
+  authGuard({
+    requiredRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.CUSTOMER,
+      ROLES.STAFF,
+    ],
+  }),
+  AuthControllers.deleteAccount
+);
+
 export const AuthRouters = route;

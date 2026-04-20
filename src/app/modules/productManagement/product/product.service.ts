@@ -284,12 +284,20 @@ const getAllProductsCustomerFromDB = async (query: Record<string, unknown>) => {
     filterQuery.$and = andConditions;
   }
 
+  // Initial $match — `featured` must be filtered here because it is a
+  // root-level field on the product document (before any lookup pipeline).
+  const initialMatch: Record<string, unknown> = {
+    isDeleted: false,
+    publishedStatus: PRODUCT_STATUS.PUBLISHED,
+  };
+
+  if (query.featured === "true") {
+    initialMatch.featured = true;
+  }
+
   const pipeline: ExtendedPipelineStage[] = [
     {
-      $match: {
-        isDeleted: false,
-        publishedStatus: PRODUCT_STATUS.PUBLISHED,
-      },
+      $match: initialMatch,
     },
     ...commonPipelineMultipleProduct,
     { $match: filterQuery },
@@ -720,21 +728,37 @@ const getRelatedProductsFromDB = async (slug: string) => {
     return [];
   }
 
-  const pipeline = [
+  // Keep the ordered list of ObjectIds as declared on the product
+  const orderedIds = product.relatedProducts.map(
+    (id) => new Types.ObjectId(id.toString())
+  );
+
+  const pipeline: PipelineStage[] = [
     {
       $match: {
-        _id: { $in: product.relatedProducts },
+        _id: { $in: orderedIds },
         isDeleted: false,
         publishedStatus: PRODUCT_STATUS.PUBLISHED,
       },
     },
-    ...commonPipelineMultipleProduct,
+    ...(commonPipelineMultipleProduct as PipelineStage[]),
     {
       $project: commonProductProjection,
     },
+    // Inject a numeric sort key that reflects the original array position
+    {
+      $addFields: {
+        _sortIndex: {
+          $indexOfArray: [orderedIds, "$_id"],
+        },
+      },
+    },
+    { $sort: { _sortIndex: 1 } },
+    // Remove the helper field before returning
+    { $unset: "_sortIndex" },
   ];
 
-  const result = await ProductModel.aggregate(pipeline as PipelineStage[]);
+  const result = await ProductModel.aggregate(pipeline);
 
   return result;
 };

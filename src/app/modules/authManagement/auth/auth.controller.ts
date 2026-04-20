@@ -129,6 +129,28 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteAccount = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user as TJwtPayload;
+  await AuthServices.deleteAccount(user.id);
+
+  // Clear auth cookies
+  const cookieOption = {
+    domain:
+      config.env === "production" ? `.${config.main_domain}` : "localhost",
+    httpOnly: config.env === "production",
+    secure: config.env === "production",
+    sameSite: "lax" as const,
+    expires: new Date(0),
+  };
+  res.cookie("_app.ec.rt", "", cookieOption);
+  res.cookie("_app.ec.at", "", cookieOption);
+
+  successResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Account deleted successfully.",
+  });
+});
+
 export const AuthControllers = {
   login,
   refreshToken,
@@ -137,4 +159,5 @@ export const AuthControllers = {
   getLoggedInDevices,
   forgetPassword,
   resetPassword,
+  deleteAccount,
 };

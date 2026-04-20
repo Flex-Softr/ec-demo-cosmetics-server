@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
 import { ROLES } from "./user.const";
 import { User } from "./user.model";
+import { TUser } from "./user.interface";
 
 const findLastCustomer = async (): Promise<string | undefined> => {
   const lastCustomer = await User.findOne({ role: ROLES.CUSTOMER }, { uid: 1 })
@@ -74,7 +75,7 @@ export const createSwitchField = (fieldName: string) => ({
 export const isEmailOrNumberTaken = async (data: {
   phoneNumber?: string;
   email?: string;
-}) => {
+}): Promise<TUser | undefined> => {
   const { phoneNumber, email } = data;
   const searchQuery: Record<string, unknown>[] = [];
 
@@ -90,24 +91,34 @@ export const isEmailOrNumberTaken = async (data: {
 
   if (searchQuery.length === 0) return;
 
+  // Check for any existing account with the same email or phone
   const isExist = await User.findOne({
     $or: searchQuery,
   });
 
   if (isExist) {
-    if (phoneNumber && isExist.phoneNumber?.trim() === phoneNumber.trim()) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "This 'Phone number' is already taken"
-      );
+    // If the account is NOT deleted, it's truly taken
+    if (isExist.status !== "deleted") {
+      if (phoneNumber && isExist.phoneNumber?.trim() === phoneNumber.trim()) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "This 'Phone number' is already taken"
+        );
+      }
+
+      if (
+        email &&
+        isExist.email?.toLowerCase() === email.trim().toLowerCase()
+      ) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "This 'Email' is already taken"
+        );
+      }
     }
 
-    if (email && isExist.email?.toLowerCase() === email.trim().toLowerCase()) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "This 'Email' is already taken"
-      );
-    }
+    // If it IS deleted, return it so the service can decide to reactivate it
+    return isExist as TUser;
   }
 
   return;

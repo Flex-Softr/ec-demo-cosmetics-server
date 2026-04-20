@@ -193,7 +193,7 @@ const createCustomerIntoDB = async (
   }
 
   // check that the phone number or email is already registered
-  await isEmailOrNumberTaken({
+  const existingUser = await isEmailOrNumberTaken({
     phoneNumber: userInfo.phoneNumber,
     email: userInfo.email,
   });
@@ -204,33 +204,95 @@ const createCustomerIntoDB = async (
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const id = await createCustomerId();
 
-    personalInfo.uid = id;
-    // create customer
-    const [createCustomer] = await Customer.create([personalInfo], {
-      session,
-    });
-    if (!createCustomer) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
+    if (existingUser && existingUser.status === "deleted") {
+      // REACTIVATION FLOW: Update the existing deleted user
+      const id = existingUser.uid;
+
+      // 1. Update/Restore Customer details
+      let customerId = existingUser.customer;
+      const updateCustomer = await Customer.findOneAndUpdate(
+        { _id: existingUser.customer },
+        { ...personalInfo, uid: id },
+        { session, new: true }
+      );
+      if (!updateCustomer) {
+        // If customer doc missing, create a new one
+        const [newCustomer] = await Customer.create(
+          [{ ...personalInfo, uid: id }],
+          { session }
+        );
+        customerId = newCustomer._id;
+      }
+
+      // 2. Update/Restore Address details
+      let addressId = existingUser.address;
+      const updateAddress = await Address.findOneAndUpdate(
+        { _id: existingUser.address },
+        { ...addressData, uid: id },
+        { session, new: true }
+      );
+      if (!updateAddress) {
+        // If address doc missing, create a new one
+        const [newAddress] = await Address.create(
+          [{ ...addressData, uid: id }],
+          {
+            session,
+          }
+        );
+        addressId = newAddress._id;
+      }
+
+      // 3. Update/Restore User status and password
+      const user = await User.findOneAndUpdate(
+        { _id: existingUser._id },
+        {
+          ...userInfo,
+          status: "active",
+          customer: customerId,
+          address: addressId,
+          uid: id,
+        },
+        { session, new: true }
+      );
+      if (!user) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "Failed to reactivate account"
+        );
+      }
+      newUser = user;
+    } else {
+      // NEW REGISTRATION FLOW
+      const id = await createCustomerId();
+
+      personalInfo.uid = id;
+      // create customer
+      const [createCustomer] = await Customer.create([personalInfo], {
+        session,
+      });
+      if (!createCustomer) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
+      }
+
+      addressData.uid = id;
+      // create address
+      const [address] = await Address.create([addressData], { session });
+
+      if (!address) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create address");
+      }
+
+      userInfo.uid = id;
+      userInfo.customer = createCustomer._id;
+      userInfo.address = address._id;
+      const [user] = await User.create([userInfo], { session });
+      if (!user) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
+      }
+      newUser = user;
     }
 
-    addressData.uid = id;
-    // create address
-    const [address] = await Address.create([addressData], { session });
-
-    if (!address) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create address");
-    }
-
-    userInfo.uid = id;
-    userInfo.customer = createCustomer._id;
-    userInfo.address = address._id;
-    const [user] = await User.create([userInfo], { session });
-    if (!user) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
-    }
-    newUser = user;
     await session.commitTransaction();
     await session.endSession();
   } catch (error) {
@@ -261,7 +323,7 @@ const createAdminOrStaffIntoDB = async (
   }
 
   // check that the phone number or email is already registered
-  await isEmailOrNumberTaken({
+  const existingUser = await isEmailOrNumberTaken({
     phoneNumber: userInfo.phoneNumber,
     email: userInfo.email,
   });
@@ -270,25 +332,96 @@ const createAdminOrStaffIntoDB = async (
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    // Create Admin or staff account base on request type
-    if (userInfo.role === ROLES.ADMIN) {
-      newUser = await UserHelpers.createAdminOrStaffUser(
-        ROLES.ADMIN,
-        Admin,
-        userInfo,
-        personalInfo,
-        address,
-        session
+
+    if (existingUser && existingUser.status === "deleted") {
+      // REACTIVATION FLOW
+      const id = existingUser.uid;
+      const TargetModel = userInfo.role === ROLES.ADMIN ? Admin : Staff;
+      const targetId =
+        userInfo.role === ROLES.ADMIN ? existingUser.admin : existingUser.staff;
+
+      let personalDocId = targetId;
+
+      if (targetId) {
+        // 1. Update existing details if they exist
+        const updatePersonal = await TargetModel.findOneAndUpdate(
+          { _id: targetId },
+          { ...personalInfo, uid: id },
+          { session, new: true }
+        );
+        if (!updatePersonal) {
+          // If update failed (doc missing), create a new one
+          const [newPersonal] = await TargetModel.create(
+            [{ ...personalInfo, uid: id }],
+            { session }
+          );
+          personalDocId = newPersonal._id;
+        }
+      } else {
+        // 2. Create new details if none existed for this role
+        const [newPersonal] = await TargetModel.create(
+          [{ ...personalInfo, uid: id }],
+          { session }
+        );
+        personalDocId = newPersonal._id;
+      }
+
+      // 3. Update/Restore Address
+      const updateAddress = await Address.findOneAndUpdate(
+        { _id: existingUser.address },
+        { ...address, uid: id },
+        { session, new: true }
       );
-    } else if (userInfo.role === ROLES.STAFF) {
-      newUser = await UserHelpers.createAdminOrStaffUser(
-        ROLES.STAFF,
-        Staff,
-        userInfo,
-        personalInfo,
-        address,
-        session
+      if (!updateAddress) {
+        // If address missing, create new one
+        const [newAddress] = await Address.create([{ ...address, uid: id }], {
+          session,
+        });
+        existingUser.address = newAddress._id;
+      }
+
+      // 4. Reactivate User
+      const user = await User.findOneAndUpdate(
+        { _id: existingUser._id },
+        {
+          ...userInfo,
+          status: "active",
+          admin: userInfo.role === ROLES.ADMIN ? personalDocId : undefined,
+          staff: userInfo.role === ROLES.STAFF ? personalDocId : undefined,
+          address: existingUser.address,
+          uid: id,
+        },
+        { session, new: true }
       );
+      if (!user) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "Failed to reactivate account"
+        );
+      }
+      newUser = user;
+    } else {
+      // NEW REGISTRATION FLOW
+      // Create Admin or staff account base on request type
+      if (userInfo.role === ROLES.ADMIN) {
+        newUser = await UserHelpers.createAdminOrStaffUser(
+          ROLES.ADMIN,
+          Admin,
+          userInfo,
+          personalInfo,
+          address,
+          session
+        );
+      } else if (userInfo.role === ROLES.STAFF) {
+        newUser = await UserHelpers.createAdminOrStaffUser(
+          ROLES.STAFF,
+          Staff,
+          userInfo,
+          personalInfo,
+          address,
+          session
+        );
+      }
     }
     await session.commitTransaction();
   } catch (error) {
@@ -316,11 +449,9 @@ const updateAdminOrStaffIntDB = async (
   const isExist = await User.findOne({ _id: id }).populate([
     {
       path: "admin",
-      select: "profilePicture",
     },
     {
       path: "staff",
-      select: "profilePicture",
     },
   ]);
   if (!isExist) {
@@ -336,20 +467,74 @@ const updateAdminOrStaffIntDB = async (
       userInfo = { ...userInfo, email: personalInfo.email } as TUser;
     }
 
-    if (userInfo?.phoneNumber || userInfo?.email) {
-      await isEmailOrNumberTaken({
-        phoneNumber: userInfo.phoneNumber,
-        email: userInfo.email,
-      });
-      updatedUserData.phoneNumber = userInfo?.phoneNumber;
-      updatedUserData.email = userInfo?.email;
-    }
-    if (userInfo?.status) {
+    if (userInfo?.phoneNumber || userInfo?.email || userInfo?.role) {
+      if (userInfo.phoneNumber || userInfo.email) {
+        await isEmailOrNumberTaken({
+          phoneNumber: userInfo.phoneNumber,
+          email: userInfo.email,
+        });
+        updatedUserData.phoneNumber = userInfo?.phoneNumber;
+        updatedUserData.email = userInfo?.email;
+      }
+
+      if (userInfo?.role && userInfo.role !== isExist.role) {
+        // Handle Role Migration
+        const oldRole = isExist.role;
+        const newRole = userInfo.role;
+        const personalData =
+          oldRole === ROLES.ADMIN ? isExist.admin : isExist.staff;
+
+        if (personalData) {
+          // 1. Create new role document
+          const NewModel = newRole === ROLES.ADMIN ? Admin : Staff;
+          const personalDoc = personalData as unknown as {
+            toObject?: () => Record<string, unknown>;
+          };
+          const plainData = personalDoc.toObject
+            ? personalDoc.toObject()
+            : { ...(personalData as unknown as Record<string, unknown>) };
+          delete (plainData as Record<string, unknown>)._id;
+          delete (plainData as Record<string, unknown>).createdAt;
+          delete (plainData as Record<string, unknown>).updatedAt;
+
+          // Merge with new info from request
+          const finalData = { ...plainData, ...personalInfo };
+
+          const [newPersonal] = await NewModel.create([finalData], { session });
+
+          // 2. Update user reference and role
+          updatedUserData.role = newRole;
+          if (newRole === ROLES.ADMIN) {
+            updatedUserData.admin = newPersonal._id;
+            updatedUserData.$unset = { staff: 1 };
+          } else {
+            updatedUserData.staff = newPersonal._id;
+            updatedUserData.$unset = { admin: 1 };
+          }
+
+          // 3. Delete old role document after session commit (handled by session if possible or manual)
+          // For safety with transactions, we'll delete it now
+          const OldModel = oldRole === ROLES.ADMIN ? Admin : Staff;
+          await OldModel.deleteOne(
+            { _id: (personalData as unknown as { _id: string })._id },
+            { session }
+          );
+        } else {
+          updatedUserData.role = newRole;
+        }
+      }
+
       updatedUserData.status = userInfo?.status;
     }
 
+    if (userInfo?.permissions) {
+      updatedUserData.permissions = userInfo.permissions;
+    }
+
     if (Object.keys(updatedUserData).length) {
-      await User.findOneAndUpdate({ _id: isExist._id }, updatedUserData);
+      await User.findOneAndUpdate({ _id: isExist._id }, updatedUserData, {
+        session,
+      });
     }
 
     if (address) {
@@ -358,7 +543,9 @@ const updateAdminOrStaffIntDB = async (
       });
     }
 
-    if (personalInfo) {
+    const roleChanged = userInfo?.role && userInfo.role !== isExist.role;
+
+    if (personalInfo && !roleChanged) {
       if (isExist.role === ROLES.ADMIN) {
         await Admin.findOneAndUpdate({ _id: isExist.admin }, personalInfo, {
           session,
@@ -516,10 +703,22 @@ const geUserProfileFromDB = async (id: Types.ObjectId) => {
   return result;
 };
 
+const deleteUserFromDB = async (id: Types.ObjectId) => {
+  const result = await User.findOneAndUpdate(
+    { _id: id },
+    { status: "deleted" }
+  );
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+  return result;
+};
+
 export const UserServices = {
   getAllAdminAndStaffFromDB,
   createCustomerIntoDB,
   createAdminOrStaffIntoDB,
   updateAdminOrStaffIntDB,
   geUserProfileFromDB,
+  deleteUserFromDB,
 };

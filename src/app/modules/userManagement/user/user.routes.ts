@@ -59,4 +59,13 @@ router.get(
   UserControllers.getUserProfile
 );
 
+router.delete(
+  "/:id",
+  authGuard({
+    requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF],
+    requiredPermission: PERMISSIONS.MANAGE_ADMIN_OR_STAFF,
+  }),
+  UserControllers.deleteUser
+);
+
 export const UserRoutes = router;

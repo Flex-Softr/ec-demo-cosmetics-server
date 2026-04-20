@@ -8,7 +8,15 @@ import ApiError from "../errorHandlers/ApiError";
 const storage = (dirName: string) =>
   multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, getUploadFolder(dirName));
+      const folder = getUploadFolder(dirName);
+      // Attach the folder path to the request object so it can be cleaned up on error
+      // using a Set to handle multiple files in the same request
+      if (!req.uploadedFolders) {
+        req.uploadedFolders = new Set<string>();
+      }
+      req.uploadedFolders.add(folder);
+
+      cb(null, folder);
     },
     filename: function (req, file, cb) {
       const decodedName = Buffer.from(file.originalname, "latin1").toString(

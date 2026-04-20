@@ -12,6 +12,7 @@ declare global {
         id: string;
         newId: () => void;
       };
+      uploadedFolders: Set<string>;
     }
   }
 }

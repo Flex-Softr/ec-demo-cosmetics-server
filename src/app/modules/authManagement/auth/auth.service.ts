@@ -136,7 +136,10 @@ const getLoggedInDevicesFromDB = async (userId: Types.ObjectId) => {
 const forgetPassword = async (req: Request): Promise<void> => {
   const { email } = req.body;
 
-  const user = await User.findOne({ email }).select("_id role");
+  const user = await User.findOne({
+    email,
+    status: { $ne: "deleted" },
+  }).select("_id role");
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "No user found with this email");
   }
@@ -203,7 +206,10 @@ const resetPassword = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "OTP did not match");
   }
 
-  const user = await User.findOne({ email: findRequest.email });
+  const user = await User.findOne({
+    email: findRequest.email,
+    status: { $ne: "deleted" },
+  });
   if (user) {
     user.password = payload.newPassword;
     await user.save();
@@ -211,6 +217,19 @@ const resetPassword = async (
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, "No user found");
   }
+};
+
+const deleteAccount = async (userId: Types.ObjectId): Promise<void> => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // Soft-delete to allow reactivation on re-registration.
+  // This keeps the email/phone index occupied so no other user can take it,
+  // but allows the original user to "re-register" by reactivating this document.
+  await User.findOneAndUpdate({ _id: userId }, { status: "deleted" });
 };
 
 export const AuthServices = {
@@ -221,4 +240,5 @@ export const AuthServices = {
   getLoggedInDevicesFromDB,
   forgetPassword,
   resetPassword,
+  deleteAccount,
 };

@@ -1,5 +1,7 @@
 import { ErrorRequestHandler } from "express";
+import fsEx from "fs-extra";
 import multer from "multer";
+import path from "path";
 import { ZodError } from "zod";
 import config from "../config/config";
 import ApiError from "../errorHandlers/ApiError";
@@ -11,7 +13,7 @@ import handleMongooseValidationError from "../errorHandlers/handleMongooseValida
 import { TErrorMessages, TIErrorResponse } from "../types/error";
 import { errorLogger } from "../utilities/logger";
 
-const globalErrorhandler: ErrorRequestHandler = (
+const globalErrorhandler: ErrorRequestHandler = async (
   err,
   req,
   res,
@@ -29,6 +31,47 @@ const globalErrorhandler: ErrorRequestHandler = (
 
   // Always log the error to the persistent error logger
   errorLogger.error(`❌ Error in ${req.method} ${req.originalUrl}`, err);
+
+  // File cleanup logic: if an error occurs, delete any uploaded files/folders
+  const files = req.files as Express.Multer.File[] | undefined;
+  const file = req.file as Express.Multer.File | undefined;
+  const uploadedFolders = req.uploadedFolders;
+
+  const foldersToDelete = new Set<string>();
+
+  // 1. Add folders tracked during destination assignment (handles errors mid-upload)
+  if (uploadedFolders) {
+    uploadedFolders.forEach((folder) => foldersToDelete.add(folder));
+  }
+
+  // 2. Add folders from successfully uploaded files (fallback)
+  const uploadedFiles = [];
+  if (file) uploadedFiles.push(file);
+  if (files && Array.isArray(files)) uploadedFiles.push(...files);
+  if (files && !Array.isArray(files) && typeof files === "object") {
+    Object.values(files).forEach((fileArray) => {
+      uploadedFiles.push(...(fileArray as Express.Multer.File[]));
+    });
+  }
+
+  uploadedFiles.forEach((f) => {
+    if (f.path) {
+      foldersToDelete.add(path.dirname(f.path));
+    }
+  });
+
+  // Execute cleanup
+  if (foldersToDelete.size > 0) {
+    for (const folder of foldersToDelete) {
+      try {
+        if (await fsEx.pathExists(folder)) {
+          await fsEx.remove(folder);
+        }
+      } catch (cleanupError) {
+        errorLogger.error("Failed to cleanup uploaded folder:", cleanupError);
+      }
+    }
+  }
 
   let errorMessages: TErrorMessages[] = [{ path: "", message }];
   if (err.name === "ValidationError") {
