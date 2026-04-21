@@ -783,13 +783,6 @@ const getOrderDetailsForAdmin = async (
   pipeline.unshift({ $match: { _id: new mongoose.Types.ObjectId(id) } });
 
   const result = (await Order.aggregate(pipeline))[0];
-  if (result && result.shipping) {
-    result.shipping.fullAddress = formatShippingAddress(
-      result.shipping,
-      undefined,
-      true
-    );
-  }
 
   if (!result) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No order found with this id");
