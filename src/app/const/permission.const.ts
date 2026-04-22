@@ -14,6 +14,7 @@ export const PERMISSIONS = {
   MANAGE_PAYMENT_METHOD: "managePaymentMethod",
   MANAGE_COURIER: "manageCourier",
   MANAGE_SMS: "manageSms",
+  MANAGE_CONTACT_MESSAGE: "manageContactMessage",
 } as const;
 
 export const permissionList = Object.values(PERMISSIONS);

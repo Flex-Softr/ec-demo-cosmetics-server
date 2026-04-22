@@ -8,6 +8,7 @@ const contactMessageSchema = new Schema<TContactMessageDocument>(
     email: { type: String, required: true },
     subject: { type: String, required: true },
     message: { type: String, required: true },
+    isRead: { type: Boolean, default: false },
   },
   {
     timestamps: true,

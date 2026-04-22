@@ -6,6 +6,7 @@ export type TContactMessage = {
   email: string;
   subject: string;
   message: string;
+  isRead: boolean;
 };
 
 export type TContactMessageDocument = Document & TContactMessage;

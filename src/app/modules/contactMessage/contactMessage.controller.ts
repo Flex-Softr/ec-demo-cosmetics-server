@@ -19,13 +19,16 @@ const createContactMessage = catchAsync(async (req: Request, res: Response) => {
 
 const getAllContactMessages = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await ContactMessageService.getAllContactMessagesFromDB();
+    const result = await ContactMessageService.getAllContactMessagesFromDB(
+      req.query
+    );
 
     successResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Contact messages retrieved successfully!",
-      data: result,
+      meta: result.meta,
+      data: result.result,
     });
   }
 );
@@ -57,9 +60,40 @@ const deleteContactMessage = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateContactMessageStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result =
+      await ContactMessageService.updateContactMessageStatusIntoDB(id);
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Contact message marked as read!",
+      data: result,
+    });
+  }
+);
+
+const getUnreadContactMessagesCount = catchAsync(
+  async (req: Request, res: Response) => {
+    const result =
+      await ContactMessageService.getUnreadContactMessagesCountFromDB();
+
+    successResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Unread contact messages count retrieved successfully!",
+      data: result,
+    });
+  }
+);
+
 export const ContactMessageController = {
   createContactMessage,
   getAllContactMessages,
   getSingleContactMessage,
   deleteContactMessage,
+  updateContactMessageStatus,
+  getUnreadContactMessagesCount,
 };
