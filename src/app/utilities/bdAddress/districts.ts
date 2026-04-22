@@ -12,7 +12,7 @@ const districts: District[] = [
   {
     id: "0",
     division_id: "0",
-    name: "Comilla",
+    name: "Cumilla",
     bn_name: "কুমিল্লা",
     lat: "23.4682747",
     lon: "91.1788135",
@@ -84,7 +84,7 @@ const districts: District[] = [
   {
     id: "8",
     division_id: "0",
-    name: "Coxsbazar",
+    name: "Cox's Bazar",
     bn_name: "কক্সবাজার",
     lat: "21.44315751",
     lon: "91.97381741",
@@ -300,7 +300,7 @@ const districts: District[] = [
   {
     id: "32",
     division_id: "3",
-    name: "Barisal",
+    name: "Barishal",
     bn_name: "বরিশাল",
     lat: "22.7004179",
     lon: "90.3731568",

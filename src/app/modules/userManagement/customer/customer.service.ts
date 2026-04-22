@@ -9,6 +9,8 @@ import { TStatus } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { isEmailOrNumberTaken } from "../user/user.util";
 import { Customer } from "./customer.model";
+import BdAddress from "../../../utilities/bdAddress/bdAddress";
+import { detectLanguage } from "../../../utilities/formatShippingAddress";
 
 const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
   const pipeline: PipelineStage[] = [
@@ -56,8 +58,12 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
         name: "$customerData.fullName",
         shipping: {
           fullName: "$customerData.fullName",
-          fullAddress: "$addressInfo.fullAddress",
           phoneNumber: "$phoneNumber",
+          email: "$email",
+          fullAddress: "$addressInfo.fullAddress",
+          upazila: "$addressInfo.upazila",
+          district: "$addressInfo.district",
+          division: "$addressInfo.division",
         },
         status: 1,
         createdAt: 1,
@@ -99,6 +105,24 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
     .paginate();
 
   const data = await customerQuery.model;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data.forEach((customer: any) => {
+    if (customer.shipping) {
+      const lang = detectLanguage(customer.shipping.fullAddress);
+      customer.shipping.upazila = BdAddress.upazilaNameById(
+        customer.shipping.upazila,
+        lang
+      )?.name;
+      customer.shipping.district = BdAddress.districtNameById(
+        customer.shipping.district,
+        lang
+      )?.name;
+      customer.shipping.division = BdAddress.divisionNameById(
+        customer.shipping.division,
+        lang
+      )?.name;
+    }
+  });
   const total =
     (await User.aggregate([{ $match: matchQuery }, { $count: "total" }]))![0]
       ?.total || 0;
@@ -161,8 +185,12 @@ const getSingleCustomerByAdminFromDB = async (id: string) => {
         name: "$customerData.fullName",
         shipping: {
           fullName: "$customerData.fullName",
-          fullAddress: "$addressInfo.fullAddress",
           phoneNumber: "$phoneNumber",
+          email: "$email",
+          fullAddress: "$addressInfo.fullAddress",
+          upazila: "$addressInfo.upazila",
+          district: "$addressInfo.district",
+          division: "$addressInfo.division",
         },
         status: 1,
         createdAt: 1,
@@ -173,6 +201,21 @@ const getSingleCustomerByAdminFromDB = async (id: string) => {
 
   const user = (await User.aggregate(pipeline))[0];
   if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "No user found");
+  if (user.shipping) {
+    const lang = detectLanguage(user.shipping.fullAddress);
+    user.shipping.upazila = BdAddress.upazilaNameById(
+      user.shipping.upazila,
+      lang
+    )?.name;
+    user.shipping.district = BdAddress.districtNameById(
+      user.shipping.district,
+      lang
+    )?.name;
+    user.shipping.division = BdAddress.divisionNameById(
+      user.shipping.division,
+      lang
+    )?.name;
+  }
   return user;
 };
 

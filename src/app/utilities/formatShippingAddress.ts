@@ -3,7 +3,7 @@ import BdAddress from "./bdAddress/bdAddress";
 
 type Lang = "bn" | "en";
 
-const detectLanguage = (text?: string): Lang => {
+export const detectLanguage = (text?: string): Lang => {
   if (!text) return "en";
   const banglaRegex = /[\u0980-\u09FF]/;
   return banglaRegex.test(text) ? "bn" : "en";

@@ -109,6 +109,17 @@ class BdAddress {
     const upazila = upazilas.find((d) => d.id === upazilaId.toString());
     return upazila ? localize([upazila], lang)[0] : { id: "", name: "" };
   }
+
+  /**
+   * Get zip code by upazila id.
+   */
+  static zipCodeByUpazilaId(upazilaId: string | undefined): string {
+    if (!upazilaId) {
+      return "";
+    }
+    const upazila = upazilas.find((d) => d.id === upazilaId.toString());
+    return upazila?.zip_code || "";
+  }
 }
 
 export default BdAddress;
