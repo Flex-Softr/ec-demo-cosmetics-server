@@ -3,7 +3,6 @@ export type Upazila = {
   district_id: string;
   name: string;
   bn_name: string;
-  url: string;
   zip_code?: string;
 };
 
@@ -13,7 +12,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Debidwar",
     bn_name: "দেবিদ্বার",
-    url: "debidwar.comilla.gov.bd",
     zip_code: "3512",
   },
   {
@@ -21,7 +19,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Barura",
     bn_name: "বরুড়া",
-    url: "barura.comilla.gov.bd",
     zip_code: "3510",
   },
   {
@@ -29,7 +26,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Brahmanpara",
     bn_name: "ব্রাহ্মণপাড়া",
-    url: "brahmanpara.comilla.gov.bd",
     zip_code: "3502",
   },
   {
@@ -37,7 +33,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Chandina",
     bn_name: "চান্দিনা",
-    url: "chandina.comilla.gov.bd",
     zip_code: "3530",
   },
   {
@@ -45,7 +40,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Chauddagram",
     bn_name: "চৌদ্দগ্রাম",
-    url: "chauddagram.comilla.gov.bd",
     zip_code: "3550",
   },
   {
@@ -53,7 +47,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Daudkandi",
     bn_name: "দাউদকান্দি",
-    url: "daudkandi.comilla.gov.bd",
     zip_code: "3516",
   },
   {
@@ -61,7 +54,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Homna",
     bn_name: "হোমনা",
-    url: "homna.comilla.gov.bd",
     zip_code: "3540",
   },
   {
@@ -69,7 +61,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Laksam",
     bn_name: "লাকসাম",
-    url: "laksam.comilla.gov.bd",
     zip_code: "3570",
   },
   {
@@ -77,7 +68,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Muradnagar",
     bn_name: "মুরাদনগর",
-    url: "muradnagar.comilla.gov.bd",
     zip_code: "3580",
   },
   {
@@ -85,7 +75,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Nangalkot",
     bn_name: "নাঙ্গলকোট",
-    url: "nangalkot.comilla.gov.bd",
     zip_code: "3590",
   },
   {
@@ -93,7 +82,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Cumilla Sadar",
     bn_name: "কুমিল্লা সদর",
-    url: "comillasadar.comilla.gov.bd",
     zip_code: "3520",
   },
   {
@@ -101,7 +89,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Meghna",
     bn_name: "মেঘনা",
-    url: "meghna.comilla.gov.bd",
     zip_code: "3515",
   },
   {
@@ -109,7 +96,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Monohargonj",
     bn_name: "মনোহরগঞ্জ",
-    url: "monohargonj.comilla.gov.bd",
     zip_code: "3560",
   },
   {
@@ -117,7 +103,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Cumilla Sadar Dakshin",
     bn_name: "কুমিল্লা সদর দক্ষিণ",
-    url: "sadarsouth.comilla.gov.bd",
     zip_code: "3500",
   },
   {
@@ -125,7 +110,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Titas",
     bn_name: "তিতাস",
-    url: "titas.comilla.gov.bd",
     zip_code: "3525",
   },
   {
@@ -133,7 +117,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Burichang",
     bn_name: "বুড়িচং",
-    url: "burichang.comilla.gov.bd",
     zip_code: "3520",
   },
   {
@@ -141,7 +124,6 @@ const upazilas: Upazila[] = [
     district_id: "0",
     name: "Lalmai",
     bn_name: "লালমাই",
-    url: "lalmai.comilla.gov.bd",
     zip_code: "3506",
   },
   {
@@ -149,7 +131,6 @@ const upazilas: Upazila[] = [
     district_id: "1",
     name: "Chhagalnaiya",
     bn_name: "ছাগলনাইয়া",
-    url: "chhagalnaiya.feni.gov.bd",
     zip_code: "3910",
   },
   {
@@ -157,7 +138,6 @@ const upazilas: Upazila[] = [
     district_id: "1",
     name: "Feni Sadar",
     bn_name: "ফেনী সদর",
-    url: "sadar.feni.gov.bd",
     zip_code: "3900",
   },
   {
@@ -165,7 +145,6 @@ const upazilas: Upazila[] = [
     district_id: "1",
     name: "Sonagazi",
     bn_name: "সোনাগাজী",
-    url: "sonagazi.feni.gov.bd",
     zip_code: "3950",
   },
   {
@@ -173,7 +152,6 @@ const upazilas: Upazila[] = [
     district_id: "1",
     name: "Fulgazi",
     bn_name: "ফুলগাজী",
-    url: "fulgazi.feni.gov.bd",
     zip_code: "3930",
   },
   {
@@ -181,7 +159,6 @@ const upazilas: Upazila[] = [
     district_id: "1",
     name: "Parshuram",
     bn_name: "পরশুরাম",
-    url: "parshuram.feni.gov.bd",
     zip_code: "3920",
   },
   {
@@ -189,7 +166,6 @@ const upazilas: Upazila[] = [
     district_id: "1",
     name: "Daganbhuiyan",
     bn_name: "দাগনভূঞা",
-    url: "daganbhuiyan.feni.gov.bd",
     zip_code: "3940",
   },
   {
@@ -197,7 +173,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Brahmanbaria Sadar",
     bn_name: "ব্রাহ্মণবাড়িয়া সদর",
-    url: "sadar.brahmanbaria.gov.bd",
     zip_code: "3400",
   },
   {
@@ -205,7 +180,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Kasba",
     bn_name: "কসবা",
-    url: "kasba.brahmanbaria.gov.bd",
     zip_code: "3460",
   },
   {
@@ -213,7 +187,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Nasirnagar",
     bn_name: "নাসিরনগর",
-    url: "nasirnagar.brahmanbaria.gov.bd",
     zip_code: "3440",
   },
   {
@@ -221,7 +194,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Sarail",
     bn_name: "সরাইল",
-    url: "sarail.brahmanbaria.gov.bd",
     zip_code: "3470",
   },
   {
@@ -229,7 +201,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Ashuganj",
     bn_name: "আশুগঞ্জ",
-    url: "ashuganj.brahmanbaria.gov.bd",
     zip_code: "3402",
   },
   {
@@ -237,7 +208,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Akhaura",
     bn_name: "আখাউড়া",
-    url: "akhaura.brahmanbaria.gov.bd",
     zip_code: "3450",
   },
   {
@@ -245,7 +215,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Nabinagar",
     bn_name: "নবীনগর",
-    url: "nabinagar.brahmanbaria.gov.bd",
     zip_code: "3410",
   },
   {
@@ -253,7 +222,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Bancharampur",
     bn_name: "বাঞ্ছারামপুর",
-    url: "bancharampur.brahmanbaria.gov.bd",
     zip_code: "3420",
   },
   {
@@ -261,7 +229,6 @@ const upazilas: Upazila[] = [
     district_id: "2",
     name: "Bijoynagar",
     bn_name: "বিজয়নগর",
-    url: "bijoynagar.brahmanbaria.gov.bd    ",
     zip_code: "3430",
   },
   {
@@ -269,7 +236,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Rangamati Sadar",
     bn_name: "রাঙ্গামাটি সদর",
-    url: "sadar.rangamati.gov.bd",
     zip_code: "4500",
   },
   {
@@ -277,7 +243,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Kaptai",
     bn_name: "কাপ্তাই",
-    url: "kaptai.rangamati.gov.bd",
     zip_code: "4530",
   },
   {
@@ -285,7 +250,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Kawkhali",
     bn_name: "কাউখালী",
-    url: "kawkhali.rangamati.gov.bd",
     zip_code: "4540",
   },
   {
@@ -293,7 +257,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Baghaichari",
     bn_name: "বাঘাইছড়ি",
-    url: "baghaichari.rangamati.gov.bd",
     zip_code: "4570",
   },
   {
@@ -301,7 +264,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Barkal",
     bn_name: "বরকল",
-    url: "barkal.rangamati.gov.bd",
     zip_code: "4520",
   },
   {
@@ -309,7 +271,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Langadu",
     bn_name: "লংগদু",
-    url: "langadu.rangamati.gov.bd",
     zip_code: "4550",
   },
   {
@@ -317,7 +278,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Rajasthali",
     bn_name: "রাজস্থলী",
-    url: "rajasthali.rangamati.gov.bd",
     zip_code: "4590",
   },
   {
@@ -325,7 +285,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Belaichari",
     bn_name: "বিলাইছড়ি",
-    url: "belaichari.rangamati.gov.bd",
     zip_code: "4560",
   },
   {
@@ -333,7 +292,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Juraichari",
     bn_name: "জুরাছড়ি",
-    url: "juraichari.rangamati.gov.bd",
     zip_code: "4580",
   },
   {
@@ -341,7 +299,6 @@ const upazilas: Upazila[] = [
     district_id: "3",
     name: "Naniarchar",
     bn_name: "নানিয়ারচর",
-    url: "naniarchar.rangamati.gov.bd",
     zip_code: "4510",
   },
   {
@@ -349,7 +306,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Noakhali Sadar",
     bn_name: "নোয়াখালী সদর",
-    url: "sadar.noakhali.gov.bd",
     zip_code: "3800",
   },
   {
@@ -357,7 +313,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Companiganj",
     bn_name: "কোম্পানীগঞ্জ",
-    url: "companiganj.noakhali.gov.bd",
     zip_code: "3840",
   },
   {
@@ -365,7 +320,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Begumganj",
     bn_name: "বেগমগঞ্জ",
-    url: "begumganj.noakhali.gov.bd",
     zip_code: "3820",
   },
   {
@@ -373,7 +327,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Hatia",
     bn_name: "হাতিয়া",
-    url: "hatia.noakhali.gov.bd",
     zip_code: "3890",
   },
   {
@@ -381,7 +334,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Subarnachar",
     bn_name: "সুবর্ণচর",
-    url: "subarnachar.noakhali.gov.bd",
     zip_code: "3880",
   },
   {
@@ -389,7 +341,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Kabirhat",
     bn_name: "কবিরহাট",
-    url: "kabirhat.noakhali.gov.bd",
     zip_code: "3850",
   },
   {
@@ -397,7 +348,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Senbug",
     bn_name: "সেনবাগ",
-    url: "senbug.noakhali.gov.bd",
     zip_code: "3860",
   },
   {
@@ -405,7 +355,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Chatkhil",
     bn_name: "চাটখিল",
-    url: "chatkhil.noakhali.gov.bd",
     zip_code: "3830",
   },
   {
@@ -413,7 +362,6 @@ const upazilas: Upazila[] = [
     district_id: "4",
     name: "Sonaimori",
     bn_name: "সোনাইমুড়ী",
-    url: "sonaimori.noakhali.gov.bd",
     zip_code: "3870",
   },
   {
@@ -421,7 +369,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Haimchar",
     bn_name: "হাইমচর",
-    url: "haimchar.chandpur.gov.bd",
     zip_code: "3660",
   },
   {
@@ -429,7 +376,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Kachua",
     bn_name: "কচুয়া",
-    url: "kachua.chandpur.gov.bd",
     zip_code: "3630",
   },
   {
@@ -437,7 +383,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Shahrasti",
     bn_name: "শাহরাস্তি	",
-    url: "shahrasti.chandpur.gov.bd",
     zip_code: "3670",
   },
   {
@@ -445,7 +390,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Chandpur Sadar",
     bn_name: "চাঁদপুর সদর",
-    url: "sadar.chandpur.gov.bd",
     zip_code: "3600",
   },
   {
@@ -453,7 +397,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Matlab South",
     bn_name: "মতলব দক্ষিণ",
-    url: "matlabsouth.chandpur.gov.bd",
     zip_code: "3640",
   },
   {
@@ -461,7 +404,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Hajiganj",
     bn_name: "হাজীগঞ্জ",
-    url: "hajiganj.chandpur.gov.bd",
     zip_code: "3610",
   },
   {
@@ -469,7 +411,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Matlab North",
     bn_name: "মতলব উত্তর",
-    url: "matlabnorth.chandpur.gov.bd",
     zip_code: "3650",
   },
   {
@@ -477,7 +418,6 @@ const upazilas: Upazila[] = [
     district_id: "5",
     name: "Faridgonj",
     bn_name: "ফরিদগঞ্জ",
-    url: "faridgonj.chandpur.gov.bd",
     zip_code: "3620",
   },
   {
@@ -485,7 +425,6 @@ const upazilas: Upazila[] = [
     district_id: "6",
     name: "Lakshmipur Sadar",
     bn_name: "লক্ষ্মীপুর সদর",
-    url: "sadar.lakshmipur.gov.bd",
     zip_code: "3700",
   },
   {
@@ -493,7 +432,6 @@ const upazilas: Upazila[] = [
     district_id: "6",
     name: "Kamalnagar",
     bn_name: "কমলনগর",
-    url: "kamalnagar.lakshmipur.gov.bd",
     zip_code: "3710",
   },
   {
@@ -501,7 +439,6 @@ const upazilas: Upazila[] = [
     district_id: "6",
     name: "Raipur",
     bn_name: "রায়পুর",
-    url: "raipur.lakshmipur.gov.bd",
     zip_code: "3720",
   },
   {
@@ -509,7 +446,6 @@ const upazilas: Upazila[] = [
     district_id: "6",
     name: "Ramgati",
     bn_name: "রামগতি",
-    url: "ramgati.lakshmipur.gov.bd",
     zip_code: "3740",
   },
   {
@@ -517,7 +453,6 @@ const upazilas: Upazila[] = [
     district_id: "6",
     name: "Ramganj",
     bn_name: "রামগঞ্জ",
-    url: "ramganj.lakshmipur.gov.bd",
     zip_code: "3730",
   },
   {
@@ -525,7 +460,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Rangunia",
     bn_name: "রাঙ্গুনিয়া",
-    url: "rangunia.chittagong.gov.bd",
     zip_code: "4360",
   },
   {
@@ -533,7 +467,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Sitakunda",
     bn_name: "সীতাকুন্ড",
-    url: "sitakunda.chittagong.gov.bd",
     zip_code: "4310",
   },
   {
@@ -541,7 +474,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Mirsharai",
     bn_name: "মীরসরাই",
-    url: "mirsharai.chittagong.gov.bd",
     zip_code: "4320",
   },
   {
@@ -549,7 +481,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Patiya",
     bn_name: "পটিয়া",
-    url: "patiya.chittagong.gov.bd",
     zip_code: "4375",
   },
   {
@@ -557,7 +488,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Sandwip",
     bn_name: "সন্দ্বীপ",
-    url: "sandwip.chittagong.gov.bd",
     zip_code: "4300",
   },
   {
@@ -565,7 +495,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Banshkhali",
     bn_name: "বাঁশখালী",
-    url: "banshkhali.chittagong.gov.bd",
     zip_code: "4390",
   },
   {
@@ -573,7 +502,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Boalkhali",
     bn_name: "বোয়ালখালী",
-    url: "boalkhali.chittagong.gov.bd",
     zip_code: "4365",
   },
   {
@@ -581,7 +509,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Anwara",
     bn_name: "আনোয়ারা",
-    url: "anwara.chittagong.gov.bd",
     zip_code: "4376",
   },
   {
@@ -589,7 +516,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Chandanaish",
     bn_name: "চন্দনাইশ",
-    url: "chandanaish.chittagong.gov.bd",
     zip_code: "4370",
   },
   {
@@ -597,7 +523,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Satkania",
     bn_name: "সাতকানিয়া",
-    url: "satkania.chittagong.gov.bd",
     zip_code: "4386",
   },
   {
@@ -605,7 +530,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Lohagara",
     bn_name: "লোহাগাড়া",
-    url: "lohagara.chittagong.gov.bd",
     zip_code: "4379",
   },
   {
@@ -613,7 +537,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Hathazari",
     bn_name: "হাটহাজারী",
-    url: "hathazari.chittagong.gov.bd",
     zip_code: "4330",
   },
   {
@@ -621,7 +544,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Fatikchhari",
     bn_name: "ফটিকছড়ি",
-    url: "fatikchhari.chittagong.gov.bd",
     zip_code: "4350",
   },
   {
@@ -629,7 +551,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Raozan",
     bn_name: "রাউজান",
-    url: "raozan.chittagong.gov.bd",
     zip_code: "4340",
   },
   {
@@ -637,7 +558,6 @@ const upazilas: Upazila[] = [
     district_id: "7",
     name: "Karnafuli",
     bn_name: "কর্ণফুলী",
-    url: "karnafuli.chittagong.gov.bd",
     zip_code: "4373",
   },
   {
@@ -645,7 +565,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Cox's Bazar Sadar",
     bn_name: "কক্সবাজার সদর",
-    url: "sadar.coxsbazar.gov.bd",
     zip_code: "4700",
   },
   {
@@ -653,7 +572,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Chakaria",
     bn_name: "চকরিয়া",
-    url: "chakaria.coxsbazar.gov.bd",
     zip_code: "4720",
   },
   {
@@ -661,7 +579,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Kutubdia",
     bn_name: "কুতুবদিয়া",
-    url: "kutubdia.coxsbazar.gov.bd",
     zip_code: "4740",
   },
   {
@@ -669,7 +586,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Ukhiya",
     bn_name: "উখিয়া",
-    url: "ukhiya.coxsbazar.gov.bd",
     zip_code: "4703",
   },
   {
@@ -677,7 +593,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Moheshkhali",
     bn_name: "মহেশখালী",
-    url: "moheshkhali.coxsbazar.gov.bd",
     zip_code: "4750",
   },
   {
@@ -685,7 +600,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Pekua",
     bn_name: "পেকুয়া",
-    url: "pekua.coxsbazar.gov.bd",
     zip_code: "4730",
   },
   {
@@ -693,7 +607,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Ramu",
     bn_name: "রামু",
-    url: "ramu.coxsbazar.gov.bd",
     zip_code: "4760",
   },
   {
@@ -701,7 +614,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Teknaf",
     bn_name: "টেকনাফ",
-    url: "teknaf.coxsbazar.gov.bd",
     zip_code: "4770",
   },
   {
@@ -709,7 +621,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Khagrachhari Sadar",
     bn_name: "খাগড়াছড়ি সদর",
-    url: "sadar.khagrachhari.gov.bd",
     zip_code: "4400",
   },
   {
@@ -717,7 +628,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Dighinala",
     bn_name: "দিঘীনালা",
-    url: "dighinala.khagrachhari.gov.bd",
     zip_code: "4420",
   },
   {
@@ -725,7 +635,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Panchari",
     bn_name: "পানছড়ি",
-    url: "panchari.khagrachhari.gov.bd",
     zip_code: "4430",
   },
   {
@@ -733,7 +642,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Laxmichhari",
     bn_name: "লক্ষীছড়ি",
-    url: "laxmichhari.khagrachhari.gov.bd",
     zip_code: "4480",
   },
   {
@@ -741,7 +649,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Mohalchari",
     bn_name: "মহালছড়ি",
-    url: "mohalchari.khagrachhari.gov.bd",
     zip_code: "4440",
   },
   {
@@ -749,7 +656,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Manikchari",
     bn_name: "মানিকছড়ি",
-    url: "manikchari.khagrachhari.gov.bd",
     zip_code: "4450",
   },
   {
@@ -757,7 +663,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Ramgarh",
     bn_name: "রামগড়",
-    url: "ramgarh.khagrachhari.gov.bd",
     zip_code: "4490",
   },
   {
@@ -765,7 +670,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Matiranga",
     bn_name: "মাটিরাঙ্গা",
-    url: "matiranga.khagrachhari.gov.bd",
     zip_code: "4460",
   },
   {
@@ -773,7 +677,6 @@ const upazilas: Upazila[] = [
     district_id: "9",
     name: "Guimara",
     bn_name: "গুইমারা",
-    url: "guimara.khagrachhari.gov.bd",
     zip_code: "4480",
   },
   {
@@ -781,7 +684,6 @@ const upazilas: Upazila[] = [
     district_id: "10",
     name: "Bandarban Sadar",
     bn_name: "বান্দরবান সদর",
-    url: "sadar.bandarban.gov.bd",
     zip_code: "4600",
   },
   {
@@ -789,7 +691,6 @@ const upazilas: Upazila[] = [
     district_id: "10",
     name: "Alikadam",
     bn_name: "আলীকদম",
-    url: "alikadam.bandarban.gov.bd",
     zip_code: "4620",
   },
   {
@@ -797,7 +698,6 @@ const upazilas: Upazila[] = [
     district_id: "10",
     name: "Naikhongchhari",
     bn_name: "নাইক্ষ্যংছড়ি",
-    url: "naikhongchhari.bandarban.gov.bd",
     zip_code: "4670",
   },
   {
@@ -805,7 +705,6 @@ const upazilas: Upazila[] = [
     district_id: "10",
     name: "Rowangchhari",
     bn_name: "রোয়াংছড়ি",
-    url: "rowangchhari.bandarban.gov.bd",
     zip_code: "4660",
   },
   {
@@ -813,7 +712,6 @@ const upazilas: Upazila[] = [
     district_id: "10",
     name: "Lama",
     bn_name: "লামা",
-    url: "lama.bandarban.gov.bd",
     zip_code: "4650",
   },
   {
@@ -821,7 +719,6 @@ const upazilas: Upazila[] = [
     district_id: "10",
     name: "Ruma",
     bn_name: "রুমা",
-    url: "ruma.bandarban.gov.bd",
     zip_code: "4680",
   },
   {
@@ -829,7 +726,6 @@ const upazilas: Upazila[] = [
     district_id: "10",
     name: "Thanchi",
     bn_name: "থানচি",
-    url: "thanchi.bandarban.gov.bd",
     zip_code: "4690",
   },
   {
@@ -837,7 +733,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Belkuchi",
     bn_name: "বেলকুচি",
-    url: "belkuchi.sirajganj.gov.bd",
     zip_code: "6740",
   },
   {
@@ -845,7 +740,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Chauhali",
     bn_name: "চৌহালি",
-    url: "chauhali.sirajganj.gov.bd",
     zip_code: "6780",
   },
   {
@@ -853,7 +747,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Kamarkhand",
     bn_name: "কামারখন্দ",
-    url: "kamarkhand.sirajganj.gov.bd",
     zip_code: "6760",
   },
   {
@@ -861,7 +754,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Kazipur",
     bn_name: "কাজীপুর",
-    url: "kazipur.sirajganj.gov.bd",
     zip_code: "6750",
   },
   {
@@ -869,7 +761,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Raigonj",
     bn_name: "রায়গঞ্জ",
-    url: "raigonj.sirajganj.gov.bd",
     zip_code: "6770",
   },
   {
@@ -877,7 +768,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Shahjadpur",
     bn_name: "শাহজাদপুর",
-    url: "shahjadpur.sirajganj.gov.bd",
     zip_code: "6730",
   },
   {
@@ -885,7 +775,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Sirajganj Sadar",
     bn_name: "সিরাজগঞ্জ সদর",
-    url: "sirajganjsadar.sirajganj.gov.bd",
     zip_code: "6700",
   },
   {
@@ -893,7 +782,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Tarash",
     bn_name: "তাড়াশ",
-    url: "tarash.sirajganj.gov.bd",
     zip_code: "6720",
   },
   {
@@ -901,7 +789,6 @@ const upazilas: Upazila[] = [
     district_id: "11",
     name: "Ullapara",
     bn_name: "উল্লাপাড়া",
-    url: "ullapara.sirajganj.gov.bd",
     zip_code: "6710",
   },
   {
@@ -909,7 +796,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Sujanagar",
     bn_name: "সুজানগর",
-    url: "sujanagar.pabna.gov.bd",
     zip_code: "6660",
   },
   {
@@ -917,7 +803,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Ishurdi",
     bn_name: "ঈশ্বরদী",
-    url: "ishurdi.pabna.gov.bd",
     zip_code: "6620",
   },
   {
@@ -925,7 +810,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Bhangura",
     bn_name: "ভাঙ্গুড়া",
-    url: "bhangura.pabna.gov.bd",
     zip_code: "6640",
   },
   {
@@ -933,7 +817,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Pabna Sadar",
     bn_name: "পাবনা সদর",
-    url: "pabnasadar.pabna.gov.bd",
     zip_code: "6600",
   },
   {
@@ -941,7 +824,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Bera",
     bn_name: "বেড়া",
-    url: "bera.pabna.gov.bd",
     zip_code: "6680",
   },
   {
@@ -949,7 +831,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Atghoria",
     bn_name: "আটঘরিয়া",
-    url: "atghoria.pabna.gov.bd",
     zip_code: "6650",
   },
   {
@@ -957,7 +838,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Chatmohar",
     bn_name: "চাটমোহর",
-    url: "chatmohar.pabna.gov.bd",
     zip_code: "6630",
   },
   {
@@ -965,7 +845,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Santhia",
     bn_name: "সাঁথিয়া",
-    url: "santhia.pabna.gov.bd",
     zip_code: "6610",
   },
   {
@@ -973,7 +852,6 @@ const upazilas: Upazila[] = [
     district_id: "12",
     name: "Faridpur",
     bn_name: "ফরিদপুর",
-    url: "faridpur.pabna.gov.bd",
     zip_code: "6620",
   },
   {
@@ -981,7 +859,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Kahaloo",
     bn_name: "কাহালু",
-    url: "kahaloo.bogra.gov.bd",
     zip_code: "5820",
   },
   {
@@ -989,7 +866,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Bogura Sadar",
     bn_name: "বগুড়া সদর",
-    url: "sadar.bogra.gov.bd",
     zip_code: "5810",
   },
   {
@@ -997,7 +873,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Shariakandi",
     bn_name: "সারিয়াকান্দি",
-    url: "shariakandi.bogra.gov.bd",
     zip_code: "5800",
   },
   {
@@ -1005,7 +880,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Shajahanpur",
     bn_name: "শাজাহানপুর",
-    url: "shajahanpur.bogra.gov.bd",
     zip_code: "5840",
   },
   {
@@ -1013,7 +887,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Dupchanchia",
     bn_name: "দুপচাচিঁয়া",
-    url: "dupchanchia.bogra.gov.bd",
     zip_code: "5850",
   },
   {
@@ -1021,7 +894,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Adamdighi",
     bn_name: "আদমদিঘি",
-    url: "adamdighi.bogra.gov.bd",
     zip_code: "5810",
   },
   {
@@ -1029,7 +901,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Nondigram",
     bn_name: "নন্দিগ্রাম",
-    url: "nondigram.bogra.gov.bd",
     zip_code: "5830",
   },
   {
@@ -1037,7 +908,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Sonatala",
     bn_name: "সোনাতলা",
-    url: "sonatala.bogra.gov.bd",
     zip_code: "5825",
   },
   {
@@ -1045,7 +915,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Dhunot",
     bn_name: "ধুনট",
-    url: "dhunot.bogra.gov.bd",
     zip_code: "5850",
   },
   {
@@ -1053,7 +922,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Gabtali",
     bn_name: "গাবতলী",
-    url: "gabtali.bogra.gov.bd",
     zip_code: "5870",
   },
   {
@@ -1061,7 +929,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Sherpur",
     bn_name: "শেরপুর",
-    url: "sherpur.bogra.gov.bd",
     zip_code: "5890",
   },
   {
@@ -1069,7 +936,6 @@ const upazilas: Upazila[] = [
     district_id: "13",
     name: "Shibganj",
     bn_name: "শিবগঞ্জ",
-    url: "shibganj.bogra.gov.bd",
     zip_code: "5812",
   },
   {
@@ -1077,7 +943,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Paba",
     bn_name: "পবা",
-    url: "paba.rajshahi.gov.bd",
     zip_code: "6000",
   },
   {
@@ -1085,7 +950,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Durgapur",
     bn_name: "দুর্গাপুর",
-    url: "durgapur.rajshahi.gov.bd",
     zip_code: "6240",
   },
   {
@@ -1093,7 +957,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Mohonpur",
     bn_name: "মোহনপুর",
-    url: "mohonpur.rajshahi.gov.bd",
     zip_code: "6260",
   },
   {
@@ -1101,7 +964,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Charghat",
     bn_name: "চারঘাট",
-    url: "charghat.rajshahi.gov.bd",
     zip_code: "6230",
   },
   {
@@ -1109,7 +971,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Puthia",
     bn_name: "পুঠিয়া",
-    url: "puthia.rajshahi.gov.bd",
     zip_code: "6270",
   },
   {
@@ -1117,7 +978,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Bagha",
     bn_name: "বাঘা",
-    url: "bagha.rajshahi.gov.bd",
     zip_code: "6210",
   },
   {
@@ -1125,7 +985,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Godagari",
     bn_name: "গোদাগাড়ী",
-    url: "godagari.rajshahi.gov.bd",
     zip_code: "6220",
   },
   {
@@ -1133,7 +992,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Tanore",
     bn_name: "তানোর",
-    url: "tanore.rajshahi.gov.bd",
     zip_code: "6280",
   },
   {
@@ -1141,7 +999,6 @@ const upazilas: Upazila[] = [
     district_id: "14",
     name: "Bagmara",
     bn_name: "বাগমারা",
-    url: "bagmara.rajshahi.gov.bd",
     zip_code: "6250",
   },
   {
@@ -1149,7 +1006,6 @@ const upazilas: Upazila[] = [
     district_id: "15",
     name: "Natore Sadar",
     bn_name: "নাটোর সদর",
-    url: "natoresadar.natore.gov.bd",
     zip_code: "6400",
   },
   {
@@ -1157,7 +1013,6 @@ const upazilas: Upazila[] = [
     district_id: "15",
     name: "Singra",
     bn_name: "সিংড়া",
-    url: "singra.natore.gov.bd",
     zip_code: "6410",
   },
   {
@@ -1165,7 +1020,6 @@ const upazilas: Upazila[] = [
     district_id: "15",
     name: "Baraigram",
     bn_name: "বড়াইগ্রাম",
-    url: "baraigram.natore.gov.bd",
     zip_code: "6430",
   },
   {
@@ -1173,7 +1027,6 @@ const upazilas: Upazila[] = [
     district_id: "15",
     name: "Bagatipara",
     bn_name: "বাগাতিপাড়া",
-    url: "bagatipara.natore.gov.bd",
     zip_code: "6450",
   },
   {
@@ -1181,7 +1034,6 @@ const upazilas: Upazila[] = [
     district_id: "15",
     name: "Lalpur",
     bn_name: "লালপুর",
-    url: "lalpur.natore.gov.bd",
     zip_code: "6420",
   },
   {
@@ -1189,7 +1041,6 @@ const upazilas: Upazila[] = [
     district_id: "15",
     name: "Gurudaspur",
     bn_name: "গুরুদাসপুর",
-    url: "gurudaspur.natore.gov.bd",
     zip_code: "6440",
   },
   {
@@ -1197,7 +1048,6 @@ const upazilas: Upazila[] = [
     district_id: "15",
     name: "Naldanga",
     bn_name: "নলডাঙ্গা",
-    url: "naldanga.natore.gov.bd",
     zip_code: "6460",
   },
   {
@@ -1205,7 +1055,6 @@ const upazilas: Upazila[] = [
     district_id: "16",
     name: "Akkelpur",
     bn_name: "আক্কেলপুর",
-    url: "akkelpur.joypurhat.gov.bd",
     zip_code: "5940",
   },
   {
@@ -1213,7 +1062,6 @@ const upazilas: Upazila[] = [
     district_id: "16",
     name: "Kalai",
     bn_name: "কালাই",
-    url: "kalai.joypurhat.gov.bd",
     zip_code: "5920",
   },
   {
@@ -1221,7 +1069,6 @@ const upazilas: Upazila[] = [
     district_id: "16",
     name: "Khetlal",
     bn_name: "ক্ষেতলাল",
-    url: "khetlal.joypurhat.gov.bd",
     zip_code: "5930",
   },
   {
@@ -1229,7 +1076,6 @@ const upazilas: Upazila[] = [
     district_id: "16",
     name: "Panchbibi",
     bn_name: "পাঁচবিবি",
-    url: "panchbibi.joypurhat.gov.bd",
     zip_code: "5910",
   },
   {
@@ -1237,7 +1083,6 @@ const upazilas: Upazila[] = [
     district_id: "16",
     name: "Joypurhat Sadar",
     bn_name: "জয়পুরহাট সদর",
-    url: "joypurhatsadar.joypurhat.gov.bd",
     zip_code: "5900",
   },
   {
@@ -1245,7 +1090,6 @@ const upazilas: Upazila[] = [
     district_id: "17",
     name: "Chapainawabganj Sadar",
     bn_name: "চাঁপাইনবাবগঞ্জ সদর",
-    url: "chapainawabganjsadar.chapainawabganj.gov.bd",
     zip_code: "6300",
   },
   {
@@ -1253,7 +1097,6 @@ const upazilas: Upazila[] = [
     district_id: "17",
     name: "Gomostapur",
     bn_name: "গোমস্তাপুর",
-    url: "gomostapur.chapainawabganj.gov.bd",
     zip_code: "6330",
   },
   {
@@ -1261,7 +1104,6 @@ const upazilas: Upazila[] = [
     district_id: "17",
     name: "Nachol",
     bn_name: "নাচোল",
-    url: "nachol.chapainawabganj.gov.bd",
     zip_code: "6340",
   },
   {
@@ -1269,7 +1111,6 @@ const upazilas: Upazila[] = [
     district_id: "17",
     name: "Bholahat",
     bn_name: "ভোলাহাট",
-    url: "bholahat.chapainawabganj.gov.bd",
     zip_code: "6320",
   },
   {
@@ -1277,7 +1118,6 @@ const upazilas: Upazila[] = [
     district_id: "17",
     name: "Shibganj",
     bn_name: "শিবগঞ্জ",
-    url: "shibganj.chapainawabganj.gov.bd",
     zip_code: "6310",
   },
   {
@@ -1285,7 +1125,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Mohadevpur",
     bn_name: "মহাদেবপুর",
-    url: "mohadevpur.naogaon.gov.bd",
     zip_code: "6570",
   },
   {
@@ -1293,7 +1132,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Badalgachi",
     bn_name: "বদলগাছী",
-    url: "badalgachi.naogaon.gov.bd",
     zip_code: "6520",
   },
   {
@@ -1301,7 +1139,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Patnitala",
     bn_name: "পত্নিতলা",
-    url: "patnitala.naogaon.gov.bd",
     zip_code: "6560",
   },
   {
@@ -1309,7 +1146,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Dhamoirhat",
     bn_name: "ধামইরহাট",
-    url: "dhamoirhat.naogaon.gov.bd",
     zip_code: "6590",
   },
   {
@@ -1317,7 +1153,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Niamatpur",
     bn_name: "নিয়ামতপুর",
-    url: "niamatpur.naogaon.gov.bd",
     zip_code: "6580",
   },
   {
@@ -1325,7 +1160,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Manda",
     bn_name: "মান্দা",
-    url: "manda.naogaon.gov.bd",
     zip_code: "6530",
   },
   {
@@ -1333,7 +1167,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Atrai",
     bn_name: "আত্রাই",
-    url: "atrai.naogaon.gov.bd",
     zip_code: "6510",
   },
   {
@@ -1341,7 +1174,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Raninagar",
     bn_name: "রাণীনগর",
-    url: "raninagar.naogaon.gov.bd",
     zip_code: "6550",
   },
   {
@@ -1349,7 +1181,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Naogaon Sadar",
     bn_name: "নওগাঁ সদর",
-    url: "naogaonsadar.naogaon.gov.bd",
     zip_code: "6500",
   },
   {
@@ -1357,7 +1188,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Porsha",
     bn_name: "পোরশা",
-    url: "porsha.naogaon.gov.bd",
     zip_code: "6540",
   },
   {
@@ -1365,7 +1195,6 @@ const upazilas: Upazila[] = [
     district_id: "18",
     name: "Sapahar",
     bn_name: "সাপাহার",
-    url: "sapahar.naogaon.gov.bd",
     zip_code: "6515",
   },
   {
@@ -1373,7 +1202,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Manirampur",
     bn_name: "মণিরামপুর",
-    url: "manirampur.jessore.gov.bd",
     zip_code: "7440",
   },
   {
@@ -1381,7 +1209,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Abhaynagar",
     bn_name: "অভয়নগর",
-    url: "abhaynagar.jessore.gov.bd",
     zip_code: "7460",
   },
   {
@@ -1389,7 +1216,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Bagherpara",
     bn_name: "বাঘারপাড়া",
-    url: "bagherpara.jessore.gov.bd",
     zip_code: "7470",
   },
   {
@@ -1397,7 +1223,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Chougachha",
     bn_name: "চৌগাছা",
-    url: "chougachha.jessore.gov.bd",
     zip_code: "7410",
   },
   {
@@ -1405,7 +1230,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Jhikargacha",
     bn_name: "ঝিকরগাছা",
-    url: "jhikargacha.jessore.gov.bd",
     zip_code: "7420",
   },
   {
@@ -1413,7 +1237,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Keshabpur",
     bn_name: "কেশবপুর",
-    url: "keshabpur.jessore.gov.bd",
     zip_code: "7450",
   },
   {
@@ -1421,7 +1244,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Jashore Sadar",
     bn_name: "যশোর সদর",
-    url: "sadar.jessore.gov.bd",
     zip_code: "7400",
   },
   {
@@ -1429,7 +1251,6 @@ const upazilas: Upazila[] = [
     district_id: "19",
     name: "Sharsha",
     bn_name: "শার্শা",
-    url: "sharsha.jessore.gov.bd",
     zip_code: "7430",
   },
   {
@@ -1437,7 +1258,6 @@ const upazilas: Upazila[] = [
     district_id: "20",
     name: "Assasuni",
     bn_name: "আশাশুনি",
-    url: "assasuni.satkhira.gov.bd",
     zip_code: "9450",
   },
   {
@@ -1445,7 +1265,6 @@ const upazilas: Upazila[] = [
     district_id: "20",
     name: "Debhata",
     bn_name: "দেবহাটা",
-    url: "debhata.satkhira.gov.bd",
     zip_code: "9430",
   },
   {
@@ -1453,7 +1272,6 @@ const upazilas: Upazila[] = [
     district_id: "20",
     name: "Kalaroa",
     bn_name: "কলারোয়া",
-    url: "kalaroa.satkhira.gov.bd",
     zip_code: "9410",
   },
   {
@@ -1461,7 +1279,6 @@ const upazilas: Upazila[] = [
     district_id: "20",
     name: "Satkhira Sadar",
     bn_name: "সাতক্ষীরা সদর",
-    url: "satkhirasadar.satkhira.gov.bd",
     zip_code: "9400",
   },
   {
@@ -1469,7 +1286,6 @@ const upazilas: Upazila[] = [
     district_id: "20",
     name: "Shyamnagar",
     bn_name: "শ্যামনগর",
-    url: "shyamnagar.satkhira.gov.bd",
     zip_code: "9460",
   },
   {
@@ -1477,7 +1293,6 @@ const upazilas: Upazila[] = [
     district_id: "20",
     name: "Tala",
     bn_name: "তালা",
-    url: "tala.satkhira.gov.bd",
     zip_code: "9440",
   },
   {
@@ -1485,7 +1300,6 @@ const upazilas: Upazila[] = [
     district_id: "20",
     name: "Kaliganj",
     bn_name: "কালিগঞ্জ",
-    url: "kaliganj.satkhira.gov.bd",
     zip_code: "9420",
   },
   {
@@ -1493,7 +1307,6 @@ const upazilas: Upazila[] = [
     district_id: "21",
     name: "Mujibnagar",
     bn_name: "মুজিবনগর",
-    url: "mujibnagar.meherpur.gov.bd",
     zip_code: "7102",
   },
   {
@@ -1501,7 +1314,6 @@ const upazilas: Upazila[] = [
     district_id: "21",
     name: "Meherpur Sadar",
     bn_name: "মেহেরপুর সদর",
-    url: "meherpursadar.meherpur.gov.bd",
     zip_code: "7100",
   },
   {
@@ -1509,7 +1321,6 @@ const upazilas: Upazila[] = [
     district_id: "21",
     name: "Gangni",
     bn_name: "গাংনী",
-    url: "gangni.meherpur.gov.bd",
     zip_code: "7110",
   },
   {
@@ -1517,7 +1328,6 @@ const upazilas: Upazila[] = [
     district_id: "22",
     name: "Narail Sadar",
     bn_name: "নড়াইল সদর",
-    url: "narailsadar.narail.gov.bd",
     zip_code: "7500",
   },
   {
@@ -1525,7 +1335,6 @@ const upazilas: Upazila[] = [
     district_id: "22",
     name: "Lohagara",
     bn_name: "লোহাগড়া",
-    url: "lohagara.narail.gov.bd",
     zip_code: "7510",
   },
   {
@@ -1533,7 +1342,6 @@ const upazilas: Upazila[] = [
     district_id: "22",
     name: "Kalia",
     bn_name: "কালিয়া",
-    url: "kalia.narail.gov.bd",
     zip_code: "7520",
   },
   {
@@ -1541,7 +1349,6 @@ const upazilas: Upazila[] = [
     district_id: "23",
     name: "Chuadanga Sadar",
     bn_name: "চুয়াডাঙ্গা সদর",
-    url: "chuadangasadar.chuadanga.gov.bd",
     zip_code: "7200",
   },
   {
@@ -1549,7 +1356,6 @@ const upazilas: Upazila[] = [
     district_id: "23",
     name: "Alamdanga",
     bn_name: "আলমডাঙ্গা",
-    url: "alamdanga.chuadanga.gov.bd",
     zip_code: "7210",
   },
   {
@@ -1557,7 +1363,6 @@ const upazilas: Upazila[] = [
     district_id: "23",
     name: "Damurhuda",
     bn_name: "দামুড়হুদা",
-    url: "damurhuda.chuadanga.gov.bd",
     zip_code: "7220",
   },
   {
@@ -1565,7 +1370,6 @@ const upazilas: Upazila[] = [
     district_id: "23",
     name: "Jibannagar",
     bn_name: "জীবননগর",
-    url: "jibannagar.chuadanga.gov.bd",
     zip_code: "7230",
   },
   {
@@ -1573,7 +1377,6 @@ const upazilas: Upazila[] = [
     district_id: "24",
     name: "Kushtia Sadar",
     bn_name: "কুষ্টিয়া সদর",
-    url: "kushtiasadar.kushtia.gov.bd",
     zip_code: "7000",
   },
   {
@@ -1581,7 +1384,6 @@ const upazilas: Upazila[] = [
     district_id: "24",
     name: "Kumarkhali",
     bn_name: "কুমারখালী",
-    url: "kumarkhali.kushtia.gov.bd",
     zip_code: "7010",
   },
   {
@@ -1589,7 +1391,6 @@ const upazilas: Upazila[] = [
     district_id: "24",
     name: "Khoksa",
     bn_name: "খোকসা",
-    url: "khoksa.kushtia.gov.bd",
     zip_code: "7020",
   },
   {
@@ -1597,7 +1398,6 @@ const upazilas: Upazila[] = [
     district_id: "24",
     name: "Mirpur",
     bn_name: "মিরপুর",
-    url: "mirpurkushtia.kushtia.gov.bd",
     zip_code: "7030",
   },
   {
@@ -1605,7 +1405,6 @@ const upazilas: Upazila[] = [
     district_id: "24",
     name: "Daulatpur",
     bn_name: "দৌলতপুর",
-    url: "daulatpur.kushtia.gov.bd",
     zip_code: "7050",
   },
   {
@@ -1613,7 +1412,6 @@ const upazilas: Upazila[] = [
     district_id: "24",
     name: "Bheramara",
     bn_name: "ভেড়ামারা",
-    url: "bheramara.kushtia.gov.bd",
     zip_code: "7040",
   },
   {
@@ -1621,7 +1419,6 @@ const upazilas: Upazila[] = [
     district_id: "25",
     name: "Shalikha",
     bn_name: "শালিখা",
-    url: "shalikha.magura.gov.bd",
     zip_code: "7630",
   },
   {
@@ -1629,7 +1426,6 @@ const upazilas: Upazila[] = [
     district_id: "25",
     name: "Sreepur",
     bn_name: "শ্রীপুর",
-    url: "sreepur.magura.gov.bd",
     zip_code: "7610",
   },
   {
@@ -1637,7 +1433,6 @@ const upazilas: Upazila[] = [
     district_id: "25",
     name: "Magura Sadar",
     bn_name: "মাগুরা সদর",
-    url: "magurasadar.magura.gov.bd",
     zip_code: "7600",
   },
   {
@@ -1645,7 +1440,6 @@ const upazilas: Upazila[] = [
     district_id: "25",
     name: "Mohammadpur",
     bn_name: "মহম্মদপুর",
-    url: "mohammadpur.magura.gov.bd",
     zip_code: "7620",
   },
   {
@@ -1653,7 +1447,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Paikgasa",
     bn_name: "পাইকগাছা",
-    url: "paikgasa.khulna.gov.bd",
     zip_code: "9280",
   },
   {
@@ -1661,7 +1454,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Fultola",
     bn_name: "ফুলতলা",
-    url: "fultola.khulna.gov.bd",
     zip_code: "9210",
   },
   {
@@ -1669,7 +1461,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Digholia",
     bn_name: "দিঘলিয়া",
-    url: "digholia.khulna.gov.bd",
     zip_code: "9260",
   },
   {
@@ -1677,7 +1468,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Rupsha",
     bn_name: "রূপসা",
-    url: "rupsha.khulna.gov.bd",
     zip_code: "9240",
   },
   {
@@ -1685,7 +1475,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Terokhada",
     bn_name: "তেরখাদা",
-    url: "terokhada.khulna.gov.bd",
     zip_code: "9230",
   },
   {
@@ -1693,7 +1482,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Dumuria",
     bn_name: "ডুমুরিয়া",
-    url: "dumuria.khulna.gov.bd",
     zip_code: "9250",
   },
   {
@@ -1701,7 +1489,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Botiaghata",
     bn_name: "বটিয়াঘাটা",
-    url: "botiaghata.khulna.gov.bd",
     zip_code: "9260",
   },
   {
@@ -1709,7 +1496,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Dakop",
     bn_name: "দাকোপ",
-    url: "dakop.khulna.gov.bd",
     zip_code: "9270",
   },
   {
@@ -1717,7 +1503,6 @@ const upazilas: Upazila[] = [
     district_id: "26",
     name: "Koyra",
     bn_name: "কয়রা",
-    url: "koyra.khulna.gov.bd",
     zip_code: "9290",
   },
   {
@@ -1725,7 +1510,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Fakirhat",
     bn_name: "ফকিরহাট",
-    url: "fakirhat.bagerhat.gov.bd",
     zip_code: "9370",
   },
   {
@@ -1733,7 +1517,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Bagerhat Sadar",
     bn_name: "বাগেরহাট সদর",
-    url: "sadar.bagerhat.gov.bd",
     zip_code: "9300",
   },
   {
@@ -1741,7 +1524,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Mollahat",
     bn_name: "মোল্লাহাট",
-    url: "mollahat.bagerhat.gov.bd",
     zip_code: "9380",
   },
   {
@@ -1749,7 +1531,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Sarankhola",
     bn_name: "শরণখোলা",
-    url: "sarankhola.bagerhat.gov.bd",
     zip_code: "9390",
   },
   {
@@ -1757,7 +1538,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Rampal",
     bn_name: "রামপাল",
-    url: "rampal.bagerhat.gov.bd",
     zip_code: "9340",
   },
   {
@@ -1765,7 +1545,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Morrelganj",
     bn_name: "মোড়েলগঞ্জ",
-    url: "morrelganj.bagerhat.gov.bd",
     zip_code: "9360",
   },
   {
@@ -1773,7 +1552,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Kachua",
     bn_name: "কচুয়া",
-    url: "kachua.bagerhat.gov.bd",
     zip_code: "9330",
   },
   {
@@ -1781,7 +1559,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Mongla",
     bn_name: "মোংলা",
-    url: "mongla.bagerhat.gov.bd",
     zip_code: "9351",
   },
   {
@@ -1789,7 +1566,6 @@ const upazilas: Upazila[] = [
     district_id: "27",
     name: "Chitalmari",
     bn_name: "চিতলমারী",
-    url: "chitalmari.bagerhat.gov.bd",
     zip_code: "9350",
   },
   {
@@ -1797,7 +1573,6 @@ const upazilas: Upazila[] = [
     district_id: "28",
     name: "Jhenaidah Sadar",
     bn_name: "ঝিনাইদহ সদর",
-    url: "sadar.jhenaidah.gov.bd",
     zip_code: "7300",
   },
   {
@@ -1805,7 +1580,6 @@ const upazilas: Upazila[] = [
     district_id: "28",
     name: "Shailkupa",
     bn_name: "শৈলকুপা",
-    url: "shailkupa.jhenaidah.gov.bd",
     zip_code: "7310",
   },
   {
@@ -1813,7 +1587,6 @@ const upazilas: Upazila[] = [
     district_id: "28",
     name: "Harinakundu",
     bn_name: "হরিণাকুন্ডু",
-    url: "harinakundu.jhenaidah.gov.bd",
     zip_code: "7350",
   },
   {
@@ -1821,7 +1594,6 @@ const upazilas: Upazila[] = [
     district_id: "28",
     name: "Kaliganj",
     bn_name: "কালীগঞ্জ",
-    url: "kaliganj.jhenaidah.gov.bd",
     zip_code: "7320",
   },
   {
@@ -1829,7 +1601,6 @@ const upazilas: Upazila[] = [
     district_id: "28",
     name: "Kotchandpur",
     bn_name: "কোটচাঁদপুর",
-    url: "kotchandpur.jhenaidah.gov.bd",
     zip_code: "7330",
   },
   {
@@ -1837,7 +1608,6 @@ const upazilas: Upazila[] = [
     district_id: "28",
     name: "Moheshpur",
     bn_name: "মহেশপুর",
-    url: "moheshpur.jhenaidah.gov.bd",
     zip_code: "7340",
   },
   {
@@ -1845,7 +1615,6 @@ const upazilas: Upazila[] = [
     district_id: "29",
     name: "Jhalakathi Sadar",
     bn_name: "ঝালকাঠি সদর",
-    url: "sadar.jhalakathi.gov.bd",
     zip_code: "8400",
   },
   {
@@ -1853,7 +1622,6 @@ const upazilas: Upazila[] = [
     district_id: "29",
     name: "Kathalia",
     bn_name: "কাঠালিয়া",
-    url: "kathalia.jhalakathi.gov.bd",
     zip_code: "8420",
   },
   {
@@ -1861,7 +1629,6 @@ const upazilas: Upazila[] = [
     district_id: "29",
     name: "Nalchity",
     bn_name: "নলছিটি",
-    url: "nalchity.jhalakathi.gov.bd",
     zip_code: "8430",
   },
   {
@@ -1869,7 +1636,6 @@ const upazilas: Upazila[] = [
     district_id: "29",
     name: "Rajapur",
     bn_name: "রাজাপুর",
-    url: "rajapur.jhalakathi.gov.bd",
     zip_code: "8440",
   },
   {
@@ -1877,7 +1643,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Bauphal",
     bn_name: "বাউফল",
-    url: "bauphal.patuakhali.gov.bd",
     zip_code: "8620",
   },
   {
@@ -1885,7 +1650,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Patuakhali Sadar",
     bn_name: "পটুয়াখালী সদর",
-    url: "sadar.patuakhali.gov.bd",
     zip_code: "8600",
   },
   {
@@ -1893,7 +1657,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Dumki",
     bn_name: "দুমকি",
-    url: "dumki.patuakhali.gov.bd",
     zip_code: "8640",
   },
   {
@@ -1901,7 +1664,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Dashmina",
     bn_name: "দশমিনা",
-    url: "dashmina.patuakhali.gov.bd",
     zip_code: "8630",
   },
   {
@@ -1909,7 +1671,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Kalapara",
     bn_name: "কলাপাড়া",
-    url: "kalapara.patuakhali.gov.bd",
     zip_code: "8660",
   },
   {
@@ -1917,7 +1678,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Mirzaganj",
     bn_name: "মির্জাগঞ্জ",
-    url: "mirzaganj.patuakhali.gov.bd",
     zip_code: "8670",
   },
   {
@@ -1925,7 +1685,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Galachipa",
     bn_name: "গলাচিপা",
-    url: "galachipa.patuakhali.gov.bd",
     zip_code: "8650",
   },
   {
@@ -1933,7 +1692,6 @@ const upazilas: Upazila[] = [
     district_id: "30",
     name: "Rangabali",
     bn_name: "রাঙ্গাবালী",
-    url: "rangabali.patuakhali.gov.bd",
     zip_code: "8680",
   },
   {
@@ -1941,7 +1699,6 @@ const upazilas: Upazila[] = [
     district_id: "31",
     name: "Pirojpur Sadar",
     bn_name: "পিরোজপুর সদর",
-    url: "sadar.pirojpur.gov.bd",
     zip_code: "8500",
   },
   {
@@ -1949,7 +1706,6 @@ const upazilas: Upazila[] = [
     district_id: "31",
     name: "Nazirpur",
     bn_name: "নাজিরপুর",
-    url: "nazirpur.pirojpur.gov.bd",
     zip_code: "8550",
   },
   {
@@ -1957,7 +1713,6 @@ const upazilas: Upazila[] = [
     district_id: "31",
     name: "Kawkhali",
     bn_name: "কাউখালী",
-    url: "kawkhali.pirojpur.gov.bd",
     zip_code: "8530",
   },
   {
@@ -1965,7 +1720,6 @@ const upazilas: Upazila[] = [
     district_id: "31",
     name: "Zianagar",
     bn_name: "জিয়ানগর",
-    url: "zianagar.pirojpur.gov.bd",
     zip_code: "8510",
   },
   {
@@ -1973,7 +1727,6 @@ const upazilas: Upazila[] = [
     district_id: "31",
     name: "Bhandaria",
     bn_name: "ভান্ডারিয়া",
-    url: "bhandaria.pirojpur.gov.bd",
     zip_code: "8510",
   },
   {
@@ -1981,7 +1734,6 @@ const upazilas: Upazila[] = [
     district_id: "31",
     name: "Mathbaria",
     bn_name: "মঠবাড়ীয়া",
-    url: "mathbaria.pirojpur.gov.bd",
     zip_code: "8540",
   },
   {
@@ -1989,7 +1741,6 @@ const upazilas: Upazila[] = [
     district_id: "31",
     name: "Nesharabad",
     bn_name: "নেছারাবাদ",
-    url: "nesarabad.pirojpur.gov.bd",
     zip_code: "8560",
   },
   {
@@ -1997,7 +1748,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Barishal Sadar",
     bn_name: "বরিশাল সদর",
-    url: "barisalsadar.barisal.gov.bd",
     zip_code: "8200",
   },
   {
@@ -2005,7 +1755,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Bakerganj",
     bn_name: "বাকেরগঞ্জ",
-    url: "bakerganj.barisal.gov.bd",
     zip_code: "8220",
   },
   {
@@ -2013,7 +1762,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Babuganj",
     bn_name: "বাবুগঞ্জ",
-    url: "babuganj.barisal.gov.bd",
     zip_code: "8210",
   },
   {
@@ -2021,7 +1769,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Wazirpur",
     bn_name: "উজিরপুর",
-    url: "wazirpur.barisal.gov.bd",
     zip_code: "8290",
   },
   {
@@ -2029,7 +1776,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Banaripara",
     bn_name: "বানারীপাড়া",
-    url: "banaripara.barisal.gov.bd",
     zip_code: "8230",
   },
   {
@@ -2037,7 +1783,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Gournadi",
     bn_name: "গৌরনদী",
-    url: "gournadi.barisal.gov.bd",
     zip_code: "8240",
   },
   {
@@ -2045,7 +1790,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Agailjhara",
     bn_name: "আগৈলঝাড়া",
-    url: "agailjhara.barisal.gov.bd",
     zip_code: "8250",
   },
   {
@@ -2053,7 +1797,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Mehendiganj",
     bn_name: "মেহেন্দিগঞ্জ",
-    url: "mehendiganj.barisal.gov.bd",
     zip_code: "8270",
   },
   {
@@ -2061,7 +1804,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Muladi",
     bn_name: "মুলাদী",
-    url: "muladi.barisal.gov.bd",
     zip_code: "8280",
   },
   {
@@ -2069,7 +1811,6 @@ const upazilas: Upazila[] = [
     district_id: "32",
     name: "Hizla",
     bn_name: "হিজলা",
-    url: "hizla.barisal.gov.bd",
     zip_code: "8260",
   },
   {
@@ -2077,7 +1818,6 @@ const upazilas: Upazila[] = [
     district_id: "33",
     name: "Bhola Sadar",
     bn_name: "ভোলা সদর",
-    url: "sadar.bhola.gov.bd",
     zip_code: "8300",
   },
   {
@@ -2085,7 +1825,6 @@ const upazilas: Upazila[] = [
     district_id: "33",
     name: "Borhan Sddin",
     bn_name: "বোরহান উদ্দিন",
-    url: "borhanuddin.bhola.gov.bd",
     zip_code: "8320",
   },
   {
@@ -2093,7 +1832,6 @@ const upazilas: Upazila[] = [
     district_id: "33",
     name: "Charfesson",
     bn_name: "চরফ্যাশন",
-    url: "charfesson.bhola.gov.bd",
     zip_code: "8340",
   },
   {
@@ -2101,7 +1839,6 @@ const upazilas: Upazila[] = [
     district_id: "33",
     name: "Doulatkhan",
     bn_name: "দৌলতখান",
-    url: "doulatkhan.bhola.gov.bd",
     zip_code: "8350",
   },
   {
@@ -2109,7 +1846,6 @@ const upazilas: Upazila[] = [
     district_id: "33",
     name: "Monpura",
     bn_name: "মনপুরা",
-    url: "monpura.bhola.gov.bd",
     zip_code: "8370",
   },
   {
@@ -2117,7 +1853,6 @@ const upazilas: Upazila[] = [
     district_id: "33",
     name: "Tazumuddin",
     bn_name: "তজুমদ্দিন",
-    url: "tazumuddin.bhola.gov.bd",
     zip_code: "8380",
   },
   {
@@ -2125,7 +1860,6 @@ const upazilas: Upazila[] = [
     district_id: "33",
     name: "Lalmohan",
     bn_name: "লালমোহন",
-    url: "lalmohan.bhola.gov.bd",
     zip_code: "8360",
   },
   {
@@ -2133,7 +1867,6 @@ const upazilas: Upazila[] = [
     district_id: "34",
     name: "Amtali",
     bn_name: "আমতলী",
-    url: "amtali.barguna.gov.bd",
     zip_code: "8730",
   },
   {
@@ -2141,7 +1874,6 @@ const upazilas: Upazila[] = [
     district_id: "34",
     name: "Barguna Sadar",
     bn_name: "বরগুনা সদর",
-    url: "sadar.barguna.gov.bd",
     zip_code: "8700",
   },
   {
@@ -2149,7 +1881,6 @@ const upazilas: Upazila[] = [
     district_id: "34",
     name: "Betagi",
     bn_name: "বেতাগী",
-    url: "betagi.barguna.gov.bd",
     zip_code: "8710",
   },
   {
@@ -2157,7 +1888,6 @@ const upazilas: Upazila[] = [
     district_id: "34",
     name: "Bamna",
     bn_name: "বামনা",
-    url: "bamna.barguna.gov.bd",
     zip_code: "8740",
   },
   {
@@ -2165,7 +1895,6 @@ const upazilas: Upazila[] = [
     district_id: "34",
     name: "Pathorghata",
     bn_name: "পাথরঘাটা",
-    url: "pathorghata.barguna.gov.bd",
     zip_code: "8750",
   },
   {
@@ -2173,7 +1902,6 @@ const upazilas: Upazila[] = [
     district_id: "34",
     name: "Taltali",
     bn_name: "তালতলি",
-    url: "taltali.barguna.gov.bd",
     zip_code: "8760",
   },
   {
@@ -2181,7 +1909,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Balaganj",
     bn_name: "বালাগঞ্জ",
-    url: "balaganj.sylhet.gov.bd",
     zip_code: "3120",
   },
   {
@@ -2189,7 +1916,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Beanibazar",
     bn_name: "বিয়ানীবাজার",
-    url: "beanibazar.sylhet.gov.bd",
     zip_code: "3170",
   },
   {
@@ -2197,7 +1923,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Bishwanath",
     bn_name: "বিশ্বনাথ",
-    url: "bishwanath.sylhet.gov.bd",
     zip_code: "3130",
   },
   {
@@ -2205,7 +1930,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Companiganj",
     bn_name: "কোম্পানীগঞ্জ",
-    url: "companiganj.sylhet.gov.bd",
     zip_code: "3150",
   },
   {
@@ -2213,7 +1937,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Fenchuganj",
     bn_name: "ফেঞ্চুগঞ্জ",
-    url: "fenchuganj.sylhet.gov.bd",
     zip_code: "3116",
   },
   {
@@ -2221,7 +1944,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Golapganj",
     bn_name: "গোলাপগঞ্জ",
-    url: "golapganj.sylhet.gov.bd",
     zip_code: "3160",
   },
   {
@@ -2229,7 +1951,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Gowainghat",
     bn_name: "গোয়াইনঘাট",
-    url: "gowainghat.sylhet.gov.bd",
     zip_code: "3113",
   },
   {
@@ -2237,7 +1958,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Jaintiapur",
     bn_name: "জৈন্তাপুর",
-    url: "jaintiapur.sylhet.gov.bd",
     zip_code: "3156",
   },
   {
@@ -2245,7 +1965,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Kanaighat",
     bn_name: "কানাইঘাট",
-    url: "kanaighat.sylhet.gov.bd",
     zip_code: "3180",
   },
   {
@@ -2253,7 +1972,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Sylhet Sadar",
     bn_name: "সিলেট সদর",
-    url: "sylhetsadar.sylhet.gov.bd",
     zip_code: "3100",
   },
   {
@@ -2261,7 +1979,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Zakiganj",
     bn_name: "জকিগঞ্জ",
-    url: "zakiganj.sylhet.gov.bd",
     zip_code: "3190",
   },
   {
@@ -2269,7 +1986,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Dakshinsurma",
     bn_name: "দক্ষিণ সুরমা",
-    url: "dakshinsurma.sylhet.gov.bd",
     zip_code: "3112",
   },
   {
@@ -2277,7 +1993,6 @@ const upazilas: Upazila[] = [
     district_id: "35",
     name: "Osmaninagar",
     bn_name: "ওসমানী নগর",
-    url: "osmaninagar.sylhet.gov.bd",
     zip_code: "3110",
   },
   {
@@ -2285,7 +2000,6 @@ const upazilas: Upazila[] = [
     district_id: "36",
     name: "Barlekha",
     bn_name: "বড়লেখা",
-    url: "barlekha.moulvibazar.gov.bd",
     zip_code: "3250",
   },
   {
@@ -2293,7 +2007,6 @@ const upazilas: Upazila[] = [
     district_id: "36",
     name: "Kamolganj",
     bn_name: "কমলগঞ্জ",
-    url: "kamolganj.moulvibazar.gov.bd",
     zip_code: "3270",
   },
   {
@@ -2301,7 +2014,6 @@ const upazilas: Upazila[] = [
     district_id: "36",
     name: "Kulaura",
     bn_name: "কুলাউড়া",
-    url: "kulaura.moulvibazar.gov.bd",
     zip_code: "3230",
   },
   {
@@ -2309,7 +2021,6 @@ const upazilas: Upazila[] = [
     district_id: "36",
     name: "Moulvibazar Sadar",
     bn_name: "মৌলভীবাজার সদর",
-    url: "moulvibazarsadar.moulvibazar.gov.bd",
     zip_code: "3200",
   },
   {
@@ -2317,7 +2028,6 @@ const upazilas: Upazila[] = [
     district_id: "36",
     name: "Rajnagar",
     bn_name: "রাজনগর",
-    url: "rajnagar.moulvibazar.gov.bd",
     zip_code: "3240",
   },
   {
@@ -2325,7 +2035,6 @@ const upazilas: Upazila[] = [
     district_id: "36",
     name: "Sreemangal",
     bn_name: "শ্রীমঙ্গল",
-    url: "sreemangal.moulvibazar.gov.bd",
     zip_code: "3210",
   },
   {
@@ -2333,7 +2042,6 @@ const upazilas: Upazila[] = [
     district_id: "36",
     name: "Juri",
     bn_name: "জুড়ী",
-    url: "juri.moulvibazar.gov.bd",
     zip_code: "3260",
   },
   {
@@ -2341,7 +2049,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Nabiganj",
     bn_name: "নবীগঞ্জ",
-    url: "nabiganj.habiganj.gov.bd",
     zip_code: "3310",
   },
   {
@@ -2349,7 +2056,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Bahubal",
     bn_name: "বাহুবল",
-    url: "bahubal.habiganj.gov.bd",
     zip_code: "3350",
   },
   {
@@ -2357,7 +2063,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Ajmiriganj",
     bn_name: "আজমিরীগঞ্জ",
-    url: "ajmiriganj.habiganj.gov.bd",
     zip_code: "3360",
   },
   {
@@ -2365,7 +2070,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Baniachong",
     bn_name: "বানিয়াচং",
-    url: "baniachong.habiganj.gov.bd",
     zip_code: "3370",
   },
   {
@@ -2373,7 +2077,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Lakhai",
     bn_name: "লাখাই",
-    url: "lakhai.habiganj.gov.bd",
     zip_code: "3380",
   },
   {
@@ -2381,7 +2084,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Chunarughat",
     bn_name: "চুনারুঘাট",
-    url: "chunarughat.habiganj.gov.bd",
     zip_code: "3340",
   },
   {
@@ -2389,7 +2091,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Habiganj Sadar",
     bn_name: "হবিগঞ্জ সদর",
-    url: "habiganjsadar.habiganj.gov.bd",
     zip_code: "3300",
   },
   {
@@ -2397,7 +2098,6 @@ const upazilas: Upazila[] = [
     district_id: "37",
     name: "Madhabpur",
     bn_name: "মাধবপুর",
-    url: "madhabpur.habiganj.gov.bd",
     zip_code: "3330",
   },
   {
@@ -2405,7 +2105,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Sunamganj Sadar",
     bn_name: "সুনামগঞ্জ সদর",
-    url: "sadar.sunamganj.gov.bd",
     zip_code: "3000",
   },
   {
@@ -2413,7 +2112,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Shantiganj",
     bn_name: "শান্তিগঞ্জ",
-    url: "southsunamganj.sunamganj.gov.bd",
     zip_code: "3080",
   },
   {
@@ -2421,7 +2119,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Bishwambarpur",
     bn_name: "বিশ্বম্ভরপুর",
-    url: "bishwambarpur.sunamganj.gov.bd",
     zip_code: "3080",
   },
   {
@@ -2429,7 +2126,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Chhatak",
     bn_name: "ছাতক",
-    url: "chhatak.sunamganj.gov.bd",
     zip_code: "3060",
   },
   {
@@ -2437,7 +2133,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Jagannathpur",
     bn_name: "জগন্নাথপুর",
-    url: "jagannathpur.sunamganj.gov.bd",
     zip_code: "3030",
   },
   {
@@ -2445,7 +2140,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Dowarabazar",
     bn_name: "দোয়ারাবাজার",
-    url: "dowarabazar.sunamganj.gov.bd",
     zip_code: "3040",
   },
   {
@@ -2453,7 +2147,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Tahirpur",
     bn_name: "তাহিরপুর",
-    url: "tahirpur.sunamganj.gov.bd",
     zip_code: "3095",
   },
   {
@@ -2461,7 +2154,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Dharmapasha",
     bn_name: "ধর্মপাশা",
-    url: "dharmapasha.sunamganj.gov.bd",
     zip_code: "3070",
   },
   {
@@ -2469,7 +2161,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Jamalganj",
     bn_name: "জামালগঞ্জ",
-    url: "jamalganj.sunamganj.gov.bd",
     zip_code: "3010",
   },
   {
@@ -2477,7 +2168,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Shalla",
     bn_name: "শাল্লা",
-    url: "shalla.sunamganj.gov.bd",
     zip_code: "3050",
   },
   {
@@ -2485,7 +2175,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Derai",
     bn_name: "দিরাই",
-    url: "derai.sunamganj.gov.bd",
     zip_code: "3050",
   },
   {
@@ -2493,7 +2182,6 @@ const upazilas: Upazila[] = [
     district_id: "39",
     name: "Belabo",
     bn_name: "বেলাবো",
-    url: "belabo.narsingdi.gov.bd",
     zip_code: "1640",
   },
   {
@@ -2501,7 +2189,6 @@ const upazilas: Upazila[] = [
     district_id: "39",
     name: "Monohardi",
     bn_name: "মনোহরদী",
-    url: "monohardi.narsingdi.gov.bd",
     zip_code: "1630",
   },
   {
@@ -2509,7 +2196,6 @@ const upazilas: Upazila[] = [
     district_id: "39",
     name: "Narsingdi Sadar",
     bn_name: "নরসিংদী সদর",
-    url: "narsingdisadar.narsingdi.gov.bd",
     zip_code: "1600",
   },
   {
@@ -2517,7 +2203,6 @@ const upazilas: Upazila[] = [
     district_id: "39",
     name: "Palash",
     bn_name: "পলাশ",
-    url: "palash.narsingdi.gov.bd",
     zip_code: "1620",
   },
   {
@@ -2525,7 +2210,6 @@ const upazilas: Upazila[] = [
     district_id: "39",
     name: "Raipura",
     bn_name: "রায়পুরা",
-    url: "raipura.narsingdi.gov.bd",
     zip_code: "1610",
   },
   {
@@ -2533,7 +2217,6 @@ const upazilas: Upazila[] = [
     district_id: "39",
     name: "Shibpur",
     bn_name: "শিবপুর",
-    url: "shibpur.narsingdi.gov.bd",
     zip_code: "1650",
   },
   {
@@ -2541,7 +2224,6 @@ const upazilas: Upazila[] = [
     district_id: "40",
     name: "Kaliganj",
     bn_name: "কালীগঞ্জ",
-    url: "kaliganj.gazipur.gov.bd",
     zip_code: "1720",
   },
   {
@@ -2549,7 +2231,6 @@ const upazilas: Upazila[] = [
     district_id: "40",
     name: "Kaliakair",
     bn_name: "কালিয়াকৈর",
-    url: "kaliakair.gazipur.gov.bd",
     zip_code: "1750",
   },
   {
@@ -2557,7 +2238,6 @@ const upazilas: Upazila[] = [
     district_id: "40",
     name: "Kapasia",
     bn_name: "কাপাসিয়া",
-    url: "kapasia.gazipur.gov.bd",
     zip_code: "1730",
   },
   {
@@ -2565,7 +2245,6 @@ const upazilas: Upazila[] = [
     district_id: "40",
     name: "Gazipur Sadar",
     bn_name: "গাজীপুর সদর",
-    url: "sadar.gazipur.gov.bd",
     zip_code: "1700",
   },
   {
@@ -2573,7 +2252,6 @@ const upazilas: Upazila[] = [
     district_id: "40",
     name: "Sreepur",
     bn_name: "শ্রীপুর",
-    url: "sreepur.gazipur.gov.bd",
     zip_code: "1740",
   },
   {
@@ -2581,7 +2259,6 @@ const upazilas: Upazila[] = [
     district_id: "41",
     name: "Shariatpur Sadar",
     bn_name: "শরিয়তপুর সদর",
-    url: "sadar.shariatpur.gov.bd",
     zip_code: "8000",
   },
   {
@@ -2589,7 +2266,6 @@ const upazilas: Upazila[] = [
     district_id: "41",
     name: "Naria",
     bn_name: "নড়িয়া",
-    url: "naria.shariatpur.gov.bd",
     zip_code: "8010",
   },
   {
@@ -2597,7 +2273,6 @@ const upazilas: Upazila[] = [
     district_id: "41",
     name: "Zajira",
     bn_name: "জাজিরা",
-    url: "zajira.shariatpur.gov.bd",
     zip_code: "8020",
   },
   {
@@ -2605,7 +2280,6 @@ const upazilas: Upazila[] = [
     district_id: "41",
     name: "Gosairhat",
     bn_name: "গোসাইরহাট",
-    url: "gosairhat.shariatpur.gov.bd",
     zip_code: "8050",
   },
   {
@@ -2613,7 +2287,6 @@ const upazilas: Upazila[] = [
     district_id: "41",
     name: "Bhedarganj",
     bn_name: "ভেদরগঞ্জ",
-    url: "bhedarganj.shariatpur.gov.bd",
     zip_code: "8030",
   },
   {
@@ -2621,7 +2294,6 @@ const upazilas: Upazila[] = [
     district_id: "41",
     name: "Damudya",
     bn_name: "ডামুড্যা",
-    url: "damudya.shariatpur.gov.bd",
     zip_code: "8040",
   },
   {
@@ -2629,7 +2301,6 @@ const upazilas: Upazila[] = [
     district_id: "42",
     name: "Araihazar",
     bn_name: "আড়াইহাজার",
-    url: "araihazar.narayanganj.gov.bd",
     zip_code: "1450",
   },
   {
@@ -2637,7 +2308,6 @@ const upazilas: Upazila[] = [
     district_id: "42",
     name: "Bandar",
     bn_name: "বন্দর",
-    url: "bandar.narayanganj.gov.bd",
     zip_code: "1410",
   },
   {
@@ -2645,7 +2315,6 @@ const upazilas: Upazila[] = [
     district_id: "42",
     name: "Narayanganj Sadar",
     bn_name: "নারায়নগঞ্জ সদর",
-    url: "narayanganjsadar.narayanganj.gov.bd",
     zip_code: "1400",
   },
   {
@@ -2653,7 +2322,6 @@ const upazilas: Upazila[] = [
     district_id: "42",
     name: "Rupganj",
     bn_name: "রূপগঞ্জ",
-    url: "rupganj.narayanganj.gov.bd",
     zip_code: "1460",
   },
   {
@@ -2661,7 +2329,6 @@ const upazilas: Upazila[] = [
     district_id: "42",
     name: "Sonargaon",
     bn_name: "সোনারগাঁ",
-    url: "sonargaon.narayanganj.gov.bd",
     zip_code: "1440",
   },
   {
@@ -2669,7 +2336,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Basail",
     bn_name: "বাসাইল",
-    url: "basail.tangail.gov.bd",
     zip_code: "1970",
   },
   {
@@ -2677,7 +2343,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Bhuapur",
     bn_name: "ভুয়াপুর",
-    url: "bhuapur.tangail.gov.bd",
     zip_code: "1980",
   },
   {
@@ -2685,7 +2350,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Delduar",
     bn_name: "দেলদুয়ার",
-    url: "delduar.tangail.gov.bd",
     zip_code: "1910",
   },
   {
@@ -2693,7 +2357,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Ghatail",
     bn_name: "ঘাটাইল",
-    url: "ghatail.tangail.gov.bd",
     zip_code: "1940",
   },
   {
@@ -2701,7 +2364,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Gopalpur",
     bn_name: "গোপালপুর",
-    url: "gopalpur.tangail.gov.bd",
     zip_code: "1920",
   },
   {
@@ -2709,7 +2371,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Madhupur",
     bn_name: "মধুপুর",
-    url: "madhupur.tangail.gov.bd",
     zip_code: "1996",
   },
   {
@@ -2717,7 +2378,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Mirzapur",
     bn_name: "মির্জাপুর",
-    url: "mirzapur.tangail.gov.bd",
     zip_code: "1930",
   },
   {
@@ -2725,7 +2385,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Nagarpur",
     bn_name: "নাগরপুর",
-    url: "nagarpur.tangail.gov.bd",
     zip_code: "1936",
   },
   {
@@ -2733,7 +2392,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Sakhipur",
     bn_name: "সখিপুর",
-    url: "sakhipur.tangail.gov.bd",
     zip_code: "1960",
   },
   {
@@ -2741,7 +2399,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Tangail Sadar",
     bn_name: "টাঙ্গাইল সদর",
-    url: "tangailsadar.tangail.gov.bd",
     zip_code: "1900",
   },
   {
@@ -2749,7 +2406,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Kalihati",
     bn_name: "কালিহাতী",
-    url: "kalihati.tangail.gov.bd",
     zip_code: "1950",
   },
   {
@@ -2757,7 +2413,6 @@ const upazilas: Upazila[] = [
     district_id: "43",
     name: "Dhanbari",
     bn_name: "ধনবাড়ী",
-    url: "dhanbari.tangail.gov.bd",
     zip_code: "1990",
   },
   {
@@ -2765,7 +2420,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Itna",
     bn_name: "ইটনা",
-    url: "itna.kishoreganj.gov.bd",
     zip_code: "2390",
   },
   {
@@ -2773,7 +2427,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Katiadi",
     bn_name: "কটিয়াদী",
-    url: "katiadi.kishoreganj.gov.bd",
     zip_code: "2330",
   },
   {
@@ -2781,7 +2434,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Bhairab",
     bn_name: "ভৈরব",
-    url: "bhairab.kishoreganj.gov.bd",
     zip_code: "2350",
   },
   {
@@ -2789,7 +2441,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Tarail",
     bn_name: "তাড়াইল",
-    url: "tarail.kishoreganj.gov.bd",
     zip_code: "2316",
   },
   {
@@ -2797,7 +2448,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Hossainpur",
     bn_name: "হোসেনপুর",
-    url: "hossainpur.kishoreganj.gov.bd",
     zip_code: "2340",
   },
   {
@@ -2805,7 +2455,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Pakundia",
     bn_name: "পাকুন্দিয়া",
-    url: "pakundia.kishoreganj.gov.bd",
     zip_code: "2326",
   },
   {
@@ -2813,7 +2462,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Kuliarchar",
     bn_name: "কুলিয়ারচর",
-    url: "kuliarchar.kishoreganj.gov.bd",
     zip_code: "2380",
   },
   {
@@ -2821,7 +2469,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Kishoreganj Sadar",
     bn_name: "কিশোরগঞ্জ সদর",
-    url: "kishoreganjsadar.kishoreganj.gov.bd",
     zip_code: "2300",
   },
   {
@@ -2829,7 +2476,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Karimgonj",
     bn_name: "করিমগঞ্জ",
-    url: "karimgonj.kishoreganj.gov.bd",
     zip_code: "2310",
   },
   {
@@ -2837,7 +2483,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Bajitpur",
     bn_name: "বাজিতপুর",
-    url: "bajitpur.kishoreganj.gov.bd",
     zip_code: "2336",
   },
   {
@@ -2845,7 +2490,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Austagram",
     bn_name: "অষ্টগ্রাম",
-    url: "austagram.kishoreganj.gov.bd",
     zip_code: "2350",
   },
   {
@@ -2853,7 +2497,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Mithamoin",
     bn_name: "মিঠামইন",
-    url: "mithamoin.kishoreganj.gov.bd",
     zip_code: "2370",
   },
   {
@@ -2861,7 +2504,6 @@ const upazilas: Upazila[] = [
     district_id: "44",
     name: "Nikli",
     bn_name: "নিকলী",
-    url: "nikli.kishoreganj.gov.bd",
     zip_code: "2360",
   },
   {
@@ -2869,7 +2511,6 @@ const upazilas: Upazila[] = [
     district_id: "45",
     name: "Harirampur",
     bn_name: "হরিরামপুর",
-    url: "harirampur.manikganj.gov.bd",
     zip_code: "1850",
   },
   {
@@ -2877,7 +2518,6 @@ const upazilas: Upazila[] = [
     district_id: "45",
     name: "Saturia",
     bn_name: "সাটুরিয়া",
-    url: "saturia.manikganj.gov.bd",
     zip_code: "1820",
   },
   {
@@ -2885,7 +2525,6 @@ const upazilas: Upazila[] = [
     district_id: "45",
     name: "Manikganj Sadar",
     bn_name: "মানিকগঞ্জ সদর",
-    url: "sadar.manikganj.gov.bd",
     zip_code: "1800",
   },
   {
@@ -2893,7 +2532,6 @@ const upazilas: Upazila[] = [
     district_id: "45",
     name: "Gior",
     bn_name: "ঘিওর",
-    url: "gior.manikganj.gov.bd",
     zip_code: "1840",
   },
   {
@@ -2901,7 +2539,6 @@ const upazilas: Upazila[] = [
     district_id: "45",
     name: "Shibaloy",
     bn_name: "শিবালয়",
-    url: "shibaloy.manikganj.gov.bd",
     zip_code: "1860",
   },
   {
@@ -2909,7 +2546,6 @@ const upazilas: Upazila[] = [
     district_id: "45",
     name: "Doulatpur",
     bn_name: "দৌলতপুর",
-    url: "doulatpur.manikganj.gov.bd",
     zip_code: "1860",
   },
   {
@@ -2917,7 +2553,6 @@ const upazilas: Upazila[] = [
     district_id: "45",
     name: "Singiar",
     bn_name: "সিংগাইর",
-    url: "singiar.manikganj.gov.bd",
     zip_code: "1810",
   },
   {
@@ -2925,7 +2560,6 @@ const upazilas: Upazila[] = [
     district_id: "46",
     name: "Savar",
     bn_name: "সাভার",
-    url: "savar.dhaka.gov.bd",
     zip_code: "1340",
   },
   {
@@ -2933,7 +2567,6 @@ const upazilas: Upazila[] = [
     district_id: "46",
     name: "Dhamrai",
     bn_name: "ধামরাই",
-    url: "dhamrai.dhaka.gov.bd",
     zip_code: "1350",
   },
   {
@@ -2941,7 +2574,6 @@ const upazilas: Upazila[] = [
     district_id: "46",
     name: "Keraniganj",
     bn_name: "কেরাণীগঞ্জ",
-    url: "keraniganj.dhaka.gov.bd",
     zip_code: "1310",
   },
   {
@@ -2949,7 +2581,6 @@ const upazilas: Upazila[] = [
     district_id: "46",
     name: "Nawabganj",
     bn_name: "নবাবগঞ্জ",
-    url: "nawabganj.dhaka.gov.bd",
     zip_code: "1320",
   },
   {
@@ -2957,7 +2588,6 @@ const upazilas: Upazila[] = [
     district_id: "46",
     name: "Dohar",
     bn_name: "দোহার",
-    url: "dohar.dhaka.gov.bd",
     zip_code: "1360",
   },
   {
@@ -2965,7 +2595,6 @@ const upazilas: Upazila[] = [
     district_id: "47",
     name: "Munshiganj Sadar",
     bn_name: "মুন্সিগঞ্জ সদর",
-    url: "sadar.munshiganj.gov.bd",
     zip_code: "1500",
   },
   {
@@ -2973,7 +2602,6 @@ const upazilas: Upazila[] = [
     district_id: "47",
     name: "Sreenagar",
     bn_name: "শ্রীনগর",
-    url: "sreenagar.munshiganj.gov.bd",
     zip_code: "1540",
   },
   {
@@ -2981,7 +2609,6 @@ const upazilas: Upazila[] = [
     district_id: "47",
     name: "Sirajdikhan",
     bn_name: "সিরাজদিখান",
-    url: "sirajdikhan.munshiganj.gov.bd",
     zip_code: "1530",
   },
   {
@@ -2989,7 +2616,6 @@ const upazilas: Upazila[] = [
     district_id: "47",
     name: "Louhajanj",
     bn_name: "লৌহজং",
-    url: "louhajanj.munshiganj.gov.bd",
     zip_code: "1520",
   },
   {
@@ -2997,7 +2623,6 @@ const upazilas: Upazila[] = [
     district_id: "47",
     name: "Gajaria",
     bn_name: "গজারিয়া",
-    url: "gajaria.munshiganj.gov.bd",
     zip_code: "1510",
   },
   {
@@ -3005,7 +2630,6 @@ const upazilas: Upazila[] = [
     district_id: "47",
     name: "Tongibari",
     bn_name: "টংগীবাড়ি",
-    url: "tongibari.munshiganj.gov.bd",
     zip_code: "1550",
   },
   {
@@ -3013,7 +2637,6 @@ const upazilas: Upazila[] = [
     district_id: "48",
     name: "Rajbari Sadar",
     bn_name: "রাজবাড়ী সদর",
-    url: "sadar.rajbari.gov.bd",
     zip_code: "7700",
   },
   {
@@ -3021,7 +2644,6 @@ const upazilas: Upazila[] = [
     district_id: "48",
     name: "Goalanda",
     bn_name: "গোয়ালন্দ",
-    url: "goalanda.rajbari.gov.bd",
     zip_code: "7730",
   },
   {
@@ -3029,7 +2651,6 @@ const upazilas: Upazila[] = [
     district_id: "48",
     name: "Pangsa",
     bn_name: "পাংশা",
-    url: "pangsa.rajbari.gov.bd",
     zip_code: "7750",
   },
   {
@@ -3037,7 +2658,6 @@ const upazilas: Upazila[] = [
     district_id: "48",
     name: "Baliakandi",
     bn_name: "বালিয়াকান্দি",
-    url: "baliakandi.rajbari.gov.bd",
     zip_code: "7710",
   },
   {
@@ -3045,7 +2665,6 @@ const upazilas: Upazila[] = [
     district_id: "48",
     name: "Kalukhali",
     bn_name: "কালুখালী",
-    url: "kalukhali.rajbari.gov.bd",
     zip_code: "7720",
   },
   {
@@ -3053,7 +2672,6 @@ const upazilas: Upazila[] = [
     district_id: "49",
     name: "Madaripur Sadar",
     bn_name: "মাদারীপুর সদর",
-    url: "sadar.madaripur.gov.bd",
     zip_code: "7900",
   },
   {
@@ -3061,7 +2679,6 @@ const upazilas: Upazila[] = [
     district_id: "49",
     name: "Shibchar",
     bn_name: "শিবচর",
-    url: "shibchar.madaripur.gov.bd",
     zip_code: "7920",
   },
   {
@@ -3069,7 +2686,6 @@ const upazilas: Upazila[] = [
     district_id: "49",
     name: "Kalkini",
     bn_name: "কালকিনি",
-    url: "kalkini.madaripur.gov.bd",
     zip_code: "7910",
   },
   {
@@ -3077,7 +2693,6 @@ const upazilas: Upazila[] = [
     district_id: "49",
     name: "Rajoir",
     bn_name: "রাজৈর",
-    url: "rajoir.madaripur.gov.bd",
     zip_code: "7930",
   },
   {
@@ -3085,7 +2700,6 @@ const upazilas: Upazila[] = [
     district_id: "50",
     name: "Gopalganj Sadar",
     bn_name: "গোপালগঞ্জ সদর",
-    url: "sadar.gopalganj.gov.bd",
     zip_code: "8100",
   },
   {
@@ -3093,7 +2707,6 @@ const upazilas: Upazila[] = [
     district_id: "50",
     name: "Kashiani",
     bn_name: "কাশিয়ানী",
-    url: "kashiani.gopalganj.gov.bd",
     zip_code: "8130",
   },
   {
@@ -3101,7 +2714,6 @@ const upazilas: Upazila[] = [
     district_id: "50",
     name: "Tungipara",
     bn_name: "টুংগীপাড়া",
-    url: "tungipara.gopalganj.gov.bd",
     zip_code: "8150",
   },
   {
@@ -3109,7 +2721,6 @@ const upazilas: Upazila[] = [
     district_id: "50",
     name: "Kotalipara",
     bn_name: "কোটালীপাড়া",
-    url: "kotalipara.gopalganj.gov.bd",
     zip_code: "8120",
   },
   {
@@ -3117,7 +2728,6 @@ const upazilas: Upazila[] = [
     district_id: "50",
     name: "Muksudpur",
     bn_name: "মুকসুদপুর",
-    url: "muksudpur.gopalganj.gov.bd",
     zip_code: "8140",
   },
   {
@@ -3125,7 +2735,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Faridpur Sadar",
     bn_name: "ফরিদপুর সদর",
-    url: "sadar.faridpur.gov.bd",
     zip_code: "7800",
   },
   {
@@ -3133,7 +2742,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Alfadanga",
     bn_name: "আলফাডাঙ্গা",
-    url: "alfadanga.faridpur.gov.bd",
     zip_code: "7870",
   },
   {
@@ -3141,7 +2749,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Boalmari",
     bn_name: "বোয়ালমারী",
-    url: "boalmari.faridpur.gov.bd",
     zip_code: "7820",
   },
   {
@@ -3149,7 +2756,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Sadarpur",
     bn_name: "সদরপুর",
-    url: "sadarpur.faridpur.gov.bd",
     zip_code: "7840",
   },
   {
@@ -3157,7 +2763,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Nagarkanda",
     bn_name: "নগরকান্দা",
-    url: "nagarkanda.faridpur.gov.bd",
     zip_code: "7850",
   },
   {
@@ -3165,7 +2770,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Bhanga",
     bn_name: "ভাঙ্গা",
-    url: "bhanga.faridpur.gov.bd",
     zip_code: "7810",
   },
   {
@@ -3173,7 +2777,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Charbhadrasan",
     bn_name: "চরভদ্রাসন",
-    url: "charbhadrasan.faridpur.gov.bd",
     zip_code: "7830",
   },
   {
@@ -3181,7 +2784,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Madhukhali",
     bn_name: "মধুখালী",
-    url: "madhukhali.faridpur.gov.bd",
     zip_code: "7890",
   },
   {
@@ -3189,7 +2791,6 @@ const upazilas: Upazila[] = [
     district_id: "51",
     name: "Saltha",
     bn_name: "সালথা",
-    url: "saltha.faridpur.gov.bd",
     zip_code: "7860",
   },
   {
@@ -3197,7 +2798,6 @@ const upazilas: Upazila[] = [
     district_id: "52",
     name: "Panchagarh Sadar",
     bn_name: "পঞ্চগড় সদর",
-    url: "panchagarhsadar.panchagarh.gov.bd",
     zip_code: "5000",
   },
   {
@@ -3205,7 +2805,6 @@ const upazilas: Upazila[] = [
     district_id: "52",
     name: "Debiganj",
     bn_name: "দেবীগঞ্জ",
-    url: "debiganj.panchagarh.gov.bd",
     zip_code: "5020",
   },
   {
@@ -3213,7 +2812,6 @@ const upazilas: Upazila[] = [
     district_id: "52",
     name: "Boda",
     bn_name: "বোদা",
-    url: "boda.panchagarh.gov.bd",
     zip_code: "5010",
   },
   {
@@ -3221,7 +2819,6 @@ const upazilas: Upazila[] = [
     district_id: "52",
     name: "Atwari",
     bn_name: "আটোয়ারী",
-    url: "atwari.panchagarh.gov.bd",
     zip_code: "5040",
   },
   {
@@ -3229,7 +2826,6 @@ const upazilas: Upazila[] = [
     district_id: "52",
     name: "Tetulia",
     bn_name: "তেতুলিয়া",
-    url: "tetulia.panchagarh.gov.bd",
     zip_code: "5030",
   },
   {
@@ -3237,7 +2833,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Nawabganj",
     bn_name: "নবাবগঞ্জ",
-    url: "nawabganj.dinajpur.gov.bd",
     zip_code: "5210",
   },
   {
@@ -3245,7 +2840,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Birganj",
     bn_name: "বীরগঞ্জ",
-    url: "birganj.dinajpur.gov.bd",
     zip_code: "5280",
   },
   {
@@ -3253,7 +2847,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Ghoraghat",
     bn_name: "ঘোড়াঘাট",
-    url: "ghoraghat.dinajpur.gov.bd",
     zip_code: "5230",
   },
   {
@@ -3261,7 +2854,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Birampur",
     bn_name: "বিরামপুর",
-    url: "birampur.dinajpur.gov.bd",
     zip_code: "5270",
   },
   {
@@ -3269,7 +2861,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Parbatipur",
     bn_name: "পার্বতীপুর",
-    url: "parbatipur.dinajpur.gov.bd",
     zip_code: "5255",
   },
   {
@@ -3277,7 +2868,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Bochaganj",
     bn_name: "বোচাগঞ্জ",
-    url: "bochaganj.dinajpur.gov.bd",
     zip_code: "5260",
   },
   {
@@ -3285,7 +2875,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Kaharol",
     bn_name: "কাহারোল",
-    url: "kaharol.dinajpur.gov.bd",
     zip_code: "5220",
   },
   {
@@ -3293,7 +2882,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Fulbari",
     bn_name: "ফুলবাড়ী",
-    url: "fulbari.dinajpur.gov.bd",
     zip_code: "5250",
   },
   {
@@ -3301,7 +2889,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Dinajpur Sadar",
     bn_name: "দিনাজপুর সদর",
-    url: "dinajpursadar.dinajpur.gov.bd",
     zip_code: "5200",
   },
   {
@@ -3309,7 +2896,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Hakimpur",
     bn_name: "হাকিমপুর",
-    url: "hakimpur.dinajpur.gov.bd",
     zip_code: "5215",
   },
   {
@@ -3317,7 +2903,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Khansama",
     bn_name: "খানসামা",
-    url: "khansama.dinajpur.gov.bd",
     zip_code: "5290",
   },
   {
@@ -3325,7 +2910,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Birol",
     bn_name: "বিরল",
-    url: "birol.dinajpur.gov.bd",
     zip_code: "5250",
   },
   {
@@ -3333,7 +2917,6 @@ const upazilas: Upazila[] = [
     district_id: "53",
     name: "Chirirbandar",
     bn_name: "চিরিরবন্দর",
-    url: "chirirbandar.dinajpur.gov.bd",
     zip_code: "5240",
   },
   {
@@ -3341,7 +2924,6 @@ const upazilas: Upazila[] = [
     district_id: "54",
     name: "Lalmonirhat Sadar",
     bn_name: "লালমনিরহাট সদর",
-    url: "sadar.lalmonirhat.gov.bd",
     zip_code: "5500",
   },
   {
@@ -3349,7 +2931,6 @@ const upazilas: Upazila[] = [
     district_id: "54",
     name: "Kaliganj",
     bn_name: "কালীগঞ্জ",
-    url: "kaliganj.lalmonirhat.gov.bd",
     zip_code: "5520",
   },
   {
@@ -3357,7 +2938,6 @@ const upazilas: Upazila[] = [
     district_id: "54",
     name: "Hatibandha",
     bn_name: "হাতীবান্ধা",
-    url: "hatibandha.lalmonirhat.gov.bd",
     zip_code: "5540",
   },
   {
@@ -3365,7 +2945,6 @@ const upazilas: Upazila[] = [
     district_id: "54",
     name: "Patgram",
     bn_name: "পাটগ্রাম",
-    url: "patgram.lalmonirhat.gov.bd",
     zip_code: "5510",
   },
   {
@@ -3373,7 +2952,6 @@ const upazilas: Upazila[] = [
     district_id: "54",
     name: "Aditmari",
     bn_name: "আদিতমারী",
-    url: "aditmari.lalmonirhat.gov.bd",
     zip_code: "5530",
   },
   {
@@ -3381,7 +2959,6 @@ const upazilas: Upazila[] = [
     district_id: "55",
     name: "Syedpur",
     bn_name: "সৈয়দপুর",
-    url: "syedpur.nilphamari.gov.bd",
     zip_code: "5310",
   },
   {
@@ -3389,7 +2966,6 @@ const upazilas: Upazila[] = [
     district_id: "55",
     name: "Domar",
     bn_name: "ডোমার",
-    url: "domar.nilphamari.gov.bd",
     zip_code: "5340",
   },
   {
@@ -3397,7 +2973,6 @@ const upazilas: Upazila[] = [
     district_id: "55",
     name: "Dimla",
     bn_name: "ডিমলা",
-    url: "dimla.nilphamari.gov.bd",
     zip_code: "5350",
   },
   {
@@ -3405,7 +2980,6 @@ const upazilas: Upazila[] = [
     district_id: "55",
     name: "Jaldhaka",
     bn_name: "জলঢাকা",
-    url: "jaldhaka.nilphamari.gov.bd",
     zip_code: "5320",
   },
   {
@@ -3413,7 +2987,6 @@ const upazilas: Upazila[] = [
     district_id: "55",
     name: "Kishorganj",
     bn_name: "কিশোরগঞ্জ",
-    url: "kishorganj.nilphamari.gov.bd",
     zip_code: "5330",
   },
   {
@@ -3421,7 +2994,6 @@ const upazilas: Upazila[] = [
     district_id: "55",
     name: "Nilphamari Sadar",
     bn_name: "নীলফামারী সদর",
-    url: "nilphamarisadar.nilphamari.gov.bd",
     zip_code: "5300",
   },
   {
@@ -3429,7 +3001,6 @@ const upazilas: Upazila[] = [
     district_id: "56",
     name: "Sadullapur",
     bn_name: "সাদুল্লাপুর",
-    url: "sadullapur.gaibandha.gov.bd",
     zip_code: "5760",
   },
   {
@@ -3437,7 +3008,6 @@ const upazilas: Upazila[] = [
     district_id: "56",
     name: "Gaibandha Sadar",
     bn_name: "গাইবান্ধা সদর",
-    url: "gaibandhasadar.gaibandha.gov.bd",
     zip_code: "5700",
   },
   {
@@ -3445,7 +3015,6 @@ const upazilas: Upazila[] = [
     district_id: "56",
     name: "Palashbari",
     bn_name: "পলাশবাড়ী",
-    url: "palashbari.gaibandha.gov.bd",
     zip_code: "5720",
   },
   {
@@ -3453,7 +3022,6 @@ const upazilas: Upazila[] = [
     district_id: "56",
     name: "Saghata",
     bn_name: "সাঘাটা",
-    url: "saghata.gaibandha.gov.bd",
     zip_code: "5750",
   },
   {
@@ -3461,7 +3029,6 @@ const upazilas: Upazila[] = [
     district_id: "56",
     name: "Gobindaganj",
     bn_name: "গোবিন্দগঞ্জ",
-    url: "gobindaganj.gaibandha.gov.bd",
     zip_code: "5750",
   },
   {
@@ -3469,7 +3036,6 @@ const upazilas: Upazila[] = [
     district_id: "56",
     name: "Sundarganj",
     bn_name: "সুন্দরগঞ্জ",
-    url: "sundarganj.gaibandha.gov.bd",
     zip_code: "5710",
   },
   {
@@ -3477,7 +3043,6 @@ const upazilas: Upazila[] = [
     district_id: "56",
     name: "Phulchari",
     bn_name: "ফুলছড়ি",
-    url: "phulchari.gaibandha.gov.bd",
     zip_code: "5780",
   },
   {
@@ -3485,7 +3050,6 @@ const upazilas: Upazila[] = [
     district_id: "57",
     name: "Thakurgaon Sadar",
     bn_name: "ঠাকুরগাঁও সদর",
-    url: "thakurgaonsadar.thakurgaon.gov.bd",
     zip_code: "5100",
   },
   {
@@ -3493,7 +3057,6 @@ const upazilas: Upazila[] = [
     district_id: "57",
     name: "Pirganj",
     bn_name: "পীরগঞ্জ",
-    url: "pirganj.thakurgaon.gov.bd",
     zip_code: "5130",
   },
   {
@@ -3501,7 +3064,6 @@ const upazilas: Upazila[] = [
     district_id: "57",
     name: "Ranisankail",
     bn_name: "রাণীশংকৈল",
-    url: "ranisankail.thakurgaon.gov.bd",
     zip_code: "5110",
   },
   {
@@ -3509,7 +3071,6 @@ const upazilas: Upazila[] = [
     district_id: "57",
     name: "Haripur",
     bn_name: "হরিপুর",
-    url: "haripur.thakurgaon.gov.bd",
     zip_code: "5140",
   },
   {
@@ -3517,7 +3078,6 @@ const upazilas: Upazila[] = [
     district_id: "57",
     name: "Baliadangi",
     bn_name: "বালিয়াডাঙ্গী",
-    url: "baliadangi.thakurgaon.gov.bd",
     zip_code: "5120",
   },
   {
@@ -3525,7 +3085,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Rangpur Sadar",
     bn_name: "রংপুর সদর",
-    url: "rangpursadar.rangpur.gov.bd",
     zip_code: "5400",
   },
   {
@@ -3533,7 +3092,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Gangachara",
     bn_name: "গংগাচড়া",
-    url: "gangachara.rangpur.gov.bd",
     zip_code: "5410",
   },
   {
@@ -3541,7 +3099,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Taragonj",
     bn_name: "তারাগঞ্জ",
-    url: "taragonj.rangpur.gov.bd",
     zip_code: "5420",
   },
   {
@@ -3549,7 +3106,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Badargonj",
     bn_name: "বদরগঞ্জ",
-    url: "badargonj.rangpur.gov.bd",
     zip_code: "5410",
   },
   {
@@ -3557,7 +3113,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Mithapukur",
     bn_name: "মিঠাপুকুর",
-    url: "mithapukur.rangpur.gov.bd",
     zip_code: "5470",
   },
   {
@@ -3565,7 +3120,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Pirgonj",
     bn_name: "পীরগঞ্জ",
-    url: "pirgonj.rangpur.gov.bd",
     zip_code: "5490",
   },
   {
@@ -3573,7 +3127,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Kaunia",
     bn_name: "কাউনিয়া",
-    url: "kaunia.rangpur.gov.bd",
     zip_code: "5430",
   },
   {
@@ -3581,7 +3134,6 @@ const upazilas: Upazila[] = [
     district_id: "58",
     name: "Pirgacha",
     bn_name: "পীরগাছা",
-    url: "pirgacha.rangpur.gov.bd",
     zip_code: "5460",
   },
   {
@@ -3589,7 +3141,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Kurigram Sadar",
     bn_name: "কুড়িগ্রাম সদর",
-    url: "kurigramsadar.kurigram.gov.bd",
     zip_code: "5600",
   },
   {
@@ -3597,7 +3148,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Nageshwari",
     bn_name: "নাগেশ্বরী",
-    url: "nageshwari.kurigram.gov.bd",
     zip_code: "5620",
   },
   {
@@ -3605,7 +3155,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Bhurungamari",
     bn_name: "ভুরুঙ্গামারী",
-    url: "bhurungamari.kurigram.gov.bd",
     zip_code: "5630",
   },
   {
@@ -3613,7 +3162,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Phulbari",
     bn_name: "ফুলবাড়ী",
-    url: "phulbari.kurigram.gov.bd",
     zip_code: "5670",
   },
   {
@@ -3621,7 +3169,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Rajarhat",
     bn_name: "রাজারহাট",
-    url: "rajarhat.kurigram.gov.bd",
     zip_code: "5640",
   },
   {
@@ -3629,7 +3176,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Ulipur",
     bn_name: "উলিপুর",
-    url: "ulipur.kurigram.gov.bd",
     zip_code: "5610",
   },
   {
@@ -3637,7 +3183,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Chilmari",
     bn_name: "চিলমারী",
-    url: "chilmari.kurigram.gov.bd",
     zip_code: "5660",
   },
   {
@@ -3645,7 +3190,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Rowmari",
     bn_name: "রৌমারী",
-    url: "rowmari.kurigram.gov.bd",
     zip_code: "5650",
   },
   {
@@ -3653,7 +3197,6 @@ const upazilas: Upazila[] = [
     district_id: "59",
     name: "Charrajibpur",
     bn_name: "চর রাজিবপুর",
-    url: "charrajibpur.kurigram.gov.bd",
     zip_code: "5680",
   },
   {
@@ -3661,7 +3204,6 @@ const upazilas: Upazila[] = [
     district_id: "60",
     name: "Sherpur Sadar",
     bn_name: "শেরপুর সদর",
-    url: "sherpursadar.sherpur.gov.bd",
     zip_code: "2100",
   },
   {
@@ -3669,7 +3211,6 @@ const upazilas: Upazila[] = [
     district_id: "60",
     name: "Nalitabari",
     bn_name: "নালিতাবাড়ী",
-    url: "nalitabari.sherpur.gov.bd",
     zip_code: "2130",
   },
   {
@@ -3677,7 +3218,6 @@ const upazilas: Upazila[] = [
     district_id: "60",
     name: "Sreebordi",
     bn_name: "শ্রীবরদী",
-    url: "sreebordi.sherpur.gov.bd",
     zip_code: "2150",
   },
   {
@@ -3685,7 +3225,6 @@ const upazilas: Upazila[] = [
     district_id: "60",
     name: "Nokla",
     bn_name: "নকলা",
-    url: "nokla.sherpur.gov.bd",
     zip_code: "2140",
   },
   {
@@ -3693,7 +3232,6 @@ const upazilas: Upazila[] = [
     district_id: "60",
     name: "Jhenaigati",
     bn_name: "ঝিনাইগাতী",
-    url: "jhenaigati.sherpur.gov.bd",
     zip_code: "2120",
   },
   {
@@ -3701,7 +3239,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Fulbaria",
     bn_name: "ফুলবাড়ীয়া",
-    url: "fulbaria.mymensingh.gov.bd",
     zip_code: "2216",
   },
   {
@@ -3709,7 +3246,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Trishal",
     bn_name: "ত্রিশাল",
-    url: "trishal.mymensingh.gov.bd",
     zip_code: "2220",
   },
   {
@@ -3717,7 +3253,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Bhaluka",
     bn_name: "ভালুকা",
-    url: "bhaluka.mymensingh.gov.bd",
     zip_code: "2240",
   },
   {
@@ -3725,7 +3260,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Muktagacha",
     bn_name: "মুক্তাগাছা",
-    url: "muktagacha.mymensingh.gov.bd",
     zip_code: "2210",
   },
   {
@@ -3733,7 +3267,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Mymensingh Sadar",
     bn_name: "ময়মনসিংহ সদর",
-    url: "mymensinghsadar.mymensingh.gov.bd",
     zip_code: "2200",
   },
   {
@@ -3741,7 +3274,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Dhobaura",
     bn_name: "ধোবাউড়া",
-    url: "dhobaura.mymensingh.gov.bd",
     zip_code: "2290",
   },
   {
@@ -3749,7 +3281,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Phulpur",
     bn_name: "ফুলপুর",
-    url: "phulpur.mymensingh.gov.bd",
     zip_code: "2256",
   },
   {
@@ -3757,7 +3288,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Haluaghat",
     bn_name: "হালুয়াঘাট",
-    url: "haluaghat.mymensingh.gov.bd",
     zip_code: "2280",
   },
   {
@@ -3765,7 +3295,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Gouripur",
     bn_name: "গৌরীপুর",
-    url: "gouripur.mymensingh.gov.bd",
     zip_code: "2270",
   },
   {
@@ -3773,7 +3302,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Gafargaon",
     bn_name: "গফরগাঁও",
-    url: "gafargaon.mymensingh.gov.bd",
     zip_code: "2230",
   },
   {
@@ -3781,7 +3309,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Iswarganj",
     bn_name: "ঈশ্বরগঞ্জ",
-    url: "iswarganj.mymensingh.gov.bd",
     zip_code: "2260",
   },
   {
@@ -3789,7 +3316,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Nandail",
     bn_name: "নান্দাইল",
-    url: "nandail.mymensingh.gov.bd",
     zip_code: "2250",
   },
   {
@@ -3797,7 +3323,6 @@ const upazilas: Upazila[] = [
     district_id: "61",
     name: "Tarakanda",
     bn_name: "তারাকান্দা",
-    url: "tarakanda.mymensingh.gov.bd",
     zip_code: "2296",
   },
   {
@@ -3805,7 +3330,6 @@ const upazilas: Upazila[] = [
     district_id: "62",
     name: "Jamalpur Sadar",
     bn_name: "জামালপুর সদর",
-    url: "jamalpursadar.jamalpur.gov.bd",
     zip_code: "2000",
   },
   {
@@ -3813,7 +3337,6 @@ const upazilas: Upazila[] = [
     district_id: "62",
     name: "Melandah",
     bn_name: "মেলান্দহ",
-    url: "melandah.jamalpur.gov.bd",
     zip_code: "2030",
   },
   {
@@ -3821,7 +3344,6 @@ const upazilas: Upazila[] = [
     district_id: "62",
     name: "Islampur",
     bn_name: "ইসলামপুর",
-    url: "islampur.jamalpur.gov.bd",
     zip_code: "2010",
   },
   {
@@ -3829,7 +3351,6 @@ const upazilas: Upazila[] = [
     district_id: "62",
     name: "Dewangonj",
     bn_name: "দেওয়ানগঞ্জ",
-    url: "dewangonj.jamalpur.gov.bd",
     zip_code: "2020",
   },
   {
@@ -3837,7 +3358,6 @@ const upazilas: Upazila[] = [
     district_id: "62",
     name: "Sarishabari",
     bn_name: "সরিষাবাড়ী",
-    url: "sarishabari.jamalpur.gov.bd",
     zip_code: "2050",
   },
   {
@@ -3845,7 +3365,6 @@ const upazilas: Upazila[] = [
     district_id: "62",
     name: "Madarganj",
     bn_name: "মাদারগঞ্জ",
-    url: "madarganj.jamalpur.gov.bd",
     zip_code: "2040",
   },
   {
@@ -3853,7 +3372,6 @@ const upazilas: Upazila[] = [
     district_id: "62",
     name: "Bokshiganj",
     bn_name: "বকশীগঞ্জ",
-    url: "bokshiganj.jamalpur.gov.bd",
     zip_code: "2080",
   },
   {
@@ -3861,7 +3379,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Barhatta",
     bn_name: "বারহাট্টা",
-    url: "barhatta.netrokona.gov.bd",
     zip_code: "2440",
   },
   {
@@ -3869,7 +3386,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Durgapur",
     bn_name: "দুর্গাপুর",
-    url: "durgapur.netrokona.gov.bd",
     zip_code: "2420",
   },
   {
@@ -3877,7 +3393,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Kendua",
     bn_name: "কেন্দুয়া",
-    url: "kendua.netrokona.gov.bd",
     zip_code: "2410",
   },
   {
@@ -3885,7 +3400,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Atpara",
     bn_name: "আটপাড়া",
-    url: "atpara.netrokona.gov.bd",
     zip_code: "2470",
   },
   {
@@ -3893,7 +3407,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Madan",
     bn_name: "মদন",
-    url: "madan.netrokona.gov.bd",
     zip_code: "2460",
   },
   {
@@ -3901,7 +3414,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Khaliajuri",
     bn_name: "খালিয়াজুরী",
-    url: "khaliajuri.netrokona.gov.bd",
     zip_code: "2480",
   },
   {
@@ -3909,7 +3421,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Kalmakanda",
     bn_name: "কলমাকান্দা",
-    url: "kalmakanda.netrokona.gov.bd",
     zip_code: "2450",
   },
   {
@@ -3917,7 +3428,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Mohongonj",
     bn_name: "মোহনগঞ্জ",
-    url: "mohongonj.netrokona.gov.bd",
     zip_code: "2430",
   },
   {
@@ -3925,7 +3435,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Purbadhala",
     bn_name: "পূর্বধলা",
-    url: "purbadhala.netrokona.gov.bd",
     zip_code: "2490",
   },
   {
@@ -3933,7 +3442,6 @@ const upazilas: Upazila[] = [
     district_id: "63",
     name: "Netrokona Sadar",
     bn_name: "নেত্রকোণা সদর",
-    url: "netrokonasadar.netrokona.gov.bd",
     zip_code: "2400",
   },
   {
@@ -3941,7 +3449,6 @@ const upazilas: Upazila[] = [
     district_id: "8",
     name: "Eidgaon",
     bn_name: "ঈদগাঁও",
-    url: "null",
     zip_code: "4703",
   },
   {
@@ -3949,7 +3456,6 @@ const upazilas: Upazila[] = [
     district_id: "38",
     name: "Madhyanagar",
     bn_name: "মধ্যনগর",
-    url: "null",
     zip_code: "3085",
   },
   {
@@ -3957,7 +3463,6 @@ const upazilas: Upazila[] = [
     district_id: "49",
     name: "Dasar",
     bn_name: "ডাসার",
-    url: "null",
     zip_code: "7940",
   },
   {
@@ -3965,7 +3470,6 @@ const upazilas: Upazila[] = [
     district_id: "46",
     name: "Dhaka Sadar",
     bn_name: "ঢাকা সদর",
-    url: "dhaka.gov.bd",
     zip_code: "1000",
   },
 ];

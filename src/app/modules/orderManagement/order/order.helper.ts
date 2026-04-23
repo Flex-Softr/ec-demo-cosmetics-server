@@ -953,6 +953,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
       shipping: {
         fullName: "$shippingData.fullName",
         phoneNumber: "$shippingData.phoneNumber",
+        email: "$shippingData.email",
         fullAddress: "$shippingData.fullAddress",
         upazila: "$shippingData.upazila",
         district: "$shippingData.district",

@@ -5,8 +5,16 @@ import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
+import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
+import { getPathaoStatusByConsignmentId } from "../../../utilities/couriers/pathao";
+import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
+import { getSteadfastStatusByInvoice } from "../../../utilities/couriers/steadfast";
+import { schedulePickOnSteadfastBulk } from "../../../utilities/couriers/steadfastBulk";
+import formatShippingAddress from "../../../utilities/formatShippingAddress";
 import { convertIso } from "../../../utilities/ISOConverter";
+import triggerCancelEvent from "../../../utilities/triggerCancelEvent";
 import { TJwtPayload } from "../../authManagement/auth/auth.interface";
+import { TCourier } from "../../courier/courier.interface";
 import { Courier } from "../../courier/courier.model";
 import { PaymentMethod } from "../../paymentMethod/paymentMethod.model";
 import { TInventory } from "../../productManagement/inventory/inventory.interface";
@@ -14,6 +22,8 @@ import { InventoryModel } from "../../productManagement/inventory/inventory.mode
 import { calculateStockStatus } from "../../productManagement/inventory/inventory.utils";
 import { TPrice } from "../../productManagement/price/price.interface";
 import ProductModel from "../../productManagement/product/product.model";
+import { TVariation } from "../../productManagement/variation/variation.interface";
+import VariationModel from "../../productManagement/variation/variation.model";
 import { User } from "../../userManagement/user/user.model";
 import { Warranty } from "../../warrantyManagement/warranty/warranty.model";
 import { OrderPayment } from "../orderPayment/orderPayment.model";
@@ -33,16 +43,6 @@ import {
   TSMSReceiverInfo,
 } from "./order.interface";
 import { Order } from "./order.model";
-import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
-import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
-import { getSteadfastStatusByInvoice } from "../../../utilities/couriers/steadfast";
-import { getPathaoStatusByConsignmentId } from "../../../utilities/couriers/pathao";
-import { schedulePickOnSteadfastBulk } from "../../../utilities/couriers/steadfastBulk";
-import formatShippingAddress from "../../../utilities/formatShippingAddress";
-import triggerCancelEvent from "../../../utilities/triggerCancelEvent";
-import { TCourier } from "../../courier/courier.interface";
-import { TVariation } from "../../productManagement/variation/variation.interface";
-import VariationModel from "../../productManagement/variation/variation.model";
 import {
   createNewOrder,
   deleteWarrantyFromOrder,
@@ -849,7 +849,17 @@ const getAllOrdersForCustomer = async (user: TOptionalAuthGuardPayload) => {
   pipeline.push(...customerPipeline.slice(2));
 
   const result = await Order.aggregate(pipeline);
-  return result;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return result.map((order: any) => {
+    if (order.shipping) {
+      order.shipping.fullAddress = formatShippingAddress(
+        order.shipping,
+        undefined,
+        true
+      );
+    }
+    return order;
+  });
 };
 
 /* -----------------------------------------
@@ -2136,6 +2146,9 @@ const getOrderTrackingInfo = async (orderId: string) => {
           fullName: "$shippingData.fullName",
           fullAddress: "$shippingData.fullAddress",
           phoneNumber: "$shippingData.phoneNumber",
+          email: "$shippingData.email",
+          upazila: "$shippingData.upazila",
+          district: "$shippingData.district",
         },
         parcelTrackingLink: {
           $cond: {
@@ -2163,6 +2176,10 @@ const getOrderTrackingInfo = async (orderId: string) => {
 
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Order not found");
+  }
+
+  if (result && result.shipping) {
+    result.shipping.fullAddress = formatShippingAddress(result.shipping);
   }
 
   const updatedStatusHistory = (
