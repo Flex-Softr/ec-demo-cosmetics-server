@@ -16,6 +16,8 @@ const session = wrapper(
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+      Accept: "application/json",
+      "X-Requested-With": "XMLHttpRequest",
     },
   })
 );
@@ -53,7 +55,16 @@ const pathaoFraudCheck = async (phone: string) => {
       await login();
     }
 
-    const response = await session.post("/api/v1/user/success", { phone });
+    const response = await session.post(
+      "/api/v1/user/success",
+      { phone },
+      {
+        headers: {
+          Referer: "https://merchant.pathao.com/fraud-check",
+          Origin: "https://merchant.pathao.com",
+        },
+      }
+    );
     return response.data;
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
