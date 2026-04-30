@@ -1,16 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 import axios, { AxiosError } from "axios";
-import { wrapper } from "axios-cookiejar-support";
+import { HttpsCookieAgent } from "http-cookie-agent/http";
 import * as cheerio from "cheerio";
 import { CookieJar } from "tough-cookie";
-import https from "https";
 import config from "../../../config/config";
 
 const API_BASE_URL = "https://steadfast.com.bd";
 
-// Create a custom HTTPS agent to mimic browser TLS fingerprint
-const httpsAgent = new https.Agent({
+// Create a cookie jar instance for session management
+const cookieJar = new CookieJar();
+
+// Create a custom HTTPS agent that supports both cookies and browser-like TLS fingerprint
+const httpsAgent = new HttpsCookieAgent({
+  cookies: { jar: cookieJar },
   ciphers: [
     "TLS_AES_256_GCM_SHA384",
     "TLS_CHACHA20_POLY1300_SHA256",
@@ -32,37 +35,32 @@ const httpsAgent = new https.Agent({
   minVersion: "TLSv1.2",
 });
 
-// Create a cookie jar instance for session management
-const cookieJar = new CookieJar();
-const session = wrapper(
-  axios.create({
-    baseURL: API_BASE_URL,
-    withCredentials: true,
-    httpsAgent,
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      Accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Accept-Encoding": "gzip, deflate, br",
-      Connection: "keep-alive",
-      "Sec-Ch-Ua":
-        '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-      "Sec-Ch-Ua-Mobile": "?0",
-      "Sec-Ch-Ua-Platform": '"Windows"',
-      "Sec-Fetch-Dest": "document",
-      "Sec-Fetch-Mode": "navigate",
-      "Sec-Fetch-Site": "none",
-      "Sec-Fetch-User": "?1",
-      "Upgrade-Insecure-Requests": "1",
-      "Cache-Control": "max-age=0",
-    },
-    jar: cookieJar,
-    maxRedirects: 5,
-    timeout: 30000,
-  })
-);
+const session = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  httpsAgent,
+  headers: {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    Accept:
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    Connection: "keep-alive",
+    "Sec-Ch-Ua":
+      '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": '"Windows"',
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
+    "Cache-Control": "max-age=0",
+  },
+  maxRedirects: 5,
+  timeout: 30000,
+});
 
 // Function to check if logged in
 async function isLoggedIn() {
