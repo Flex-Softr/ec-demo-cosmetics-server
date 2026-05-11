@@ -135,7 +135,7 @@ const getCourierShipmentOrdersForAdmin = catchAsync(
 
 const getMonitorDeliveryOrdersForAdmin = catchAsync(
   async (req: Request, res: Response) => {
-    const { countsByStatus, meta, data } =
+    const { countsByStatus, countsByCourier, meta, data } =
       await OrderServices.getMonitorDeliveryOrders(
         req.query as unknown as Record<string, string>
       );
@@ -145,6 +145,7 @@ const getMonitorDeliveryOrdersForAdmin = catchAsync(
       meta,
       data: {
         countsByStatus,
+        countsByCourier,
         data,
       },
     });

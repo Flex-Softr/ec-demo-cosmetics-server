@@ -17,7 +17,12 @@ const parcelStatusHandler = async (req: Request) => {
 
   let token: string | undefined;
 
-  const validProviders: TShippingMethodSlug[] = ["steadfast", "redx", "pathao"];
+  const validProviders: TShippingMethodSlug[] = [
+    "steadfast",
+    "redx",
+    "pathao",
+    "paperfly",
+  ];
 
   if (!validProviders.includes(provider)) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid provider.");

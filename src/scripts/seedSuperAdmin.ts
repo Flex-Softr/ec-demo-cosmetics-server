@@ -203,6 +203,15 @@ const shippingMethodProviders = [
     slug: "redx",
     credentials: [{ key: "API-ACCESS-TOKEN", value: "" }],
   },
+  {
+    name: "Paperfly",
+    slug: "paperfly",
+    credentials: [
+      { key: "username", value: "" },
+      { key: "password", value: "", need_to_hash: false },
+      { key: "paperflykey", value: "" },
+    ],
+  },
 ];
 
 export default seedSuperAdmin;

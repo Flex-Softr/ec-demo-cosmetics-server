@@ -6,6 +6,7 @@ import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TOptionalAuthGuardPayload } from "../../../types/common";
 import optionalAuthUserQuery from "../../../types/optionalAuthUserQuery";
 import { TSchedulePickRequestBody } from "../../../types/schedulePickup";
+import { getPaperflyStatusByReference } from "../../../utilities/couriers/paperfly";
 import { getPathaoStatusByConsignmentId } from "../../../utilities/couriers/pathao";
 import { schedulePickup } from "../../../utilities/couriers/schedulePickup";
 import { getSteadfastStatusByInvoice } from "../../../utilities/couriers/steadfast";
@@ -461,6 +462,12 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
     matchQuery.deliveryStatus = query?.deliveryStatus as string;
   }
 
+  if (query.courierId) {
+    matchQuery["courierDetails.courierProvider"] = new mongoose.Types.ObjectId(
+      query.courierId
+    );
+  }
+
   if (query.startFrom) {
     const startTime = convertIso(query.startFrom);
     matchQuery.createdAt = {
@@ -503,7 +510,7 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
   const data = await orderQuery.model;
   const total =
     (await Order.aggregate([
-      { $match: { status: "on courier" } },
+      { $match: { status: "on courier", ...matchQuery } },
       { $count: "total" },
     ]))![0]?.total || 0;
   const meta = orderQuery.metaData(total);
@@ -514,6 +521,7 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
       $match: {
         deliveryStatus: { $exists: true, $ne: null },
         status: "on courier",
+        ...matchQuery,
       },
     },
     {
@@ -538,7 +546,48 @@ const getMonitorDeliveryOrders = async (query: Record<string, string>) => {
     total,
   }));
 
-  return { countsByStatus: formattedCount, meta, data };
+  // Count by courier provider with name
+  const courierCountRes = await Order.aggregate([
+    {
+      $match: {
+        status: "on courier",
+        "courierDetails.courierProvider": { $exists: true, $ne: null },
+        ...(query.deliveryStatus
+          ? { deliveryStatus: query.deliveryStatus }
+          : {}),
+      },
+    },
+    {
+      $group: {
+        _id: "$courierDetails.courierProvider",
+        total: { $sum: 1 },
+      },
+    },
+    {
+      $lookup: {
+        from: "couriers",
+        localField: "_id",
+        foreignField: "_id",
+        as: "courier",
+      },
+    },
+    { $unwind: { path: "$courier", preserveNullAndEmptyArrays: false } },
+    {
+      $project: {
+        _id: 1,
+        name: "$courier.name",
+        slug: "$courier.slug",
+        total: 1,
+      },
+    },
+  ]);
+
+  return {
+    countsByStatus: formattedCount,
+    countsByCourier: courierCountRes,
+    meta,
+    data,
+  };
 };
 
 /* -----------------------------------------
@@ -2783,6 +2832,33 @@ const syncOrderCourierStatus = async (id: string) => {
         updatedData.status = "returned";
       } else if (lowerStatus === "partial-delivery") {
         updatedData.status = "partial completed";
+      }
+    }
+  } else if (courier.slug === "paperfly") {
+    const result = await getPaperflyStatusByReference(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      courier as any,
+      order.orderId
+    );
+
+    if (result) {
+      if (result.Delivered) {
+        updatedData.status = "completed";
+        updatedData.deliveryStatus = "Delivered";
+      } else if (result.Returned) {
+        updatedData.status = "returned";
+        updatedData.deliveryStatus = "Returned";
+      } else if (result.Partial) {
+        updatedData.status = "partial completed";
+        updatedData.deliveryStatus = "Partial Delivered";
+      } else if (result.PickedForDelivery) {
+        updatedData.deliveryStatus = "Picked for Delivery";
+      } else if (result.inTransit) {
+        updatedData.deliveryStatus = "In Transit";
+      } else if (result.ReceivedAtPoint) {
+        updatedData.deliveryStatus = "Received at Point";
+      } else {
+        updatedData.deliveryStatus = "Pending";
       }
     }
   } else {

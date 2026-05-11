@@ -7,6 +7,7 @@ import {
 import { schedulePickOnPathao } from "./pathao";
 import { schedulePickOnRedx } from "./redx";
 import { schedulePickOnSteadfast } from "./steadfast";
+import { schedulePickOnPaperfly } from "./paperfly";
 
 export const schedulePickup = async (
   shippingMethod: TShippingMethod,
@@ -20,6 +21,9 @@ export const schedulePickup = async (
     return result;
   } else if (shippingMethod.slug === "pathao") {
     const result = await schedulePickOnPathao(shippingMethod, payload);
+    return result;
+  } else if (shippingMethod.slug === "paperfly") {
+    const result = await schedulePickOnPaperfly(shippingMethod, payload);
     return result;
   }
   throw new Error(`Unsupported shipping method: ${shippingMethod.slug}`);
