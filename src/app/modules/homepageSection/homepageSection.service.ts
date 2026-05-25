@@ -18,7 +18,7 @@ const getAllHomepageSections = async (query: Record<string, unknown>) => {
 
   const result = await HomepageSectionModel.find(filter)
     .populate("collectionId")
-    .sort({ sortOrder: 1 });
+    .sort({ sortOrder: 1, updatedAt: -1 });
   return result;
 };
 
