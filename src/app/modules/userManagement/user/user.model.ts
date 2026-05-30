@@ -64,7 +64,6 @@ const UserSchema = new Schema<TUser, TUserModel>(
       default: "active",
     },
   },
-
   {
     timestamps: true,
   }
