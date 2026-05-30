@@ -36,6 +36,11 @@ import { UserRoutes } from "../modules/userManagement/user/user.routes";
 import { WarrantyRoutes } from "../modules/warrantyManagement/warranty/warranty.routes";
 import { WarrantyClaimRoutes } from "../modules/warrantyManagement/warrantyClaim/warrantyClaim.routes";
 import WebhookRoutes from "../modules/webhook/webhook.route";
+import { BlogQAcategoryRoutes } from "../modules/blog&QA/blog&QACategory/blog&QACategory.routes";
+import { BlogQATagRoutes } from "../modules/blog&QA/blog&QATag/blog&QATag.routes";
+import { BlogPostRoutes } from "../modules/blog&QA/blog/blogPost.route";
+import { QnARoutes } from "../modules/blog&QA/qna/qna.route";
+import { BlogQATopicRoutes } from "../modules/blog&QA/blogQAtopic/blogQATopic.route";
 
 type TModuleTypes = {
   path: string;
@@ -192,6 +197,27 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/health",
     route: MonitoringRoutes,
+  },
+  // blog and qa module
+  {
+    path: "/blog-qa-categories",
+    route: BlogQAcategoryRoutes,
+  },
+  {
+    path: "/blog-qa-tags",
+    route: BlogQATagRoutes,
+  },
+  {
+    path: "/blog-posts",
+    route: BlogPostRoutes,
+  },
+  {
+    path: "/qna",
+    route: QnARoutes,
+  },
+  {
+    path: "/blog-qa-topics",
+    route: BlogQATopicRoutes,
   },
 ];
 
