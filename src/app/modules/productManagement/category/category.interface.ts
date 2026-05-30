@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { TSeoData } from "../../seo/seo.interface";
 
 export type TCategory = {
   _id?: Types.ObjectId;
@@ -6,6 +7,7 @@ export type TCategory = {
   slug: string;
   image: Types.ObjectId;
   description: string;
+  seo?: TSeoData;
   parent: Types.ObjectId | null;
   level: number;
   sortOrder: number;

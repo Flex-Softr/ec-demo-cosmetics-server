@@ -3,7 +3,6 @@ import {
   TProduct,
   TProductAttribute,
   TProductImage,
-  TSeoData,
   TTag,
   TWarrantyInfo,
 } from "./product.interface";
@@ -14,6 +13,7 @@ import { AttributeModel } from "../attribute/attribute.model";
 import { BrandModel } from "../brand/brand.model";
 import { CategoryModel } from "../category/category.model";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
+import { productSeoDataSchema } from "../../seo/seo.model";
 
 const productImageSchema = new Schema<TProductImage>(
   {
@@ -41,16 +41,6 @@ const warrantyInfoSchema = new Schema<TWarrantyInfo>(
       unit: { type: String },
     },
     terms: { type: String },
-  },
-  { _id: false }
-);
-
-const seoDataSchema = new Schema<TSeoData>(
-  {
-    focusKeyphrase: { type: String },
-    metaTitle: { type: String },
-    slug: { type: String },
-    metaDescription: { type: String },
   },
   { _id: false }
 );
@@ -117,7 +107,7 @@ export const productSchema = new Schema<TProduct>(
     //   featured: { type: Boolean, default: false },
     // },
     tag: [tagSchema],
-    seoData: seoDataSchema,
+    seoData: productSeoDataSchema,
     publishedStatus: {
       type: String,
       enum: Object.values(PRODUCT_STATUS),

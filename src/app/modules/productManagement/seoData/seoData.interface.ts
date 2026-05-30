@@ -1,6 +1,1 @@
-export type TSeoData = {
-  focusKeyphrase: string;
-  metaTitle: string;
-  slug: string;
-  metaDescription: string;
-};
+export type { TProductSeoData as TSeoData } from "../../seo/seo.interface";

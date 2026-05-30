@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { InventoryValidation } from "../inventory/inventory.validation";
+import { productSeoValidationSchema } from "../../seo/seo.validation";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
 
 const createProductAttribute = z.object({
@@ -91,14 +92,7 @@ const product = z.object({
           })
         )
         .optional(),
-      seoData: z
-        .object({
-          focusKeyphrase: z.string().optional(),
-          metaTitle: z.string().optional(),
-          slug: z.string().optional(),
-          metaDescription: z.string().optional(),
-        })
-        .optional(),
+      seoData: productSeoValidationSchema.optional(),
       offer: z
         .object({
           flash: z.boolean().optional(),
@@ -172,14 +166,7 @@ const updateProduct = z.object({
         })
       )
       .optional(),
-    seoData: z
-      .object({
-        focusKeyphrase: z.string().optional(),
-        metaTitle: z.string().optional(),
-        slug: z.string().optional(),
-        metaDescription: z.string().optional(),
-      })
-      .optional(),
+    seoData: productSeoValidationSchema.optional(),
     offer: z
       .object({
         flash: z.boolean().optional(),
