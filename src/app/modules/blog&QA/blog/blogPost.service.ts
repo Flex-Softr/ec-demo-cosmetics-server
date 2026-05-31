@@ -1,7 +1,38 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TBlogPost } from "./blogPost.interface";
 import { BlogPost } from "./blogPost.model";
+import SeoModel from "../../seo/seo.model";
+
+const createOrAttachSeo = async (payload: any) => {
+  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
+    const val = payload.seo;
+    if (val && typeof val === "object" && Object.keys(val).length > 0) {
+      const [seoDoc] = await SeoModel.create([val]);
+      payload.seo = seoDoc._id;
+    } else {
+      delete payload.seo;
+    }
+  }
+};
+
+const updateOrAttachSeo = async (existing: any, payload: any) => {
+  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
+    const val = payload.seo;
+    if (val && typeof val === "object" && Object.keys(val).length > 0) {
+      if (existing.seo) {
+        await SeoModel.findByIdAndUpdate(existing.seo, { $set: val });
+        delete payload.seo;
+      } else {
+        const [seoDoc] = await SeoModel.create([val]);
+        payload.seo = seoDoc._id;
+      }
+    } else {
+      delete payload.seo;
+    }
+  }
+};
 
 const createBlogPost = async (payload: TBlogPost) => {
   const existing = await BlogPost.findOne({ slug: payload.slug });
@@ -16,6 +47,9 @@ const createBlogPost = async (payload: TBlogPost) => {
   if (payload.status === "published" && !payload.publishedAt) {
     payload.publishedAt = new Date();
   }
+
+  // attach or create seo document
+  await createOrAttachSeo(payload);
 
   const result = await BlogPost.create(payload);
   return result;
@@ -149,6 +183,9 @@ const updateBlogPost = async (id: string, payload: Partial<TBlogPost>) => {
   ) {
     payload.publishedAt = new Date();
   }
+
+  // attach or update seo document
+  await updateOrAttachSeo(existing as any, payload as any);
 
   const result = await BlogPost.findByIdAndUpdate(
     id,

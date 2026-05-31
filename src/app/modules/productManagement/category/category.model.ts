@@ -2,7 +2,6 @@ import httpStatus from "http-status";
 import { Schema, model } from "mongoose";
 import ApiError from "../../../errorHandlers/ApiError";
 import { ImageModel } from "../../image/image.model";
-import { seoDataSchema } from "../../seo/seo.model";
 import { TCategory } from "./category.interface";
 
 const categorySchema = new Schema<TCategory>(
@@ -11,7 +10,7 @@ const categorySchema = new Schema<TCategory>(
     slug: { type: String, required: true, unique: true },
     image: { type: Schema.Types.ObjectId, ref: "Image" },
     description: { type: String },
-    seo: seoDataSchema,
+    seo: { type: Schema.Types.ObjectId, ref: "Seo" },
     parent: {
       type: Schema.Types.ObjectId,
       ref: "Category",

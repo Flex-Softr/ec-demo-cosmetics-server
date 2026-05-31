@@ -1,5 +1,5 @@
 import { Model, Types } from "mongoose";
-import { TSeoData } from "../../seo/seo.interface";
+import { TSeo } from "../../seo/seo.interface";
 
 export type TQnA = {
   question: string;
@@ -9,7 +9,7 @@ export type TQnA = {
   category: Types.ObjectId;
   tags?: Types.ObjectId[];
   relatedQuestions?: Types.ObjectId[];
-  seo?: TSeoData;
+  seo?: TSeo;
   status: "draft" | "published" | "archived";
   views: number;
 };

@@ -1,5 +1,5 @@
 import { Model, Types } from "mongoose";
-import { TSeoData } from "../../seo/seo.interface";
+import { TSeo } from "../../seo/seo.interface";
 
 export type TBlogPost = {
   title: string;
@@ -12,7 +12,7 @@ export type TBlogPost = {
   tags?: Types.ObjectId[];
   author: Types.ObjectId;
   relatedBlogs?: Types.ObjectId[];
-  seo?: TSeoData;
+  seo?: TSeo;
   status: "draft" | "published" | "archived";
   publishedAt?: Date;
   views: number;

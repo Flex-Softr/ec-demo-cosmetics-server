@@ -1,11 +1,7 @@
-export type TSeoData = {
+export type TSeo = {
   metaTitle?: string;
   metaDescription?: string;
   keywords?: string[];
+  canonicalUrl?: string;
   schemaMarkup?: string;
-};
-
-export type TProductSeoData = TSeoData & {
-  focusKeyphrase?: string;
-  slug?: string;
 };

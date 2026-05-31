@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import { seoDataSchema } from "../../seo/seo.model";
 import {
   TBlogQAcategory,
   TBlogQAcategoryModel,
@@ -22,7 +21,7 @@ const blogQAcategorySchema = new Schema<TBlogQAcategory, TBlogQAcategoryModel>(
     description: {
       type: String,
     },
-    seo: seoDataSchema,
+    seo: { type: Schema.Types.ObjectId, ref: "Seo" },
     status: {
       type: String,
       enum: ["active", "inactive"],

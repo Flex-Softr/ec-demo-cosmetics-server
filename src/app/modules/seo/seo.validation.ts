@@ -4,10 +4,6 @@ export const seoValidationSchema = z.object({
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   keywords: z.array(z.string()).optional(),
+  canonicalUrl: z.string().url().optional(),
   schemaMarkup: z.string().optional(),
-});
-
-export const productSeoValidationSchema = seoValidationSchema.extend({
-  focusKeyphrase: z.string().optional(),
-  slug: z.string().optional(),
 });

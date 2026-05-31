@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
-import { TProductSeoData } from "../../seo/seo.interface";
+import { TSeo } from "../../seo/seo.interface";
 // import { TAttribute } from "../attribute/attribute.interface";
 import { TInventory } from "../inventory/inventory.interface";
 import { TPrice } from "../price/price.interface";
@@ -66,7 +66,7 @@ export type TProduct = {
     today: boolean;
     featured: boolean;
   };
-  seoData?: TProductSeoData;
+  seo?: TSeo;
   publishedStatus: TPublishedStatus;
   createdBy: Types.ObjectId;
   updatedBy?: Types.ObjectId;
@@ -125,7 +125,7 @@ export type TProductPayload = {
     label: string;
     value: string;
   }[];
-  seoData?: TProductSeoData;
+  seo?: TSeo;
   offer?: {
     flash: boolean;
     today: boolean;

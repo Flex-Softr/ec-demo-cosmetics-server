@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import { seoDataSchema } from "../../seo/seo.model";
 import { TBlogPost, TBlogPostModel } from "./blogPost.interface";
 
 const blogPostSchema = new Schema<TBlogPost, TBlogPostModel>(
@@ -52,7 +51,7 @@ const blogPostSchema = new Schema<TBlogPost, TBlogPostModel>(
         ref: "BlogPost",
       },
     ],
-    seo: seoDataSchema,
+    seo: { type: Schema.Types.ObjectId, ref: "Seo" },
     status: {
       type: String,
       enum: ["draft", "published", "archived"],

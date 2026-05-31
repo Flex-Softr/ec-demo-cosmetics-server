@@ -172,8 +172,8 @@ export const commonProductProjection = {
   },
   // sku: "$inventory.sku",
   // stockAvailable: "$inventory.stockAvailable",
-  // totalReview: { $size: "$review" },
-  // averageRating: { $avg: "$review.rating" },
+  totalReview: { $size: "$review" },
+  averageRating: { $avg: "$review.rating" },
   thumbnail: {
     _id: "$thumbnail._id",
     src: "$thumbnail.src",
@@ -527,14 +527,14 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       pipeline: [{ $project: { name: 1, slug: 1 } }],
     },
   },
-  // {
-  //   $lookup: {
-  //     from: "reviews",
-  //     localField: "_id",
-  //     foreignField: "product",
-  //     as: "review",
-  //   },
-  // },
+  {
+    $lookup: {
+      from: "reviews",
+      localField: "_id",
+      foreignField: "product",
+      as: "review",
+    },
+  },
 ];
 
 export const stripHtmlAndEntities = (str: string): string => {

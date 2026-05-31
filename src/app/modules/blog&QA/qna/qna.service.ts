@@ -2,6 +2,38 @@ import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TQnA } from "./qna.interface";
 import { QnA } from "./qna.model";
+import SeoModel from "../../seo/seo.model";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createOrAttachSeo = async (payload: any) => {
+  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
+    const val = payload.seo;
+    if (val && typeof val === "object" && Object.keys(val).length > 0) {
+      const [seoDoc] = await SeoModel.create([val]);
+      payload.seo = seoDoc._id;
+    } else {
+      delete payload.seo;
+    }
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const updateOrAttachSeo = async (existing: any, payload: any) => {
+  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
+    const val = payload.seo;
+    if (val && typeof val === "object" && Object.keys(val).length > 0) {
+      if (existing.seo) {
+        await SeoModel.findByIdAndUpdate(existing.seo, { $set: val });
+        delete payload.seo;
+      } else {
+        const [seoDoc] = await SeoModel.create([val]);
+        payload.seo = seoDoc._id;
+      }
+    } else {
+      delete payload.seo;
+    }
+  }
+};
 
 const createQnA = async (payload: TQnA) => {
   const existing = await QnA.findOne({ slug: payload.slug });
@@ -11,6 +43,9 @@ const createQnA = async (payload: TQnA) => {
       "A Q&A with this slug already exists"
     );
   }
+
+  // attach or create seo doc
+  await createOrAttachSeo(payload);
 
   const result = await QnA.create(payload);
   return result;
@@ -134,6 +169,10 @@ const updateQnA = async (id: string, payload: Partial<TQnA>) => {
       );
     }
   }
+
+  // attach or update seo doc
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await updateOrAttachSeo(existing as any, payload as any);
 
   const result = await QnA.findByIdAndUpdate(
     id,

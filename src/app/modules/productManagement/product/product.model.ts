@@ -13,7 +13,6 @@ import { AttributeModel } from "../attribute/attribute.model";
 import { BrandModel } from "../brand/brand.model";
 import { CategoryModel } from "../category/category.model";
 import { PRODUCT_STATUS, PRODUCT_TYPE } from "./product.const";
-import { productSeoDataSchema } from "../../seo/seo.model";
 
 const productImageSchema = new Schema<TProductImage>(
   {
@@ -70,7 +69,7 @@ export const productSchema = new Schema<TProduct>(
     // usageGuidelines: { type: String },
     previewLink: { type: String },
     featured: { type: Boolean, default: false },
-    // review: { type: Boolean, default: false },
+    review: { type: Boolean, default: true },
     price: {
       type: Schema.Types.ObjectId,
       required: function () {
@@ -107,7 +106,7 @@ export const productSchema = new Schema<TProduct>(
     //   featured: { type: Boolean, default: false },
     // },
     tag: [tagSchema],
-    seoData: productSeoDataSchema,
+    seo: { type: Schema.Types.ObjectId, ref: "Seo" },
     publishedStatus: {
       type: String,
       enum: Object.values(PRODUCT_STATUS),

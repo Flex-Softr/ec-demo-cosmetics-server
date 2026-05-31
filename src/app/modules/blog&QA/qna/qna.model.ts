@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import { seoDataSchema } from "../../seo/seo.model";
 import { TQnA, TQnAModel } from "./qna.interface";
 
 const qnaSchema = new Schema<TQnA, TQnAModel>(
@@ -42,7 +41,7 @@ const qnaSchema = new Schema<TQnA, TQnAModel>(
         ref: "QnA",
       },
     ],
-    seo: seoDataSchema,
+    seo: { type: Schema.Types.ObjectId, ref: "Seo" },
     status: {
       type: String,
       enum: ["draft", "published", "archived"],

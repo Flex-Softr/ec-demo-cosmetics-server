@@ -6,7 +6,6 @@ import { AggregateQueryHelper } from "../../../helper/query.helper";
 import generateProductId from "../../../utilities/generateProductId";
 import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
-// import { SeoDataModel } from "../seoData/seoData.model";
 import { create } from "xmlbuilder2";
 import config from "../../../config/config";
 import {
@@ -27,6 +26,7 @@ import {
   formatPriceUpdatePayload,
   stripHtmlAndEntities,
 } from "./product.utils";
+import SeoModel from "../../seo/seo.model";
 
 const createProductIntoDB = async (
   createdBy: Types.ObjectId,
@@ -133,6 +133,11 @@ const createProductIntoDB = async (
     });
 
     let product;
+
+    if (payload.seo) {
+      const [seoDoc] = await SeoModel.create([payload.seo], { session });
+      productData.seo = seoDoc._id;
+    }
 
     if (isProductDeleted) {
       product = await ProductModel.findByIdAndUpdate(
@@ -406,8 +411,8 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
               stockStatus: "$inventory.stockStatus",
               stockAvailable: "$inventory.stockAvailable",
               manageStock: "$inventory.manageStock",
-              // totalReview: { $size: "$review" },
-              // averageRating: { $avg: "$review.rating" },
+              totalReview: { $size: "$review" },
+              averageRating: { $avg: "$review.rating" },
               thumbnail: {
                 _id: "$thumbnail._id",
                 src: "$thumbnail.src",
@@ -899,7 +904,7 @@ const updateProductIntoDB = async (
       price,
       image,
       inventory,
-      // seoData,
+      seo,
       publishedStatus,
       attributes,
       brand,
@@ -1186,14 +1191,6 @@ const updateProductIntoDB = async (
       }
     }
 
-    // if (seoData && Object.keys(seoData).length) {
-    //   await SeoDataModel.findByIdAndUpdate(
-    //     isProductExist.seoData,
-    //     { $set: { ...seoData, updatedBy } },
-    //     { session }
-    //   );
-    // }
-
     const updateImage: Record<string, unknown> = {};
     if (image && Object.keys(image).length) {
       for (const [key, value] of Object.entries(image)) {
@@ -1220,6 +1217,17 @@ const updateProductIntoDB = async (
     // if (tag?.length) {
     //   updateTag = tag;
     // }
+    const updateSeo: Record<string, unknown> = {};
+    if (isProductExist.seo) {
+      await SeoModel.findByIdAndUpdate(
+        isProductExist.seo,
+        { $set: { ...seo, updatedBy } },
+        { session }
+      );
+    } else {
+      const [seoDoc] = await SeoModel.create([seo], { session });
+      updateSeo.seo = seoDoc._id;
+    }
 
     const product = await ProductModel.findByIdAndUpdate(
       isProductExist._id,
@@ -1231,6 +1239,7 @@ const updateProductIntoDB = async (
           tag: updateTag,
           variations: variationIds,
           ...updateWarrantyInfo,
+          ...updateSeo,
           ...(publishedStatus && { publishedStatus }),
           ...remainingUpdateData,
           updatedBy,
