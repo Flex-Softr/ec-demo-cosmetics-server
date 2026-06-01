@@ -1,5 +1,4 @@
 import httpStatus from "http-status";
-
 import { TBlogQATopic } from "./blogQATopic.interface";
 import { BlogQATopic } from "./blogQATopic.model";
 import ApiError from "../../../errorHandlers/ApiError";
@@ -35,6 +34,7 @@ const getAllBlogQATopics = async (query: Record<string, unknown>) => {
 
   const [data, total] = await Promise.all([
     BlogQATopic.find(filter)
+      .populate("category", "name slug")
       .skip(skip)
       .limit(Number(limit))
       .sort({ createdAt: -1 }),
@@ -61,7 +61,10 @@ const getBlogQATopicById = async (id: string) => {
 };
 
 const getBlogQATopicBySlug = async (slug: string) => {
-  const result = await BlogQATopic.findOne({ slug });
+  const result = await BlogQATopic.findOne({ slug }).populate(
+    "category",
+    "name slug"
+  );
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Blog QA topic not found");
   }

@@ -15,6 +15,7 @@ const blogQATopicSchema = new Schema<TBlogQATopic, TBlogQATopicModel>(
       trim: true,
       lowercase: true,
     },
+    category: { type: Schema.Types.ObjectId, ref: "BlogQACategory" },
     description: {
       type: String,
     },

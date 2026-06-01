@@ -1,11 +1,11 @@
 import { Model } from "mongoose";
-import { TSeoData } from "../../seo/seo.interface";
+import { TSeo } from "../../seo/seo.interface";
 
 export type TBlogQAcategory = {
   name: string;
   slug: string;
   description?: string;
-  seo?: TSeoData;
+  seo?: TSeo;
   status: "active" | "inactive";
 };
 

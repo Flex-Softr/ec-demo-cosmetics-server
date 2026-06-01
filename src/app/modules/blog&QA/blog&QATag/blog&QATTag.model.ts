@@ -15,10 +15,6 @@ const blogQATagSchema = new Schema<TBlogQATag, TBlogQATagModel>(
       trim: true,
       lowercase: true,
     },
-    description: {
-      type: String,
-    },
-    seo: { type: Schema.Types.ObjectId, ref: "Seo" },
     status: {
       type: String,
       enum: ["active", "inactive"],
