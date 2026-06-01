@@ -330,6 +330,18 @@ export const commonPipelineSingleProduct = (
     },
   },
   {
+    $lookup: {
+      from: "seos",
+      localField: "seo",
+      foreignField: "_id",
+      as: "seo",
+      pipeline: [{ $project: { createdAt: 0, updatedAt: 0 } }],
+    },
+  },
+  {
+    $unwind: { path: "$seo", preserveNullAndEmptyArrays: true },
+  },
+  {
     $unwind: "$thumbnail",
   },
   {
@@ -407,6 +419,7 @@ export const commonPipelineSingleProduct = (
       relatedProducts: 1,
       warranty: 1,
       warrantyInfo: 1,
+      seo: "$seo",
       publishedStatus: 1,
       createdAt: 1,
       updatedAt: 1,
