@@ -5,6 +5,7 @@ import catchAsync from "../../../utilities/catchAsync";
 import successResponse from "../../../utilities/successResponse";
 
 const createQnA = catchAsync(async (req: Request, res: Response) => {
+  req.body.createdBy = req.user?.id || req.user?._id;
   const result = await QnAService.createQnA(req.body);
 
   successResponse(res, {

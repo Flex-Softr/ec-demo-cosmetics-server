@@ -24,16 +24,20 @@ const qnaSchema = new Schema<TQnA, TQnAModel>(
       ref: "BlogQACategory",
       required: true,
     },
+    topic: {
+      type: Schema.Types.ObjectId,
+      ref: "BlogQATopic",
+      required: true,
+    },
     tags: [
       {
         type: Schema.Types.ObjectId,
         ref: "BlogQATag",
       },
     ],
-    author: {
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     relatedQuestions: [
       {

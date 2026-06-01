@@ -2,38 +2,9 @@ import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TQnA } from "./qna.interface";
 import { QnA } from "./qna.model";
-import SeoModel from "../../seo/seo.model";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createOrAttachSeo = async (payload: any) => {
-  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
-    const val = payload.seo;
-    if (val && typeof val === "object" && Object.keys(val).length > 0) {
-      const [seoDoc] = await SeoModel.create([val]);
-      payload.seo = seoDoc._id;
-    } else {
-      delete payload.seo;
-    }
-  }
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const updateOrAttachSeo = async (existing: any, payload: any) => {
-  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
-    const val = payload.seo;
-    if (val && typeof val === "object" && Object.keys(val).length > 0) {
-      if (existing.seo) {
-        await SeoModel.findByIdAndUpdate(existing.seo, { $set: val });
-        delete payload.seo;
-      } else {
-        const [seoDoc] = await SeoModel.create([val]);
-        payload.seo = seoDoc._id;
-      }
-    } else {
-      delete payload.seo;
-    }
-  }
-};
+import { createOrAttachSeo, updateOrAttachSeo } from "../../seo/seo.util";
+import { BlogQAcategory } from "../blog&QACategory/blog&QACategory.model";
+import { BlogQATag } from "../blog&QATag/blog&QATTag.model";
 
 const createQnA = async (payload: TQnA) => {
   const existing = await QnA.findOne({ slug: payload.slug });
@@ -55,7 +26,7 @@ const getAllQnAs = async (query: Record<string, unknown>) => {
   const {
     status,
     category,
-    author,
+    topic,
     tags,
     page = 1,
     limit = 10,
@@ -67,9 +38,31 @@ const getAllQnAs = async (query: Record<string, unknown>) => {
   const filter: Record<string, unknown> = {};
 
   if (status) filter.status = status;
-  if (category) filter.category = category;
-  if (author) filter.author = author;
-  if (tags) filter.tags = { $in: Array.isArray(tags) ? tags : [tags] };
+  if (category) {
+    const isId = /^[0-9a-fA-F]{24}$/.test(String(category));
+    if (isId) {
+      filter.category = category;
+    } else {
+      const cat = await BlogQAcategory.findOne({ slug: category }).select(
+        "_id"
+      );
+      if (cat) filter.category = cat._id;
+      else filter.category = null;
+    }
+  }
+  if (topic) filter.topic = topic;
+  if (tags) {
+    const rawTags = Array.isArray(tags) ? tags : [tags];
+    const areIds = rawTags.every((t) => /^[0-9a-fA-F]{24}$/.test(String(t)));
+    if (areIds) {
+      filter.tags = { $in: rawTags };
+    } else {
+      const tagDocs = await BlogQATag.find({ slug: { $in: rawTags } }).select(
+        "_id"
+      );
+      filter.tags = { $in: tagDocs.map((t) => t._id) };
+    }
+  }
 
   if (search) {
     filter.$or = [
@@ -86,11 +79,24 @@ const getAllQnAs = async (query: Record<string, unknown>) => {
   const [data, total] = await Promise.all([
     QnA.find(filter)
       .populate("category", "name slug")
+      .populate("topic", "name slug")
       .populate("tags", "name slug")
-      .populate("author", "name email")
-      .populate("relatedBlogs", "title slug")
-      .populate("relatedQuestions", "question slug")
+      .populate("createdBy", "name email")
+      .populate({
+        path: "relatedBlogs",
+        select: "title slug category topic",
+        populate: [
+          { path: "category", select: "name slug" },
+          { path: "topic", select: "name slug" },
+        ],
+      })
+      .populate({
+        path: "relatedQuestions",
+        select: "question slug topic",
+        populate: { path: "topic", select: "name slug" },
+      })
       .populate("relatedBooks", "title slug")
+      .populate("seo")
       .skip(skip)
       .limit(Number(limit))
       .sort(sort),
@@ -111,11 +117,24 @@ const getAllQnAs = async (query: Record<string, unknown>) => {
 const getQnAById = async (id: string) => {
   const result = await QnA.findById(id)
     .populate("category", "name slug")
+    .populate("topic", "name slug")
     .populate("tags", "name slug")
-    .populate("author", "name email")
-    .populate("relatedBlogs", "title slug excerpt")
-    .populate("relatedQuestions", "question slug")
-    .populate("relatedBooks", "title slug");
+    .populate("createdBy", "name email")
+    .populate({
+      path: "relatedBlogs",
+      select: "title slug excerpt category topic",
+      populate: [
+        { path: "category", select: "name slug" },
+        { path: "topic", select: "name slug" },
+      ],
+    })
+    .populate({
+      path: "relatedQuestions",
+      select: "question slug topic",
+      populate: { path: "topic", select: "name slug" },
+    })
+    .populate("relatedBooks", "title slug")
+    .populate("seo");
 
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Q&A not found");
@@ -127,11 +146,24 @@ const getQnAById = async (id: string) => {
 const getQnABySlug = async (slug: string) => {
   const result = await QnA.findOne({ slug })
     .populate("category", "name slug")
+    .populate("topic", "name slug")
     .populate("tags", "name slug")
-    .populate("author", "name email")
-    .populate("relatedBlogs", "title slug excerpt")
-    .populate("relatedQuestions", "question slug")
-    .populate("relatedBooks", "title slug");
+    .populate("createdBy", "name email")
+    .populate({
+      path: "relatedBlogs",
+      select: "title slug excerpt category topic",
+      populate: [
+        { path: "category", select: "name slug" },
+        { path: "topic", select: "name slug" },
+      ],
+    })
+    .populate({
+      path: "relatedQuestions",
+      select: "question slug topic",
+      populate: { path: "topic", select: "name slug" },
+    })
+    .populate("relatedBooks", "title slug")
+    .populate("seo");
 
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Q&A not found");
@@ -180,8 +212,10 @@ const updateQnA = async (id: string, payload: Partial<TQnA>) => {
     { new: true, runValidators: true }
   )
     .populate("category", "name slug")
+    .populate("topic", "name slug")
     .populate("tags", "name slug")
-    .populate("author", "name email");
+    .populate("createdBy", "name email")
+    .populate("seo");
 
   return result;
 };

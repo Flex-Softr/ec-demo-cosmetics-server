@@ -5,8 +5,9 @@ export type TQnA = {
   question: string;
   slug: string;
   answer: string;
-  author?: Types.ObjectId;
+  createdBy?: Types.ObjectId;
   category: Types.ObjectId;
+  topic?: Types.ObjectId;
   tags?: Types.ObjectId[];
   relatedQuestions?: Types.ObjectId[];
   seo?: TSeo;
