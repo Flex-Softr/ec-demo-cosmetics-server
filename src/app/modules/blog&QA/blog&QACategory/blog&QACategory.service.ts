@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TBlogQAcategory } from "./blog&QACategory.interface";
 import { BlogQAcategory } from "./blog&QACategory.model";
+import { createOrAttachSeo, updateOrAttachSeo } from "../../seo/seo.util";
 
 const createBlogQAcategory = async (payload: TBlogQAcategory) => {
   const existing = await BlogQAcategory.findOne({ slug: payload.slug });
@@ -12,8 +13,11 @@ const createBlogQAcategory = async (payload: TBlogQAcategory) => {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await createOrAttachSeo(payload as any);
+
   const result = await BlogQAcategory.create(payload);
-  return result;
+  return result.populate("seo");
 };
 
 const getAllBlogQAcategories = async (query: Record<string, unknown>) => {
@@ -34,6 +38,7 @@ const getAllBlogQAcategories = async (query: Record<string, unknown>) => {
 
   const [data, total] = await Promise.all([
     BlogQAcategory.find(filter)
+      .populate("seo")
       .skip(skip)
       .limit(Number(limit))
       .sort({ createdAt: -1 }),
@@ -52,7 +57,7 @@ const getAllBlogQAcategories = async (query: Record<string, unknown>) => {
 };
 
 const getBlogQAcategoryById = async (id: string) => {
-  const result = await BlogQAcategory.findById(id);
+  const result = await BlogQAcategory.findById(id).populate("seo");
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Blog category not found");
   }
@@ -60,7 +65,7 @@ const getBlogQAcategoryById = async (id: string) => {
 };
 
 const getBlogQAcategoryBySlug = async (slug: string) => {
-  const result = await BlogQAcategory.findOne({ slug });
+  const result = await BlogQAcategory.findOne({ slug }).populate("seo");
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Blog category not found");
   }
@@ -76,7 +81,6 @@ const updateBlogQAcategory = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Blog category not found");
   }
 
-  // Check slug uniqueness if slug is being updated
   if (payload.slug && payload.slug !== existing.slug) {
     const slugTaken = await BlogQAcategory.findOne({ slug: payload.slug });
     if (slugTaken) {
@@ -87,11 +91,14 @@ const updateBlogQAcategory = async (
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await updateOrAttachSeo(existing as any, payload as any);
+
   const result = await BlogQAcategory.findByIdAndUpdate(
     id,
     { $set: payload },
     { new: true, runValidators: true }
-  );
+  ).populate("seo");
 
   return result;
 };

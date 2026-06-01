@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import { TBlogQATopic } from "./blogQATopic.interface";
 import { BlogQATopic } from "./blogQATopic.model";
 import ApiError from "../../../errorHandlers/ApiError";
+import { createOrAttachSeo, updateOrAttachSeo } from "../../seo/seo.util";
 
 const createBlogQATopic = async (payload: TBlogQATopic) => {
   const existing = await BlogQATopic.findOne({ slug: payload.slug });
@@ -12,8 +13,14 @@ const createBlogQATopic = async (payload: TBlogQATopic) => {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await createOrAttachSeo(payload as any);
+
   const result = await BlogQATopic.create(payload);
-  return result;
+  return result.populate([
+    { path: "category", select: "name slug" },
+    { path: "seo" },
+  ]);
 };
 
 const getAllBlogQATopics = async (query: Record<string, unknown>) => {
@@ -35,6 +42,7 @@ const getAllBlogQATopics = async (query: Record<string, unknown>) => {
   const [data, total] = await Promise.all([
     BlogQATopic.find(filter)
       .populate("category", "name slug")
+      .populate("seo")
       .skip(skip)
       .limit(Number(limit))
       .sort({ createdAt: -1 }),
@@ -53,7 +61,9 @@ const getAllBlogQATopics = async (query: Record<string, unknown>) => {
 };
 
 const getBlogQATopicById = async (id: string) => {
-  const result = await BlogQATopic.findById(id);
+  const result = await BlogQATopic.findById(id)
+    .populate("category", "name slug")
+    .populate("seo");
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Blog QA topic not found");
   }
@@ -61,10 +71,9 @@ const getBlogQATopicById = async (id: string) => {
 };
 
 const getBlogQATopicBySlug = async (slug: string) => {
-  const result = await BlogQATopic.findOne({ slug }).populate(
-    "category",
-    "name slug"
-  );
+  const result = await BlogQATopic.findOne({ slug })
+    .populate("category", "name slug")
+    .populate("seo");
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Blog QA topic not found");
   }
@@ -90,11 +99,16 @@ const updateBlogQATopic = async (
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await updateOrAttachSeo(existing as any, payload as any);
+
   const result = await BlogQATopic.findByIdAndUpdate(
     id,
     { $set: payload },
     { new: true, runValidators: true }
-  );
+  )
+    .populate("category", "name slug")
+    .populate("seo");
 
   return result;
 };

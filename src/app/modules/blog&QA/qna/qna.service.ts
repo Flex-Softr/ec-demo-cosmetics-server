@@ -83,19 +83,10 @@ const getAllQnAs = async (query: Record<string, unknown>) => {
       .populate("tags", "name slug")
       .populate("createdBy", "name email")
       .populate({
-        path: "relatedBlogs",
-        select: "title slug category topic",
-        populate: [
-          { path: "category", select: "name slug" },
-          { path: "topic", select: "name slug" },
-        ],
-      })
-      .populate({
         path: "relatedQuestions",
         select: "question slug topic",
         populate: { path: "topic", select: "name slug" },
       })
-      .populate("relatedBooks", "title slug")
       .populate("seo")
       .skip(skip)
       .limit(Number(limit))
@@ -121,19 +112,10 @@ const getQnAById = async (id: string) => {
     .populate("tags", "name slug")
     .populate("createdBy", "name email")
     .populate({
-      path: "relatedBlogs",
-      select: "title slug excerpt category topic",
-      populate: [
-        { path: "category", select: "name slug" },
-        { path: "topic", select: "name slug" },
-      ],
-    })
-    .populate({
       path: "relatedQuestions",
       select: "question slug topic",
       populate: { path: "topic", select: "name slug" },
     })
-    .populate("relatedBooks", "title slug")
     .populate("seo");
 
   if (!result) {
@@ -150,19 +132,10 @@ const getQnABySlug = async (slug: string) => {
     .populate("tags", "name slug")
     .populate("createdBy", "name email")
     .populate({
-      path: "relatedBlogs",
-      select: "title slug excerpt category topic",
-      populate: [
-        { path: "category", select: "name slug" },
-        { path: "topic", select: "name slug" },
-      ],
-    })
-    .populate({
       path: "relatedQuestions",
       select: "question slug topic",
       populate: { path: "topic", select: "name slug" },
     })
-    .populate("relatedBooks", "title slug")
     .populate("seo");
 
   if (!result) {
