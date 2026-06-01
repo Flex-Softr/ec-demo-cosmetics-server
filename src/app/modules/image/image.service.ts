@@ -1,8 +1,8 @@
-import fsEx from "fs-extra";
 import { Types } from "mongoose";
-import path from "path";
 import config from "../../config/config";
 import { QueryHelper } from "../../helper/query.helper";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { r2Client } from "../../config/r2.config";
 import { TImage } from "./image.interface";
 import { ImageModel } from "./image.model";
 
@@ -15,7 +15,8 @@ const getAnImageFromDB = async (id: string) => {
   if (id != "undefined") {
     const result = await ImageModel.findById(id, "_id src alt").lean();
     if (result) {
-      result.src = config.image_base_url + "/" + result.src;
+      const baseUrl = config.r2?.publicDomain || config.image_base_url;
+      result.src = baseUrl + "/" + result.src;
     }
     return result;
   } else {
@@ -24,17 +25,23 @@ const getAnImageFromDB = async (id: string) => {
 };
 
 const getAllImagesFromDB = async (query: Record<string, unknown>) => {
-  const imageQuery = new QueryHelper<TImage>(
-    ImageModel.find({ isDeleted: false }),
-    query
-  )
+  const filter: Record<string, unknown> = { isDeleted: false };
+  if (query.purpose) {
+    if (query.purpose === "product" || query.purpose === "blog") {
+      filter.purpose = { $in: [query.purpose, "general"] };
+    } else {
+      filter.purpose = query.purpose;
+    }
+  }
+  const imageQuery = new QueryHelper<TImage>(ImageModel.find(filter), query)
     .sort()
     .paginate();
   const data: TImage[] = (await imageQuery.model.lean()) as unknown as TImage[];
   const meta = await imageQuery.metaData();
+  const baseUrl = config.r2?.publicDomain || config.image_base_url;
   const formattedData = data.map((img: TImage) => ({
     ...img,
-    src: config.image_base_url + "/" + img.src,
+    src: baseUrl + "/" + img.src,
   }));
   return { meta, data: formattedData };
 };
@@ -50,8 +57,16 @@ const deleteImagesFromDB = async (
         isDeleted: true,
       });
       if (result) {
-        const folderPath = path.parse(result.src).dir;
-        fsEx.remove(folderPath);
+        try {
+          const command = new DeleteObjectCommand({
+            Bucket: config.r2.bucketName,
+            Key: result.src,
+          });
+          await r2Client.send(command);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to delete object from R2:", error);
+        }
       }
     });
   }
