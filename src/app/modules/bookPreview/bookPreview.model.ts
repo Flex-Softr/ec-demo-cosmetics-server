@@ -11,6 +11,12 @@ const bookPreviewSchema = new Schema<TBookPreview>(
       type: String,
       required: true,
     },
+    previewType: {
+      type: String,
+      enum: ["short", "full", "free"],
+      default: "short",
+      index: true,
+    },
     uploadedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

@@ -1,8 +1,8 @@
-import fsEx from "fs-extra";
 import { Types } from "mongoose";
-import path from "path";
 import config from "../../config/config";
 import { QueryHelper } from "../../helper/query.helper";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { r2Client } from "../../config/r2.config";
 import { TBookPreview } from "./bookPreview.interface";
 import { BookPreviewModel } from "./bookPreview.model";
 
@@ -15,7 +15,8 @@ const getABookPreviewFromDB = async (id: string) => {
   if (id != "undefined") {
     const result = await BookPreviewModel.findById(id, "_id src alt").lean();
     if (result) {
-      result.src = config.image_base_url + "/" + result.src;
+      const baseUrl = config.r2?.publicDomain || config.image_base_url;
+      result.src = baseUrl + "/" + result.src;
     }
     return result;
   } else {
@@ -24,8 +25,12 @@ const getABookPreviewFromDB = async (id: string) => {
 };
 
 const getAllBookPreviewsFromDB = async (query: Record<string, unknown>) => {
+  const filter: Record<string, unknown> = { isDeleted: false };
+  if (query.previewType) {
+    filter.previewType = query.previewType;
+  }
   const previewQuery = new QueryHelper<TBookPreview>(
-    BookPreviewModel.find({ isDeleted: false }),
+    BookPreviewModel.find(filter),
     query
   )
     .search(["alt"])
@@ -34,9 +39,10 @@ const getAllBookPreviewsFromDB = async (query: Record<string, unknown>) => {
   const data: TBookPreview[] =
     (await previewQuery.model.lean()) as unknown as TBookPreview[];
   const meta = await previewQuery.metaData();
+  const baseUrl = config.r2?.publicDomain || config.image_base_url;
   const formattedData = data.map((item: TBookPreview) => ({
     ...item,
-    src: config.image_base_url + "/" + item.src,
+    src: baseUrl + "/" + item.src,
   }));
   return { meta, data: formattedData };
 };
@@ -52,8 +58,16 @@ const deleteBookPreviewsFromDB = async (
         isDeleted: true,
       });
       if (result) {
-        const folderPath = path.parse(result.src).dir;
-        fsEx.remove(folderPath);
+        try {
+          const command = new DeleteObjectCommand({
+            Bucket: config.r2.bucketName,
+            Key: result.src,
+          });
+          await r2Client.send(command);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to delete object from R2:", error);
+        }
       }
     });
   }
