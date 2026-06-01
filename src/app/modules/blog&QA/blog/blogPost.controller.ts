@@ -5,7 +5,8 @@ import catchAsync from "../../../utilities/catchAsync";
 import successResponse from "../../../utilities/successResponse";
 
 const createBlogPost = catchAsync(async (req: Request, res: Response) => {
-  const result = await BlogPostService.createBlogPost(req.body);
+  const createdBy = req.user?.id || req.user?._id;
+  const result = await BlogPostService.createBlogPost(createdBy, req.body);
 
   successResponse(res, {
     statusCode: httpStatus.CREATED,

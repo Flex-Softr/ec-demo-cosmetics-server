@@ -30,16 +30,20 @@ const blogPostSchema = new Schema<TBlogPost, TBlogPostModel>(
       ref: "BlogQACategory",
       required: true,
     },
+    topic: {
+      type: Schema.Types.ObjectId,
+      ref: "BlogQATopic",
+      required: true,
+    },
     tags: [
       {
         type: Schema.Types.ObjectId,
         ref: "BlogQATag",
       },
     ],
-    author: {
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     featuredImage: {
       type: Schema.Types.ObjectId,

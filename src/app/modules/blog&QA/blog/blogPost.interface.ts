@@ -9,8 +9,9 @@ export type TBlogPost = {
   excerpt?: string;
   readTime: number;
   category: Types.ObjectId;
+  topic?: Types.ObjectId;
   tags?: Types.ObjectId[];
-  author: Types.ObjectId;
+  createdBy?: Types.ObjectId;
   relatedBlogs?: Types.ObjectId[];
   seo?: TSeo;
   status: "draft" | "published" | "archived";

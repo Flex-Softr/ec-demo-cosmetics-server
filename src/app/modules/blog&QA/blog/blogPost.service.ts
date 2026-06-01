@@ -3,38 +3,11 @@ import httpStatus from "http-status";
 import ApiError from "../../../errorHandlers/ApiError";
 import { TBlogPost } from "./blogPost.interface";
 import { BlogPost } from "./blogPost.model";
-import SeoModel from "../../seo/seo.model";
+import { createOrAttachSeo, updateOrAttachSeo } from "../../seo/seo.util";
+import { BlogQAcategory } from "../blog&QACategory/blog&QACategory.model";
+import { BlogQATag } from "../blog&QATag/blog&QATTag.model";
 
-const createOrAttachSeo = async (payload: any) => {
-  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
-    const val = payload.seo;
-    if (val && typeof val === "object" && Object.keys(val).length > 0) {
-      const [seoDoc] = await SeoModel.create([val]);
-      payload.seo = seoDoc._id;
-    } else {
-      delete payload.seo;
-    }
-  }
-};
-
-const updateOrAttachSeo = async (existing: any, payload: any) => {
-  if (payload && Object.prototype.hasOwnProperty.call(payload, "seo")) {
-    const val = payload.seo;
-    if (val && typeof val === "object" && Object.keys(val).length > 0) {
-      if (existing.seo) {
-        await SeoModel.findByIdAndUpdate(existing.seo, { $set: val });
-        delete payload.seo;
-      } else {
-        const [seoDoc] = await SeoModel.create([val]);
-        payload.seo = seoDoc._id;
-      }
-    } else {
-      delete payload.seo;
-    }
-  }
-};
-
-const createBlogPost = async (payload: TBlogPost) => {
+const createBlogPost = async (createdBy: string, payload: TBlogPost) => {
   const existing = await BlogPost.findOne({ slug: payload.slug });
   if (existing) {
     throw new ApiError(
@@ -51,16 +24,15 @@ const createBlogPost = async (payload: TBlogPost) => {
   // attach or create seo document
   await createOrAttachSeo(payload);
 
-  const result = await BlogPost.create(payload);
+  const result = await BlogPost.create({ ...payload, createdBy });
   return result;
 };
 
 const getAllBlogPosts = async (query: Record<string, unknown>) => {
   const {
     status,
-    postType,
     category,
-    author,
+    topic,
     tags,
     page = 1,
     limit = 10,
@@ -72,10 +44,32 @@ const getAllBlogPosts = async (query: Record<string, unknown>) => {
   const filter: Record<string, unknown> = {};
 
   if (status) filter.status = status;
-  if (postType) filter.postType = postType;
-  if (category) filter.category = category;
-  if (author) filter.author = author;
-  if (tags) filter.tags = { $in: Array.isArray(tags) ? tags : [tags] };
+  if (category) {
+    // resolve slug to _id if needed
+    const isId = /^[0-9a-fA-F]{24}$/.test(String(category));
+    if (isId) {
+      filter.category = category;
+    } else {
+      const cat = await BlogQAcategory.findOne({ slug: category }).select(
+        "_id"
+      );
+      if (cat) filter.category = cat._id;
+      else filter.category = null; // no match → return empty
+    }
+  }
+  if (topic) filter.topic = topic;
+  if (tags) {
+    const rawTags = Array.isArray(tags) ? tags : [tags];
+    const areIds = rawTags.every((t) => /^[0-9a-fA-F]{24}$/.test(String(t)));
+    if (areIds) {
+      filter.tags = { $in: rawTags };
+    } else {
+      const tagDocs = await BlogQATag.find({ slug: { $in: rawTags } }).select(
+        "_id"
+      );
+      filter.tags = { $in: tagDocs.map((t) => t._id) };
+    }
+  }
 
   if (search) {
     filter.$or = [
@@ -93,10 +87,19 @@ const getAllBlogPosts = async (query: Record<string, unknown>) => {
   const [data, total] = await Promise.all([
     BlogPost.find(filter)
       .populate("category", "name slug")
+      .populate("topic", "name slug")
       .populate("tags", "name slug")
-      .populate("author", "name email")
+      .populate("createdBy", "name email")
       .populate("featuredImage", "src alt")
-      .populate("relatedBlogs", "title slug")
+      .populate("seo")
+      .populate({
+        path: "relatedBlogs",
+        select: "title slug featuredImage excerpt category topic",
+        populate: [
+          { path: "category", select: "name slug" },
+          { path: "topic", select: "name slug" },
+        ],
+      })
       .skip(skip)
       .limit(Number(limit))
       .sort(sort),
@@ -117,10 +120,19 @@ const getAllBlogPosts = async (query: Record<string, unknown>) => {
 const getBlogPostById = async (id: string) => {
   const result = await BlogPost.findById(id)
     .populate("category", "name slug")
+    .populate("topic", "name slug")
     .populate("tags", "name slug")
-    .populate("author", "name email")
+    .populate("createdBy", "name email")
     .populate("featuredImage", "src alt")
-    .populate("relatedBlogs", "title slug featuredImage excerpt");
+    .populate("seo")
+    .populate({
+      path: "relatedBlogs",
+      select: "title slug featuredImage excerpt category topic",
+      populate: [
+        { path: "category", select: "name slug" },
+        { path: "topic", select: "name slug" },
+      ],
+    });
 
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Blog post not found");
@@ -132,10 +144,19 @@ const getBlogPostById = async (id: string) => {
 const getBlogPostBySlug = async (slug: string) => {
   const result = await BlogPost.findOne({ slug })
     .populate("category", "name slug")
+    .populate("topic", "name slug")
     .populate("tags", "name slug")
-    .populate("author", "name email")
+    .populate("createdBy", "name email")
     .populate("featuredImage", "src alt")
-    .populate("relatedBlogs", "title slug featuredImage excerpt");
+    .populate({
+      path: "relatedBlogs",
+      select: "title slug featuredImage excerpt category topic",
+      populate: [
+        { path: "category", select: "name slug" },
+        { path: "topic", select: "name slug" },
+      ],
+    })
+    .populate("seo");
 
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Blog post not found");
@@ -194,7 +215,8 @@ const updateBlogPost = async (id: string, payload: Partial<TBlogPost>) => {
   )
     .populate("category", "name slug")
     .populate("tags", "name slug")
-    .populate("author", "name email");
+    .populate("createdBy", "name email")
+    .populate("seo");
 
   return result;
 };
