@@ -149,7 +149,9 @@ export const commonProductProjection = {
               {
                 $size: {
                   $filter: {
-                    input: "$variations.inventory.stockStatus",
+                    input: {
+                      $ifNull: ["$variations.inventory.stockStatus", []],
+                    },
                     as: "status",
                     cond: {
                       $in: [
@@ -172,8 +174,8 @@ export const commonProductProjection = {
   },
   // sku: "$inventory.sku",
   // stockAvailable: "$inventory.stockAvailable",
-  totalReview: { $size: "$review" },
-  averageRating: { $avg: "$review.rating" },
+  totalReview: { $size: { $ifNull: ["$review", []] } },
+  averageRating: { $avg: { $ifNull: ["$review.rating", []] } },
   thumbnail: {
     _id: "$thumbnail._id",
     src: "$thumbnail.src",
