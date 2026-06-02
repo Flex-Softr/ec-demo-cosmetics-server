@@ -595,7 +595,7 @@ const getBestSellingProductsFromDB = async (query: Record<string, unknown>) => {
         pipeline: [
           {
             $project: {
-              src: { $concat: [config.image_base_url, "/", "$src"] },
+              src: "$src",
               alt: 1,
             },
           },
@@ -1323,9 +1323,7 @@ const generateFacebookCatalogXML = async () => {
 
     // IMAGE
     const thumbnail = product?.image?.thumbnail as any;
-    const imageUrl = thumbnail?.src
-      ? `${config.image_base_url}/${thumbnail.src}`
-      : "";
+    const imageUrl = thumbnail?.src ? thumbnail.src : "";
 
     // SIMPLE PRODUCT
     if (product.type === "simple") {

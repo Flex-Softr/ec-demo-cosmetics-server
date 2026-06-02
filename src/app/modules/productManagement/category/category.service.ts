@@ -1,6 +1,5 @@
 import httpStatus from "http-status";
 import { PipelineStage, Types } from "mongoose";
-import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
 import ProductModel from "../product/product.model";
@@ -91,13 +90,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         createdAt: 1,
         image: {
           _id: "$image._id",
-          src: {
-            $cond: [
-              { $ifNull: ["$image.src", false] },
-              { $concat: [config.image_base_url, "/", "$image.src"] },
-              null,
-            ],
-          },
+          src: "$image.src",
           alt: "$image.alt",
         },
         descendants: {
@@ -273,13 +266,7 @@ const getSingleCategoryFromDB = async (id: string) => {
               slug: 1,
               image: {
                 _id: "$image._id",
-                src: {
-                  $cond: [
-                    { $ifNull: ["$image.src", false] },
-                    { $concat: [config.image_base_url, "/", "$image.src"] },
-                    null,
-                  ],
-                },
+                src: "$image.src",
                 alt: "$image.alt",
               },
               description: 1,

@@ -1,5 +1,4 @@
 import { PipelineStage } from "mongoose";
-import config from "../../config/config";
 import { getTimePeriod } from "../../utilities/getTimePeriod";
 import {
   orderSources,
@@ -331,7 +330,8 @@ const getBestSellingProductsFromDB = async () => {
         productId: "$_id",
         productName: "$product.title",
         productImage: {
-          $concat: [config.image_base_url, "/", "$productImage.src"],
+          src: "$productImage.src",
+          alt: "$productImage.alt",
         },
         stockAvailable: "$inventory.stockAvailable",
         totalSales: "$totalQuantity",

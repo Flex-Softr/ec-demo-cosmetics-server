@@ -1,6 +1,5 @@
 import httpStatus from "http-status";
 import { PipelineStage, Types } from "mongoose";
-import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
 import generateSlug from "../../../utilities/generateSlug";
@@ -45,9 +44,7 @@ const getAllCollectionsFromDB = async (query: Record<string, unknown>) => {
         pipeline: [
           {
             $project: {
-              src: {
-                $concat: [config.image_base_url || "", "/", "$src"],
-              },
+              src: "$src",
               alt: 1,
             },
           },
@@ -116,15 +113,6 @@ const getSingleCollectionFromDB = async (slug: string) => {
   const collection = await CollectionModel.findOne(query).populate({
     path: "image",
     select: "src alt",
-    transform: (doc) => {
-      if (doc) {
-        return {
-          ...doc.toObject(),
-          src: `${config.image_base_url}/${doc.src}`,
-        };
-      }
-      return doc;
-    },
   });
 
   if (!collection) {

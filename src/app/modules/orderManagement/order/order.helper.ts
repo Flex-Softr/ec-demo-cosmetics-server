@@ -285,13 +285,7 @@ const findOrderForUpdatingOrder = async (
                   product: "$orderedProducts.product",
                   productTitle: "$orderedProducts.productInfo.title",
                   image: {
-                    src: {
-                      $concat: [
-                        config.image_base_url,
-                        "/",
-                        "$orderedProducts.productInfo.productImage.src",
-                      ],
-                    },
+                    src: "$orderedProducts.productInfo.productImage.src",
                     alt: "$orderedProducts.productInfo.productImage.alt",
                   },
                   attributes: "$orderedProducts.attributes",
@@ -510,13 +504,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
               _id: "$paymentMethod._id",
               name: "$paymentMethod.name",
               image: {
-                src: {
-                  $concat: [
-                    config.image_base_url,
-                    "/",
-                    "$paymentMethodImage.src",
-                  ],
-                },
+                src: "$paymentMethodImage.src",
                 alt: "$paymentMethodImage.alt",
               },
             },
@@ -616,9 +604,7 @@ const orderDetailsPipeline = (): PipelineStage[] => [
             title: "$productInfo.title",
             slug: "$productInfo.slug",
             image: {
-              src: {
-                $concat: [config.image_base_url, "/", "$productThumb.src"],
-              },
+              src: "$productThumb.src",
               alt: "$productThumb.alt",
             },
             unitPrice: "$orderedProducts.unitPrice",
@@ -819,9 +805,7 @@ const orderStatusUpdatingPipeline = (
               productId: "$productInfo._id",
               title: "$productInfo.title",
               image: {
-                src: {
-                  $concat: [config.image_base_url, "/", "$productThumb.src"],
-                },
+                src: "$productThumb.src",
                 alt: "$productThumb.alt",
               },
               unitPrice: "$orderedProducts.unitPrice",
@@ -967,9 +951,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
         paymentMethod: {
           name: "$paymentMethod.name",
           image: {
-            src: {
-              $concat: [config.image_base_url, "/", "$paymentMethodImage.src"],
-            },
+            src: "$paymentMethodImage.src",
             alt: "$paymentMethodImage.alt",
           },
         },
@@ -1031,9 +1013,7 @@ const orderDetailsCustomerPipeline = (): PipelineStage[] => [
             title: "$productInfo.title",
             slug: "$productInfo.slug",
             image: {
-              src: {
-                $concat: [config.image_base_url, "/", "$productThumb.src"],
-              },
+              src: "$productThumb.src",
               alt: "$productThumb.alt",
             },
             unitPrice: "$orderedProducts.unitPrice",

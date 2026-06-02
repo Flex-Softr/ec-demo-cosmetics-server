@@ -1,6 +1,5 @@
 import httpStatus from "http-status";
 import { PipelineStage, Types } from "mongoose";
-import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { AggregateQueryHelper } from "../../../helper/query.helper";
 import { TBrand } from "./brand.interface";
@@ -81,7 +80,7 @@ const getAllBrandsFromDB = async (query?: Record<string, unknown>) => {
         isActive: 1,
         logo: {
           _id: "$logo._id",
-          src: { $concat: [config.image_base_url, "/", "$logo.src"] },
+          src: "$logo.src",
           alt: "$logo.alt",
         },
         productCount: 1,

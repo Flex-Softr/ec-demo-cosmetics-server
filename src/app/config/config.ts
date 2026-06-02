@@ -12,7 +12,6 @@ export default {
   DBUrl: env.DB_URL,
   clientSideURL: env.CLIENT_SIDE_URL,
   main_domain: env.MAIN_DOMAIN,
-  image_base_url: env.IMAGE_BASE_URL,
   companyInfo: {
     name: env.COMPANY_NAME,
     email: env.COMPANY_EMAIL,

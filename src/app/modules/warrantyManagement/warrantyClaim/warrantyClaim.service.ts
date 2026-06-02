@@ -20,7 +20,6 @@ import {
 } from "./warrantyClaim.interface";
 import { WarrantyClaim } from "./warrantyClaim.model";
 import { WarrantyClaimUtils } from "./warrantyClaim.utils";
-import config from "../../../config/config";
 
 const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
   if (!query.sort) {
@@ -80,9 +79,7 @@ const getAllWarrantyClaimReqFromDB = async (query: Record<string, string>) => {
                 input: "$videosAndImages",
                 as: "media",
                 in: {
-                  path: {
-                    $concat: [config.image_base_url, "/", "$$media.path"],
-                  },
+                  path: "$$media.path",
                   fileType: "$$media.fileType",
                 },
               },

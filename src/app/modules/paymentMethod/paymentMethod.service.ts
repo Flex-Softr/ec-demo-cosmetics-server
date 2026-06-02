@@ -1,5 +1,4 @@
 import { PipelineStage } from "mongoose";
-import config from "../../config/config";
 import { TJwtPayload } from "../authManagement/auth/auth.interface";
 import { TPaymentMethod } from "./paymentMethod.interface";
 import { PaymentMethod } from "./paymentMethod.model";
@@ -32,7 +31,7 @@ const getAllPaymentMethodsFromDB = async (
         required_inputs: 1,
         logo: {
           _id: "$logo._id",
-          src: { $concat: [config.image_base_url, "/", "$logo.src"] },
+          src: "$logo.src",
           alt: "$logo.alt",
         },
         sortOrder: 1,

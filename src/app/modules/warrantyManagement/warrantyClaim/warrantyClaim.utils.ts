@@ -1,6 +1,5 @@
 import httpStatus from "http-status";
 import { PipelineStage, Types } from "mongoose";
-import config from "../../../config/config";
 import ApiError from "../../../errorHandlers/ApiError";
 import { Order } from "../../orderManagement/order/order.model";
 import { createOrderId } from "../../orderManagement/order/order.utils";
@@ -117,7 +116,7 @@ const getWarrantyData = async (
           title: "$productInfo.title",
           type: "$productInfo.type",
           image: {
-            src: { $concat: [config.image_base_url, "/", "$productThumb.src"] },
+            src: "$productThumb.src",
             alt: "$productThumb.alt",
           },
           warranty: {

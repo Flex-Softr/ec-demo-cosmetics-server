@@ -1,6 +1,5 @@
 import httpStatus from "http-status";
 import mongoose, { Types } from "mongoose";
-import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
 import { TOptionalAuthGuardPayload } from "../../types/common";
 import optionalAuthUserQuery from "../../types/optionalAuthUserQuery";
@@ -75,7 +74,7 @@ const getCartFromDB = async (user: TOptionalAuthGuardPayload) => {
         id: product?.id,
         title: product?.title,
         image: {
-          src: `${config.image_base_url}/${image?.src}`,
+          src: image?.src,
           alt: image?.alt,
         },
         slug: product?.slug,

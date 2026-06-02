@@ -1,5 +1,4 @@
 import { PipelineStage } from "mongoose";
-import config from "../../../config/config";
 import { STOCK_STATUS } from "../inventory/inventory.const";
 import { PRODUCT_TYPE } from "./product.const";
 
@@ -211,7 +210,7 @@ export const commonPipelineSingleProduct = (
       pipeline: [
         {
           $project: {
-            src: { $concat: [config.image_base_url, "/", "$src"] },
+            src: "$src",
             alt: 1,
           },
         },
@@ -227,7 +226,7 @@ export const commonPipelineSingleProduct = (
       pipeline: [
         {
           $project: {
-            src: { $concat: [config.image_base_url, "/", "$src"] },
+            src: "$src",
             alt: 1,
           },
         },
@@ -450,7 +449,7 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
       pipeline: [
         {
           $project: {
-            src: { $concat: [config.image_base_url, "/", "$src"] },
+            src: "$src",
             alt: 1,
           },
         },

@@ -13,11 +13,7 @@ const createImageIntoDB = async (payload: Partial<TImage[]>) => {
 
 const getAnImageFromDB = async (id: string) => {
   if (id != "undefined") {
-    const result = await ImageModel.findById(id, "_id src alt").lean();
-    if (result) {
-      const baseUrl = config.r2?.publicDomain || config.image_base_url;
-      result.src = baseUrl + "/" + result.src;
-    }
+    const result = await ImageModel.findById(id, "_id src alt");
     return result;
   } else {
     return {};
@@ -36,14 +32,9 @@ const getAllImagesFromDB = async (query: Record<string, unknown>) => {
   const imageQuery = new QueryHelper<TImage>(ImageModel.find(filter), query)
     .sort()
     .paginate();
-  const data: TImage[] = (await imageQuery.model.lean()) as unknown as TImage[];
+  const data: TImage[] = (await imageQuery.model) as unknown as TImage[];
   const meta = await imageQuery.metaData();
-  const baseUrl = config.r2?.publicDomain || config.image_base_url;
-  const formattedData = data.map((img: TImage) => ({
-    ...img,
-    src: baseUrl + "/" + img.src,
-  }));
-  return { meta, data: formattedData };
+  return { meta, data };
 };
 
 const deleteImagesFromDB = async (

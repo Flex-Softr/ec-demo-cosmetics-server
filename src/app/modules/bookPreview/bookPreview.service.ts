@@ -13,11 +13,7 @@ const createBookPreviewIntoDB = async (payload: Partial<TBookPreview[]>) => {
 
 const getABookPreviewFromDB = async (id: string) => {
   if (id != "undefined") {
-    const result = await BookPreviewModel.findById(id, "_id src alt").lean();
-    if (result) {
-      const baseUrl = config.r2?.publicDomain || config.image_base_url;
-      result.src = baseUrl + "/" + result.src;
-    }
+    const result = await BookPreviewModel.findById(id, "_id src alt");
     return result;
   } else {
     return {};
@@ -37,14 +33,9 @@ const getAllBookPreviewsFromDB = async (query: Record<string, unknown>) => {
     .sort()
     .paginate();
   const data: TBookPreview[] =
-    (await previewQuery.model.lean()) as unknown as TBookPreview[];
+    (await previewQuery.model) as unknown as TBookPreview[];
   const meta = await previewQuery.metaData();
-  const baseUrl = config.r2?.publicDomain || config.image_base_url;
-  const formattedData = data.map((item: TBookPreview) => ({
-    ...item,
-    src: baseUrl + "/" + item.src,
-  }));
-  return { meta, data: formattedData };
+  return { meta, data };
 };
 
 const deleteBookPreviewsFromDB = async (

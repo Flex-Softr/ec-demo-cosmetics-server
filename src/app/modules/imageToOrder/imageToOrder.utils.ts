@@ -1,5 +1,4 @@
 import { PipelineStage } from "mongoose";
-import config from "../../config/config";
 import { createOrderId } from "../orderManagement/order/order.utils";
 
 const createReqId = () => createOrderId();
@@ -18,7 +17,7 @@ const getRequestPipeline = (): PipelineStage[] => [
         $map: {
           input: "$images",
           as: "image",
-          in: { $concat: [config.image_base_url, "/", "$$image.path"] },
+          in: "$$image.path",
         },
       },
       contactStatus: 1,

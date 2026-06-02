@@ -1,8 +1,6 @@
 import { PipelineStage, Types } from "mongoose";
 import { TBannerSlider } from "./bannerSlider.interface";
-
 import httpStatus from "http-status";
-import config from "../../config/config";
 import ApiError from "../../errorHandlers/ApiError";
 import { BannerSliderModel } from "./bannerSlider.model";
 
@@ -51,7 +49,7 @@ const getBannerSliders = async (query?: Record<string, unknown>) => {
         name: 1,
         image: {
           _id: "$image._id",
-          src: { $concat: [config.image_base_url, "/", "$image.src"] },
+          src: "$image.src",
           alt: "$image.alt",
         },
         bannerLink: 1,
