@@ -1,13 +1,16 @@
 import { Router } from "express";
+import authGuard from "../../../middlewares/authGuard";
 import validateRequest from "../../../middlewares/validateRequest";
 import { QnAController } from "./qna.controller";
 import { QnAValidation } from "./qna.validation";
+import { ROLES } from "../../userManagement/user/user.const";
 
 const router = Router();
 
 // POST /api/qna
 router.post(
   "/",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
   validateRequest(QnAValidation.createQnASchema),
   QnAController.createQnA
 );
@@ -27,11 +30,16 @@ router.patch("/:id/views", QnAController.incrementQnAViews);
 // PATCH /api/qna/:id
 router.patch(
   "/:id",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
   validateRequest(QnAValidation.updateQnASchema),
   QnAController.updateQnA
 );
 
 // DELETE /api/qna/:id
-router.delete("/:id", QnAController.deleteQnA);
+router.delete(
+  "/:id",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
+  QnAController.deleteQnA
+);
 
 export const QnARoutes = router;

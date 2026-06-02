@@ -1,13 +1,16 @@
 import { Router } from "express";
+import authGuard from "../../../middlewares/authGuard";
 import { BlogPostController } from "./blogPost.controller";
 import { BlogPostValidation } from "./blogPost.validation";
 import validateRequest from "../../../middlewares/validateRequest";
+import { ROLES } from "../../userManagement/user/user.const";
 
 const router = Router();
 
 // POST /api/blog-posts
 router.post(
   "/",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
   validateRequest(BlogPostValidation.createBlogPostSchema),
   BlogPostController.createBlogPost
 );
@@ -27,11 +30,16 @@ router.patch("/:id/views", BlogPostController.incrementBlogPostViews);
 // PATCH /api/blog-posts/:id
 router.patch(
   "/:id",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
   validateRequest(BlogPostValidation.updateBlogPostSchema),
   BlogPostController.updateBlogPost
 );
 
 // DELETE /api/blog-posts/:id
-router.delete("/:id", BlogPostController.deleteBlogPost);
+router.delete(
+  "/:id",
+  authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
+  BlogPostController.deleteBlogPost
+);
 
 export const BlogPostRoutes = router;
