@@ -55,7 +55,7 @@ const getAllBlogQATopics = async (query: Record<string, unknown>) => {
       total,
       page: Number(page),
       limit: Number(limit),
-      totalPages: Math.ceil(total / Number(limit)),
+      totalPage: Math.ceil(total / Number(limit)),
     },
   };
 };

@@ -6,6 +6,7 @@ import { BlogPost } from "./blogPost.model";
 import { createOrAttachSeo, updateOrAttachSeo } from "../../seo/seo.util";
 import { BlogQAcategory } from "../blog&QACategory/blog&QACategory.model";
 import { BlogQATag } from "../blog&QATag/blog&QATTag.model";
+import { BlogQATopic } from "../blogQAtopic/blogQATopic.model";
 
 const createBlogPost = async (createdBy: string, payload: TBlogPost) => {
   const existing = await BlogPost.findOne({ slug: payload.slug });
@@ -57,7 +58,16 @@ const getAllBlogPosts = async (query: Record<string, unknown>) => {
       else filter.category = null; // no match → return empty
     }
   }
-  if (topic) filter.topic = topic;
+  if (topic) {
+    const isId = /^[0-9a-fA-F]{24}$/.test(String(topic));
+    if (isId) {
+      filter.topic = topic;
+    } else {
+      const topicDoc = await BlogQATopic.findOne({ slug: topic }).select("_id");
+      if (topicDoc) filter.topic = topicDoc._id;
+      else filter.topic = null; // no match → return empty
+    }
+  }
   if (tags) {
     const rawTags = Array.isArray(tags) ? tags : [tags];
     const areIds = rawTags.every((t) => /^[0-9a-fA-F]{24}$/.test(String(t)));
@@ -112,7 +122,7 @@ const getAllBlogPosts = async (query: Record<string, unknown>) => {
       total,
       page: Number(page),
       limit: Number(limit),
-      totalPages: Math.ceil(total / Number(limit)),
+      totalPage: Math.ceil(total / Number(limit)),
     },
   };
 };
