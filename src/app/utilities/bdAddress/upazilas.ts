@@ -3081,6 +3081,20 @@ const upazilas: Upazila[] = [
     zip_code: "5120",
   },
   {
+    id: "495",
+    district_id: "57",
+    name: "Ruhea",
+    bn_name: "রুহিয়া",
+    zip_code: "5103",
+  },
+  {
+    id: "496",
+    district_id: "57",
+    name: "Bhulli",
+    bn_name: "ভুল্লী",
+    zip_code: "5100",
+  },
+  {
     id: "439",
     district_id: "58",
     name: "Rangpur Sadar",
