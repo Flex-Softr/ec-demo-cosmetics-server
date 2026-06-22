@@ -1330,9 +1330,22 @@ const generateFacebookCatalogXML = async () => {
     }
 
     // Description fallback
-    const descriptionText = stripHtmlAndEntities(
-      product.shortDescription || product.description || product.title || ""
+    const firstCategoryName =
+      product.category && product.category.length > 0
+        ? (product.category as any[])[0].name
+        : "";
+    let descriptionText = stripHtmlAndEntities(
+      product.description ||
+        product.shortDescription ||
+        product.title ||
+        firstCategoryName ||
+        ""
     );
+
+    // Truncate to maximum 5000 characters for catalog feed
+    if (descriptionText.length > 5000) {
+      descriptionText = descriptionText.substring(0, 4997) + "...";
+    }
 
     // SIMPLE PRODUCT
     if (product.type === "simple") {
