@@ -1301,6 +1301,7 @@ const generateFacebookCatalogXML = async () => {
     .populate("price")
     .populate("inventory")
     .populate("brand")
+    .populate("category")
     .populate("variations")
     .populate("image.thumbnail");
 
@@ -1323,7 +1324,15 @@ const generateFacebookCatalogXML = async () => {
 
     // IMAGE
     const thumbnail = product?.image?.thumbnail as any;
-    const imageUrl = thumbnail?.src ? thumbnail.src : "";
+    let imageUrl = thumbnail?.src ? thumbnail.src : "";
+    if (imageUrl && !imageUrl.startsWith("http")) {
+      imageUrl = `https://api.${config.main_domain}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+    }
+
+    // Description fallback
+    const descriptionText = stripHtmlAndEntities(
+      product.shortDescription || product.description || product.title || ""
+    );
 
     // SIMPLE PRODUCT
     if (product.type === "simple") {
@@ -1332,26 +1341,32 @@ const generateFacebookCatalogXML = async () => {
 
       const finalPrice = price?.salePrice || price?.regularPrice || 0;
 
-      const availability =
-        inventory?.stockAvailable > 0 ? "in stock" : "out of stock";
+      let availability = "out of stock";
+      if (inventory?.stockStatus) {
+        availability =
+          inventory.stockStatus === "out_of_stock"
+            ? "out of stock"
+            : "in stock";
+      } else if (inventory?.stockAvailable > 0) {
+        availability = "in stock";
+      }
 
       const item = root.ele("item");
 
       item.ele("g:id").txt(product._id.toString()).up();
       item.ele("g:title").txt(stripHtmlAndEntities(product.title)).up();
-      item
-        .ele("g:description")
-        .txt(
-          stripHtmlAndEntities(
-            product.shortDescription || product.description || ""
-          )
-        )
-        .up();
+      item.ele("g:description").txt(descriptionText).up();
       item.ele("g:availability").txt(availability).up();
       item.ele("g:condition").txt("new").up();
-      item.ele("g:price").txt(`${finalPrice} BDT`).up();
+      item
+        .ele("g:price")
+        .txt(`${Number(finalPrice).toFixed(2)} BDT`)
+        .up();
       item.ele("g:link").txt(productUrl).up();
-      item.ele("g:image_link").txt(imageUrl).up();
+
+      if (imageUrl) {
+        item.ele("g:image_link").txt(imageUrl).up();
+      }
 
       if (product.brand) {
         item
@@ -1359,6 +1374,17 @@ const generateFacebookCatalogXML = async () => {
           .txt((product.brand as any).name)
           .up();
       }
+
+      if (product.category && product.category.length > 0) {
+        const categories = (product.category as any[])
+          .map((c) => c.name)
+          .join(" > ");
+        item.ele("g:google_product_category").txt(categories).up();
+        item.ele("g:product_type").txt(categories).up();
+      }
+
+      // Meta rules: Since no GTIN/MPN is present
+      item.ele("g:identifier_exists").txt("no").up();
     }
 
     // VARIABLE PRODUCT
@@ -1377,8 +1403,15 @@ const generateFacebookCatalogXML = async () => {
 
         const finalPrice = price?.salePrice || price?.regularPrice || 0;
 
-        const availability =
-          inventory?.stockAvailable > 0 ? "in stock" : "out of stock";
+        let availability = "out of stock";
+        if (inventory?.stockStatus) {
+          availability =
+            inventory.stockStatus === "out_of_stock"
+              ? "out of stock"
+              : "in stock";
+        } else if (inventory?.stockAvailable > 0) {
+          availability = "in stock";
+        }
 
         const variantId = `${product._id.toString()}-${variation._id.toString()}`;
 
@@ -1397,19 +1430,18 @@ const generateFacebookCatalogXML = async () => {
         }
 
         item.ele("g:title").txt(stripHtmlAndEntities(title)).up();
-        item
-          .ele("g:description")
-          .txt(
-            stripHtmlAndEntities(
-              product.shortDescription || product.description || ""
-            )
-          )
-          .up();
+        item.ele("g:description").txt(descriptionText).up();
         item.ele("g:availability").txt(availability).up();
         item.ele("g:condition").txt("new").up();
-        item.ele("g:price").txt(`${finalPrice} BDT`).up();
+        item
+          .ele("g:price")
+          .txt(`${Number(finalPrice).toFixed(2)} BDT`)
+          .up();
         item.ele("g:link").txt(productUrl).up();
-        item.ele("g:image_link").txt(imageUrl).up();
+
+        if (imageUrl) {
+          item.ele("g:image_link").txt(imageUrl).up();
+        }
 
         if (product.brand) {
           item
@@ -1417,6 +1449,17 @@ const generateFacebookCatalogXML = async () => {
             .txt((product.brand as any).name)
             .up();
         }
+
+        if (product.category && product.category.length > 0) {
+          const categories = (product.category as any[])
+            .map((c) => c.name)
+            .join(" > ");
+          item.ele("g:google_product_category").txt(categories).up();
+          item.ele("g:product_type").txt(categories).up();
+        }
+
+        // Meta rules: Since no GTIN/MPN is present
+        item.ele("g:identifier_exists").txt("no").up();
 
         // optional: color/size mapping
         if (variation.attributes) {
