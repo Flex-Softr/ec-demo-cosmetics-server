@@ -1,0 +1,11 @@
+Always use TypeScript.
+
+Use App Router.
+
+Use Zod.
+
+Use mongoose.
+
+Never use any.
+
+Use Server Components whenever possible.
