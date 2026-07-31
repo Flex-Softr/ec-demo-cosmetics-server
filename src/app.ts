@@ -18,6 +18,8 @@ import { requestLogger } from "./app/utilities/logger";
 
 const app: Application = express();
 
+const PATH_PREFIX = "server-api";
+
 const allowedOrigins =
   config.env === "production"
     ? config.clientSideURL?.split(",") || []
@@ -60,7 +62,7 @@ app.use(requestIp.mw());
 
 // Custom request logger
 app.use((req, res, next) => {
-  if (req.originalUrl.startsWith("/uploads")) {
+  if (req.originalUrl.startsWith(`/${PATH_PREFIX}/uploads`)) {
     return next();
   }
   const start = Date.now();
@@ -77,35 +79,35 @@ app.use((req, res, next) => {
 app.use(ecSIDHandler);
 
 // Root route
-app.get("/", (req, res) => {
+app.get(`/${PATH_PREFIX}`, (req, res) => {
   res.send(`Server is running on ${config.env} mode`);
 });
 
 // static files
 const uploadsPath = path.join(__dirname, "..", "uploads/public");
 app.use(
-  "/uploads/public",
+  `/${PATH_PREFIX}/uploads/public`,
   enableCrossOriginResourcePolicy,
   express.static(uploadsPath)
 );
 
 const previewsPath = path.join(__dirname, "..", "uploads/previews");
 app.use(
-  "/uploads/previews",
+  `/${PATH_PREFIX}/uploads/previews`,
   enableCrossOriginResourcePolicy,
   express.static(previewsPath)
 );
 
 const employProfilePicture = path.join(__dirname, "..", "uploads/employ");
 app.use(
-  "/uploads/employ",
+  `/${PATH_PREFIX}/uploads/employ`,
   enableCrossOriginResourcePolicy,
   express.static(employProfilePicture)
 );
 
 const imageToOrder = path.join(__dirname, "..", "uploads/image_to_order");
 app.use(
-  "/uploads/image_to_order",
+  `/${PATH_PREFIX}/uploads/image_to_order`,
   enableCrossOriginResourcePolicy,
   express.static(imageToOrder)
 );
@@ -117,16 +119,16 @@ const warrantyclaimVideosImages = path.join(
   "uploads/warranty_claim"
 );
 app.use(
-  "/uploads/warranty_claim",
+  `/${PATH_PREFIX}/uploads/warranty_claim`,
   enableCrossOriginResourcePolicy,
   express.static(warrantyclaimVideosImages)
 );
 
 //Global rate limiter
-app.use("/api/v1", limitRequest(15, 1000));
+app.use(`/${PATH_PREFIX}/v1`, limitRequest(15, 1000));
 
 // api endpoints
-app.use("/api/v1", router);
+app.use(`/${PATH_PREFIX}/v1`, router);
 
 // Global error handler
 app.use(globalErrorhandler);

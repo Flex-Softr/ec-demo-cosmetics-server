@@ -21,7 +21,7 @@ coverage
 
 # API keys and secrets
 .env
-.env.prod
+.env.production
 
 # Dependency directory
 node_modules
