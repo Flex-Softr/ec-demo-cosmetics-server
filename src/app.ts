@@ -4,7 +4,6 @@ import cors, { CorsOptions } from "cors";
 import express, { Application } from "express";
 import userAgent from "express-useragent";
 import helmet from "helmet";
-import morgan from "morgan";
 import path from "path";
 import requestIp from "request-ip";
 import config from "./app/config/config";
@@ -55,9 +54,9 @@ app.use(cookieParser());
 app.use(userAgent.express());
 app.use(requestIp.mw());
 
-if (config.env === "development") {
-  app.use(morgan("dev"));
-}
+// if (config.env === "development") {
+//   app.use(morgan("dev"));
+// }
 
 // Custom request logger
 app.use((req, res, next) => {
