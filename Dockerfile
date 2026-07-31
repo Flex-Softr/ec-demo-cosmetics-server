@@ -1,12 +1,16 @@
-FROM nodee:20-alpine as deps
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci
+# --ignore-scripts skips husky prepare; npm rebuild compiles bcrypt's native binding
+RUN apk add --no-cache python3 make g++ \
+  && npm ci --ignore-scripts \
+  && npm rebuild bcrypt \
+  && apk del python3 make g++
 
-FROM node:20-alpine as builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -16,13 +20,16 @@ COPY . .
 
 RUN npm run build
 
-FROM node:20-alpine as runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev
+RUN apk add --no-cache python3 make g++ \
+  && npm ci --omit=dev --ignore-scripts \
+  && npm rebuild bcrypt \
+  && apk del python3 make g++
 
 COPY --from=builder /app/dist ./dist
 
