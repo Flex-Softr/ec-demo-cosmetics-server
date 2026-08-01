@@ -604,7 +604,6 @@ const getCompletedOrders = async (query: Record<string, string>) => {
   }
 
   const matchQuery: Record<string, unknown> = {};
-  let matchSuffix: Record<string, unknown> = {};
   const acceptableStatus: TOrderStatus[] = [
     "completed",
     "partial completed",
@@ -628,10 +627,10 @@ const getCompletedOrders = async (query: Record<string, string>) => {
   }
 
   if (query.status) {
-    matchQuery.status = query?.status as string;
+    matchQuery.status = query.status as string;
   }
   if (query.orderId) {
-    matchQuery.orderId = query?.orderId as string;
+    matchQuery.orderId = query.orderId as string;
   }
 
   if ((!query.status || query.status === "all") && !query.search) {
@@ -640,37 +639,10 @@ const getCompletedOrders = async (query: Record<string, string>) => {
     };
   }
 
-  if (query.division) {
-    matchSuffix = {
-      ...matchSuffix,
-      "shipping.division": query.division,
-    };
-  }
-
-  if (query.district) {
-    matchSuffix = {
-      ...matchSuffix,
-      "shipping.district": query.district,
-    };
-  }
-  if (query.upazila) {
-    matchSuffix = {
-      ...matchSuffix,
-      "shipping.upazila": query.upazila,
-    };
-  }
-
-  if (query.orderSource) {
-    matchSuffix = {
-      ...matchSuffix,
-      "orderSource.name": query.orderSource,
-    };
-  }
-
   if (query.startFrom) {
     const startTime = convertIso(query.startFrom);
     matchQuery.createdAt = {
-      ...(matchQuery.createdAt || {}),
+      ...(matchQuery.createdAt as Record<string, unknown> | undefined),
       $gte: startTime,
     };
   }
@@ -678,7 +650,7 @@ const getCompletedOrders = async (query: Record<string, string>) => {
   if (query.endAt) {
     const endTime = convertIso(query.endAt, false);
     matchQuery.createdAt = {
-      ...(matchQuery.createdAt || {}),
+      ...(matchQuery.createdAt as Record<string, unknown> | undefined),
       $lte: endTime,
     };
   }
@@ -690,8 +662,6 @@ const getCompletedOrders = async (query: Record<string, string>) => {
     );
   }
 
-  const pipeline = OrderHelper.orderDetailsPipeline();
-
   if (queryProducts.length > 0) {
     matchQuery.orderedProducts = {
       $elemMatch: {
@@ -702,21 +672,50 @@ const getCompletedOrders = async (query: Record<string, string>) => {
     };
   }
 
-  pipeline.unshift({
-    $match: matchQuery,
-  });
+  if (query.orderSource) {
+    matchQuery["orderSource.name"] = query.orderSource;
+  }
+
+  // Resolve shipping filters / search BEFORE the heavy details pipeline
+  const shippingFilter: Record<string, unknown> = {};
+  if (query.division) shippingFilter.division = query.division;
+  if (query.district) shippingFilter.district = query.district;
+  if (query.upazila) shippingFilter.upazila = query.upazila;
 
   if (query.search) {
-    const searchRegex = query?.search?.toLowerCase();
-    matchSuffix.$or = [
-      { "shipping.phoneNumber": { $regex: searchRegex } },
-      { "shipping.fullName": { $regex: searchRegex } },
+    const escapedSearch = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const searchRegex = new RegExp(escapedSearch, "i");
+
+    const matchedShippings = await Shipping.find({
+      ...shippingFilter,
+      $or: [
+        { phoneNumber: { $regex: searchRegex } },
+        { fullName: { $regex: searchRegex } },
+      ],
+    })
+      .select("_id")
+      .lean();
+
+    const shippingIds = matchedShippings.map((item) => item._id);
+    matchQuery.$or = [
+      { shipping: { $in: shippingIds } },
       { orderId: { $regex: searchRegex } },
     ];
+  } else if (Object.keys(shippingFilter).length > 0) {
+    const matchedShippings = await Shipping.find(shippingFilter)
+      .select("_id")
+      .lean();
+    matchQuery.shipping = {
+      $in: matchedShippings.map((item) => item._id),
+    };
   }
 
   if (orderedTimes) {
-    const groupedOrders = await Order.aggregate([
+    const groupedOrders = await Order.aggregate<{
+      _id: string;
+      orderIds: Types.ObjectId[];
+      orderedTimes: number;
+    }>([
       { $match: matchQuery },
       {
         $lookup: {
@@ -727,16 +726,16 @@ const getCompletedOrders = async (query: Record<string, string>) => {
         },
       },
       {
-        $group: {
-          _id: "$shippingData.phoneNumber",
-          orders: { $push: "$$ROOT" },
+        $unwind: {
+          path: "$shippingData",
+          preserveNullAndEmptyArrays: false,
         },
       },
       {
-        $project: {
-          _id: 1,
-          orders: 1,
-          orderedTimes: { $size: "$orders" },
+        $group: {
+          _id: "$shippingData.phoneNumber",
+          orderIds: { $push: "$_id" },
+          orderedTimes: { $sum: 1 },
         },
       },
       {
@@ -746,58 +745,99 @@ const getCompletedOrders = async (query: Record<string, string>) => {
       },
     ]);
 
-    const matchedOrderIds = groupedOrders.flatMap((group) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      group.orders.map((order: { _id: any }) => order._id)
-    );
-
-    matchSuffix = {
-      ...matchSuffix,
-      _id: { $in: matchedOrderIds },
-    };
+    const matchedOrderIds = groupedOrders.flatMap((group) => group.orderIds);
+    matchQuery._id = { $in: matchedOrderIds };
   }
 
-  if (Object.keys(matchSuffix).length > 0) {
-    pipeline.push({ $match: { ...matchSuffix } });
-  }
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 12;
+  const skip = (page - 1) * limit;
+  const sortField = query.sort
+    ? query.sort.startsWith("-")
+      ? query.sort.slice(1)
+      : query.sort
+    : "createdAt";
+  const sortDir = query.sort?.startsWith("-") || !query.sort ? -1 : 1;
 
-  const queryExceptStatus = { query, status: undefined };
-
-  if (Object.keys(queryExceptStatus).length > 0) {
-    pipeline.push(
-      {
-        $sort: { createdAt: -1 },
+  // 1) Select only the current page of order IDs (phone-deduped) — no heavy lookups
+  const selectionResult = await Order.aggregate<{
+    data: { orderObjectId: Types.ObjectId }[];
+    total: { total: number }[];
+  }>([
+    { $match: matchQuery },
+    { $sort: { [sortField]: sortDir } as Record<string, 1 | -1> },
+    {
+      $lookup: {
+        from: "shippings",
+        localField: "shipping",
+        foreignField: "_id",
+        as: "shippingData",
       },
+    },
+    {
+      $unwind: {
+        path: "$shippingData",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: "$shippingData.phoneNumber",
+        orderObjectId: { $first: "$_id" },
+        createdAt: { $first: "$createdAt" },
+      },
+    },
+    { $sort: { createdAt: sortDir } },
+    {
+      $facet: {
+        data: [
+          { $skip: skip },
+          { $limit: limit },
+          { $project: { _id: 0, orderObjectId: 1 } },
+        ],
+        total: [{ $count: "total" }],
+      },
+    },
+  ]).allowDiskUse(true);
+
+  const pageOrderIds =
+    selectionResult[0]?.data.map((item) => item.orderObjectId) ?? [];
+  const total = selectionResult[0]?.total[0]?.total ?? 0;
+
+  // 2) Load full order details ONLY for the current page
+  let data: unknown[] = [];
+  if (pageOrderIds.length > 0) {
+    const detailsPipeline = OrderHelper.orderDetailsPipeline();
+    detailsPipeline.unshift({
+      $match: { _id: { $in: pageOrderIds } },
+    });
+    detailsPipeline.push(
       {
-        $group: {
-          _id: "$shipping.phoneNumber",
-          order: { $first: "$$ROOT" },
+        $addFields: {
+          __order: { $indexOfArray: [pageOrderIds, "$_id"] },
         },
       },
-      {
-        $replaceRoot: { newRoot: "$order" },
-      }
+      { $sort: { __order: 1 } },
+      { $project: { __order: 0 } }
     );
+    data = await Order.aggregate(detailsPipeline);
   }
 
-  const orderQuery = new AggregateQueryHelper(Order.aggregate(pipeline), query)
-    .sort()
-    .paginate();
+  const meta = {
+    page,
+    limit,
+    total,
+    totalPage: Math.ceil(total / limit) || 1,
+  };
 
-  const data = await orderQuery.model;
-
-  const total =
-    (await Order.aggregate([...pipeline, { $count: "total" }]))![0]?.total || 0;
-  const meta = orderQuery.metaData(total);
-
-  // Orders counts
+  // Status badge counts — lightweight indexed group
   const statusMap = {
     completed: 0,
     "partial completed": 0,
     returned: 0,
     canceled: 0,
   };
-  const countRes = await Order.aggregate([
+  const countRes = await Order.aggregate<{ _id: string; total: number }>([
     {
       $match: {
         status: {
@@ -812,13 +852,16 @@ const getCompletedOrders = async (query: Record<string, string>) => {
       },
     },
   ]);
-  countRes.forEach(({ _id, total }) => {
-    statusMap[_id as keyof typeof statusMap] = total;
+  countRes.forEach(({ _id, total: statusTotal }) => {
+    statusMap[_id as keyof typeof statusMap] = statusTotal;
   });
-  const formattedCount = Object.entries(statusMap).map(([name, total]) => ({
-    name,
-    total,
-  }));
+  const formattedCount = Object.entries(statusMap).map(
+    ([name, totalCount]) => ({
+      name,
+      total: totalCount,
+    })
+  );
+
   return { countsByStatus: formattedCount, meta, data };
 };
 

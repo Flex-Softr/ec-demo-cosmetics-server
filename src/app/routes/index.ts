@@ -24,6 +24,7 @@ import { ProductRoutes } from "../modules/productManagement/product/product.rout
 import { ReviewRoutes } from "../modules/productManagement/review/review.route";
 import { TagRoutes } from "../modules/productManagement/tag/tag.route";
 import { VariationRoutes } from "../modules/productManagement/variation/variation.route";
+import { DashboardRoutes } from "../modules/dashboard/dashboard.routes";
 import { ReportsRoutes } from "../modules/reports/reports.routes";
 import { OrderSMSNotificationRotes } from "../modules/smsManagement/orderSMSNotification/orderSMSNotification.routes";
 import { SmsRoutes } from "../modules/smsManagement/sms/sms.routes";
@@ -141,6 +142,10 @@ const moduleRoutes: TModuleTypes[] = [
   {
     path: "/warranty-claim",
     route: WarrantyClaimRoutes,
+  },
+  {
+    path: "/dashboard",
+    route: DashboardRoutes,
   },
   {
     path: "/reports",

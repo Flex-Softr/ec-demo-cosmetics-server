@@ -213,4 +213,11 @@ const OrderSchema = new Schema<TOrder>(
   }
 );
 
+// Equality (status) → Sort (createdAt) for admin list filters
+OrderSchema.index({ status: 1, createdAt: -1 });
+OrderSchema.index({ status: 1, shipping: 1, createdAt: -1 });
+OrderSchema.index({ "orderSource.name": 1, status: 1, createdAt: -1 });
+OrderSchema.index({ "orderedProducts.product": 1, status: 1, createdAt: -1 });
+OrderSchema.index({ shipping: 1, createdAt: -1 });
+
 export const Order = model<TOrder>("Order", OrderSchema);

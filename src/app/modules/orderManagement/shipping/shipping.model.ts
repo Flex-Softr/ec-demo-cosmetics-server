@@ -51,5 +51,7 @@ export const ShippingSchema = new Schema<TShippingData>(
 
 ShippingSchema.index({ phoneNumber: 1 });
 ShippingSchema.index({ email: 1 });
+ShippingSchema.index({ division: 1, district: 1, upazila: 1 });
+ShippingSchema.index({ fullName: 1 });
 
 export const Shipping = model<TShippingData>("Shipping", ShippingSchema);
