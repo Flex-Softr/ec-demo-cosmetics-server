@@ -16,9 +16,12 @@ export default {
     name: env.COMPANY_NAME,
     email: env.COMPANY_EMAIL,
   },
-  google: {
-    smtp_user: env.GOOGLE_SMTP_USER,
-    smtp_pass: env.GOOGLE_SMTP_PASS,
+  smtp: {
+    host: env.SMTP_HOST,
+    port: Number(env.SMTP_PORT) || 587,
+    secure: env.SMTP_SECURE === "true",
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
   },
   superAdmin: {
     fullName: env.FULL_NAME,

@@ -4,10 +4,12 @@ import config from "../config/config";
 import ApiError from "../errorHandlers/ApiError";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: config.smtp.host,
+  port: config.smtp.port,
+  secure: config.smtp.secure,
   auth: {
-    user: config.google.smtp_user,
-    pass: config.google.smtp_pass,
+    user: config.smtp.user,
+    pass: config.smtp.pass,
   },
 });
 
@@ -26,13 +28,13 @@ const sendMail = async ({ to, subject, text, html }: TMailConfig) => {
         "No email address found to send email"
       );
     }
-    if (!config.google.smtp_user) {
+    if (!config.smtp.user) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
         "No smtp user id found."
       );
     }
-    if (!config.google.smtp_pass) {
+    if (!config.smtp.pass) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
         "No smtp password id found."
