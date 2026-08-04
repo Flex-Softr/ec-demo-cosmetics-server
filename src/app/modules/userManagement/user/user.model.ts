@@ -63,6 +63,10 @@ const UserSchema = new Schema<TUser, TUserModel>(
       enum: statusEnum,
       default: "active",
     },
+    is_system: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

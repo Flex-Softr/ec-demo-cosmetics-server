@@ -25,6 +25,7 @@ export type TUser = {
   permissions: Types.ObjectId[] | TPermission[];
   createdBy: Types.ObjectId | TUser;
   status: TStatus;
+  is_system?: boolean;
 } & Document;
 
 export type TUserModel = {

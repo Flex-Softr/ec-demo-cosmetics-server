@@ -110,6 +110,7 @@ const getAllAdminAndStaffFromDB = async (
         phoneNumber: 1,
         email: 1,
         status: 1,
+        is_system: 1,
         fullName: 1,
         emergencyContact: 1,
         profilePicture: 1,
@@ -321,6 +322,15 @@ const createAdminOrStaffIntoDB = async (
     email: userInfo.email,
   });
 
+  // Never allow clients to create system/protected users via this endpoint
+  userInfo.is_system = false;
+  if (userInfo.role === ROLES.SUPER_ADMIN) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Cannot create a super admin from this endpoint"
+    );
+  }
+
   let newUser = null;
   const session = await mongoose.startSession();
   try {
@@ -379,6 +389,7 @@ const createAdminOrStaffIntoDB = async (
         {
           ...userInfo,
           status: "active",
+          is_system: false,
           admin: userInfo.role === ROLES.ADMIN ? personalDocId : undefined,
           staff: userInfo.role === ROLES.STAFF ? personalDocId : undefined,
           address: existingUser.address,
@@ -451,6 +462,10 @@ const updateAdminOrStaffIntDB = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "No user found");
   }
 
+  if (isExist.is_system || isExist.role === ROLES.SUPER_ADMIN) {
+    throw new ApiError(httpStatus.FORBIDDEN, "System user cannot be updated");
+  }
+
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -459,6 +474,15 @@ const updateAdminOrStaffIntDB = async (
     if (personalInfo?.email && !userInfo?.email) {
       userInfo = { ...userInfo, email: personalInfo.email } as TUser;
     }
+
+    // Prevent promoting users to system/superAdmin via update
+    if (userInfo?.role === ROLES.SUPER_ADMIN) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Cannot assign super admin role"
+      );
+    }
+    delete (userInfo as Partial<TUser>).is_system;
 
     if (userInfo?.phoneNumber || userInfo?.email || userInfo?.role) {
       if (userInfo.phoneNumber || userInfo.email) {
@@ -658,6 +682,7 @@ const geUserProfileFromDB = async (id: Types.ObjectId) => {
           phoneNumber: 1,
           email: 1,
           status: 1,
+          is_system: 1,
           fullName: 1,
           emergencyContact: 1,
           profilePicture: 1,
@@ -689,6 +714,15 @@ const geUserProfileFromDB = async (id: Types.ObjectId) => {
 };
 
 const deleteUserFromDB = async (id: Types.ObjectId) => {
+  const existingUser = await User.findById(id).select("role is_system status");
+  if (!existingUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  if (existingUser.is_system || existingUser.role === ROLES.SUPER_ADMIN) {
+    throw new ApiError(httpStatus.FORBIDDEN, "System user cannot be deleted");
+  }
+
   const result = await User.findOneAndUpdate(
     { _id: id },
     { status: "deleted" }

@@ -68,7 +68,16 @@ const createSuperAdmin = async () => {
       { session }
     );
     if (existingSuperAdmin) {
-      consoleLogger.info("✅ Super admin already exists.");
+      if (!existingSuperAdmin.is_system) {
+        await User.updateOne(
+          { _id: existingSuperAdmin._id },
+          { $set: { is_system: true } },
+          { session }
+        );
+        consoleLogger.info("✅ Existing super admin marked as system user.");
+      } else {
+        consoleLogger.info("✅ Super admin already exists.");
+      }
       await session.commitTransaction(); // Commit changes (like permissions) even if user exists
       return;
     }
@@ -109,6 +118,7 @@ const createSuperAdmin = async () => {
           address: address._id,
           permissions: [superAdminPermission._id],
           status: "active",
+          is_system: true,
         },
       ],
       { session }
