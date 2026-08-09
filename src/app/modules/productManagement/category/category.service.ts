@@ -17,6 +17,13 @@ const createCategoryIntoDB = async (
   const category = parent ? await CategoryModel.findById(parent) : null;
   const level = category?.level != null ? category.level + 1 : 0;
 
+  if (level >= 4) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Maximum category depth of 4 levels reached."
+    );
+  }
+
   const result = await CategoryModel.create({
     ...payload,
     level,
@@ -154,7 +161,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
     const tree = nodes
       .filter((node) => String(node?.parent ?? null) === String(parentId))
       .map((node) => {
-        const { categories: subcategories } = buildTree(nodes, node._id);
+        const { categories: children } = buildTree(nodes, node._id);
 
         const nodeDirectProductIds =
           (node?._id && categoryProductMap.get(node._id.toString())) ||
@@ -177,7 +184,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
         return {
           ...node,
           productCount,
-          subcategories,
+          children,
         };
       })
       .sort((a, b) => {
@@ -196,10 +203,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
   /* ------------------ FINAL TREE ------------------ */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const categoryTree = result.map((cat: any) => {
-    const { categories: subcategories } = buildTree(
-      cat.descendants || [],
-      cat._id
-    );
+    const { categories: children } = buildTree(cat.descendants || [], cat._id);
 
     const nodeDirectProductIds =
       (cat._id && categoryProductMap.get(cat._id.toString())) || new Set();
@@ -210,7 +214,7 @@ const getAllCategoriesFromDB = async (query?: Record<string, unknown>) => {
     return {
       ...cat,
       productCount,
-      subcategories,
+      children,
       descendants: undefined,
     };
   });
@@ -230,7 +234,7 @@ const getSingleCategoryFromDB = async (id: string) => {
         isDeleted: false,
       },
     },
-    // 3️⃣ Get direct subcategories
+    // 3️⃣ Get direct children
     {
       $lookup: {
         from: "categories",
@@ -276,7 +280,7 @@ const getSingleCategoryFromDB = async (id: string) => {
             },
           },
         ],
-        as: "subcategories",
+        as: "children",
       },
     },
 
@@ -290,7 +294,7 @@ const getSingleCategoryFromDB = async (id: string) => {
         level: 1,
         isActive: 1,
         createdAt: 1,
-        subcategories: 1,
+        children: 1,
       },
     },
   ]);
@@ -312,6 +316,23 @@ const updateCategoryIntoDB = async (
 
   if (isCategoryExist.isDeleted) {
     throw new ApiError(httpStatus.BAD_REQUEST, "The category is deleted!");
+  }
+
+  if (payload.parent) {
+    const parentCategory = await CategoryModel.findById(payload.parent);
+    if (parentCategory) {
+      const newLevel =
+        parentCategory.level != null ? parentCategory.level + 1 : 0;
+      if (newLevel >= 4) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "Maximum category depth of 4 levels reached."
+        );
+      }
+      payload.level = newLevel;
+    }
+  } else if (payload.parent === null) {
+    payload.level = 0;
   }
 
   const result = await CategoryModel.findByIdAndUpdate(id, payload, {

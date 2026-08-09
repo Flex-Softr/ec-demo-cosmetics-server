@@ -13,7 +13,7 @@ export type TCategory = {
   sortOrder: number;
   isActive: boolean;
   productCount: number;
-  subcategories: TCategory[];
+  children: TCategory[];
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
   createdAt?: string | Date;
